@@ -1,0 +1,43 @@
+@*****************************************************************************
+ * Display information on an item including basic metadata and identified    *
+ * topics organized by scheme                                                *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(item: Item)@*(implicit hubContext: HubContext)*@
+@main("Item - TopicHub") {
+  <div itemscope itemtype="http://schema.org/@item.contentType.get.label" class="jumbotron">
+    <h3>~ @item.contentType.get.tag ~</h3>
+    <h2 itemprop="name">@item.metadataValue("title")</h2>
+    <p itemprop="author">@item.metadataValues("author").mkString("; ")</p>
+    <p><span class="muted">@item.metadataValue("citation")</span></p>
+    <p>@HubUtils.pluralize(item.transfers, "transfer") since @HubUtils.fmtDate(item.created). @if(item.transfers > 0){Most recent @HubUtils.fmtDate(item.updated)}</p>
+    <p>Appears in collection: <a href="@routes.Application.itemBrowse("collection", item.collectionId)">@Collection.findById(item.collectionId).get.description</a></p>
+    <p>
+      @if(item.hasMetadata("accessUrl")) {
+        <a rel="tooltip" title="see article in new browser window" href="@item.metadataValue("accessUrl")" target="_blank" class="btn btn-primary btn-large">View &raquo;</a>
+      }
+      @*<a rel="tooltip" title="download whole package to desktop" href="@routes.Application.itemFile(item.id)" class="btn btn-primary btn-large">Download &raquo;</a>
+      <a rel="tooltip" title="send an email notification with link to this item" href="@routes.Application.itemTransfer(item.id, "alert")" class="btn btn-primary btn-large pull-right">Remind Me &raquo;</a>
+      <a rel="tooltip" title="start a SWORD deposit of package to my repository" href="@routes.Application.itemTransfer(item.id, "package")" class="btn btn-primary btn-large pull-right">Deposit &raquo;</a>
+      *@
+    </p>
+  </div>
+  <h3>Topics Arranged by Scheme</h3>
+  <ul class="nav nav-tabs">
+    @item.regularTopics.map { sc =>
+      <li><a href="#@sc._1" data-toggle="tab">@sc._1</a></li>
+    }
+  </ul>
+  <div class="tab-content">
+    @item.regularTopics.map { sc =>
+      <div class="tab-pane" id="@sc._1">
+        <p>@Scheme.findByTag(sc._1).get.description</p>
+        <ul>
+          @sc._2.map { tp =>
+            <li><a href="@routes.Application.topic(tp.id)">@tp.tag</a>: @tp.name</li>
+          }
+        </ul>
+      </div>
+      }
+  </div>
+}

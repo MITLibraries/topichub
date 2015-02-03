@@ -1,0 +1,19 @@
+@*****************************************************************************
+ * Page with form to create new Finder                                       *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(tag: String, finderForm: Form[Finder])@*(implicit hubContext: HubContext)*@
+@import helper._
+@main("Create Finder - TopicHub") {
+  <h2>Add a new finder</h2>
+  @form(routes.Application.createFinder(tag)) {
+    @select(finderForm("scheme_id"), options(Scheme.mapView))
+    @select(finderForm("content_format_id"), options(ContentFormat.mapView))
+    @textarea(finderForm("description"))
+    @inputText(finderForm("cardinality"))
+    @inputText(finderForm("idKey"))
+    @inputText(finderForm("idLabel"))
+    @inputText(finderForm("author"))
+    <input type="submit" value="Create">
+  }
+}

@@ -1,0 +1,28 @@
+@*****************************************************************************
+ * Page for listing current schemes and link for new scheme creation         *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(schemes: List[Scheme])@*(implicit hubContext: HubContext)*@
+@main("Schemes - TopicHub") {
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-md-4">
+      <div class="well-lg sidebar-nav">
+        <ul class="navbar-nav nav-list">
+          <li class="nav-header">Schemes (@schemes.size)</li>
+          @schemes.map { scheme =>
+            <li>@scheme.tag <a href="@routes.Application.scheme(scheme.id)">@scheme.description</a></li>
+          }
+        </ul>
+      </div>
+    </div>
+    <div class="col-md-8">
+      <div class="jumbotron">
+        <h2>Scheme Management</h2>
+        <p>Classification, identification, and other characterization systems - collectively called <em>schemes</em> on the hub - are the key to ability to organize content. You may install as many schemes as are useful in extracting topics or other information in content, but only if you can provide instructions (via Finders) on how to obtain topics in the scheme for a given document type. Normally a subscriber may only subscribe to topics found in content that has been transmitted to the hub, but if you also supply a <em>validator</em> for the scheme, then subscribers can 'pre-subscribe' to validated topics. To add a new scheme, click the link below. Browse schemes at left.</p>
+        <p><a rel="tooltip" title="create a new scheme on this hub" href="@routes.Application.newScheme" class="btn btn-primary btn-large pull-right">Create &raquo;</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+}

@@ -1,0 +1,22 @@
+@************************************************************************
+ * Page to display a publisher content harvest with control to start a  *
+ * harvest with override parameters                                     *
+ * Copyright (c) 2015 MIT Libraries                                     *
+ ************************************************************************@
+@(harvest: Harvest, startForm: Form[Int])@*(implicit hubContext: HubContext)*@
+@import helper._
+@main("Harvest - TopicHub") {
+  <h2>Hidden</h2>
+  <div class="jumbotron">
+    <h3>~ Harvest ~</h3>
+    <h2>@harvest.name for <a href="@routes.Application.editPublisher(harvest.publisher.get.id)">@harvest.publisher.get.name</a></h2>
+    <h3>Protocol: @harvest.protocol</h3>
+    <p>First date: @HubUtils.fmtDate(harvest.start)</p>
+    <p>Last Date: @HubUtils.fmtDate(harvest.updated)</p>
+    @form(routes.Application.startHarvest(harvest.id)) {
+      @inputText(startForm("span"))
+      <input type="submit" value="Start">
+    }
+    @*<a rel="tooltip" title="start new harvest" href="@routes.Application.startHarvest(harvest.id, 1)" class="btn btn-primary btn-large pull-right">Start &raquo;</a>*@
+  </div>
+}

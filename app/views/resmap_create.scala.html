@@ -1,0 +1,15 @@
+@*****************************************************************************
+ * Page with form to create new Resource Map                                 *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(resmapForm: Form[ResourceMap])@*(implicit hubContext: HubContext)*@
+@import helper._
+@main("Resource Maps - TopicHub") {
+     <h2>Add a new resource map</h2>
+    @form(routes.Application.createResourceMap) {
+        @inputText(resmapForm("tag"))
+        @inputText(resmapForm("description"))
+        @inputText(resmapForm("swordurl"))
+        <input type="submit" value="Create">
+    }
+}

@@ -1,0 +1,13 @@
+@*****************************************************************************
+ * Page to display list of installed finders                                 *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(finders: List[Finder])@*(implicit hubContext: HubContext)*@
+@main("Finders - TopicHub") {
+   <h2>Number of finders: @finders.size</h2>
+   <ul>
+     @finders.map { finder =>
+       <li>@finder.description</li>
+     }
+   </ul>
+}

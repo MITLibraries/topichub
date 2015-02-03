@@ -1,0 +1,101 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Home and informational page
+GET     /                           controllers.Application.index
+#GET     /explain                    controllers.Application.explain
+GET     /about                      controllers.Application.about
+
+# Publisher pages
+GET     /publishers                 controllers.Application.publishers
+GET     /publishers/browse          controllers.Application.publisherBrowse(filter: String, value: String, page: Int ?= 0)
+GET     /publisher/:id              controllers.Application.publisher(id: Int)
+GET     /publishers/create          controllers.Application.newPublisher
+GET     /publisher/:id/create       controllers.Application.newCollection(id: Int)
+GET     /publisher/:id/edit         controllers.Application.editPublisher(id: Int)
+POST    /publishers                 controllers.Application.createPublisher
+POST    /publisher/:id              controllers.Application.createCollection(id: Int)
+GET     /publisher/:id/createH      controllers.Application.newHarvest(id: Int)
+POST    /harvest/:id                controllers.Application.createHarvest(id: Int)
+
+# Collection pages
+GET     /collections                controllers.Application.collections
+
+# Harvest pages
+GET     /harvest/:id                controllers.Application.harvest(id: Int)
+GET     /harvest/:id/start          controllers.Application.startHarvest(id: Int)
+GET     /harvest/:id/delete         controllers.Application.deleteHarvest(id: Int)
+
+# Scheme pages
+GET     /schemes                    controllers.Application.schemes
+GET     /scheme/:id                 controllers.Application.scheme(id: Int)
+GET     /scheme/:id/edit            controllers.Application.editScheme(id: Int)
+GET     /schemes/create             controllers.Application.newScheme
+POST    /schemes                    controllers.Application.createScheme
+
+# Finder pages
+GET     /scheme/:tag/finders        controllers.Application.finders(tag: String)
+GET     /scheme/:tag/create         controllers.Application.newFinder(tag: String)
+POST    /scheme/:tag                controllers.Application.createFinder(tag: String)
+GET     /scheme/:tag/finder/:id/delete  controllers.Application.deleteFinder(tag: String, id: Int)
+
+# Validator pages
+
+GET     /scheme/:tag/createvalidator       controllers.Application.newValidator(tag: String)
+#GET     /testvalidator                  controllers.Application.testValidator
+#POST    /testvalidator                  controllers.Application.runTestValidator
+POST    /scheme/:tag/validator             controllers.Application.createValidator(tag: String)
+GET     /scheme/:tag/validator/:id/delete  controllers.Application.deleteValidator(tag: String, id: Int)
+
+# Content Type pages
+GET     /ctypes                     controllers.Application.contentTypes
+GET     /ctype/:id                  controllers.Application.contentType(id: Int)
+GET     /ctypes/create              controllers.Application.newContentType
+POST    /ctypes                     controllers.Application.createContentType
+POST    /ctype/:id/scheme           controllers.Application.addContentTypeScheme(id: Int, relation: String)
+GET     /ctype/:id/scheme           controllers.Application.removeContentTypeScheme(id: Int, sid: Int, relation: String)
+#POST    /ctypei/:id                 controllers.Application.newCtypeIndex(id: Long)
+#POST    /ctypet/:id                 controllers.Application.newCtypeTopic(id: Long)
+
+# Content Format pages
+GET     /cformats                   controllers.Application.contentFormats
+GET     /cformat/:id                controllers.Application.contentFormat(id: Int)
+GET     /cformats/create            controllers.Application.newContentFormat
+POST    /cformats                   controllers.Application.createContentFormat
+
+# Resource Map pages
+GET     /resmaps                    controllers.Application.resourceMaps
+GET     /resmap/:id                 controllers.Application.resourceMap(id: Int)
+GET     /resmaps/create             controllers.Application.newResourceMap
+POST    /resmaps                    controllers.Application.createResourceMap
+POST    /resmap/:id                 controllers.Application.newResourceMapping(id: Int)
+GET     /resmap/:id/scheme          controllers.Application.removeResourceMapping(id: Int, sid: Int, source: String)
+
+# Item pages
+#GET     /items                       controllers.Application.items
+#GET     /items/search                controllers.Application.itemSearch(topicId: String, page: Int)
+GET     /items/browse                controllers.Application.itemBrowse(filter: String, id: Int, page: Int ?= 0)
+GET     /item/:id                    controllers.Application.item(id: Int)
+
+# Topic pages
+GET     /topics                      controllers.Application.topics
+GET     /topic/:id                   controllers.Application.topic(id: Int)
+GET     /topics/browse               controllers.Application.topicBrowse(id: Int, page: Int ?= 0)
+POST    /topic/:sid/validate         controllers.Application.topicValidate(sid: Int)
+
+# Administrative services
+#GET     /reindex/:dtype             controllers.Application.reindex(dtype: String)
+GET     /workbench                   controllers.Application.workbench
+GET     /purge                       controllers.Application.purge
+
+# hub model services & page
+GET     /cmodel                      controllers.Application.contentModel
+GET     /pubmodel                    controllers.Application.publisherModel
+GET     /model/create                controllers.Application.newHubModel
+POST    /cmodel                      controllers.Application.addContentModel
+POST    /pubmodel                    controllers.Application.addPublisherModel
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET     /webjars/*file              controllers.WebJarAssets.at(file)
