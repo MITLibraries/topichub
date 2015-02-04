@@ -217,6 +217,15 @@ object Application extends Controller {
     ).getOrElse(NotFound(views.html.trouble("No such harvest: " + id)))
   }
 
+  def pullKnownItem(cid: Int, hid: Int, oid: String) = Action { implicit request =>
+    Collection.findById(cid).map ( coll =>
+      Harvest.findById(hid).map( harvest => {
+        harvester ! (oid, coll, harvest)
+        Ok(views.html.index("pulled: " + oid))
+      }).getOrElse(NotFound(views.html.trouble("No such harvest: " + hid)))
+    ).getOrElse(NotFound(views.html.trouble("No such collection: " + cid)))
+  }
+
   def newHarvest(id: Int) = Action { implicit request =>
     Publisher.findById(id).map( pub =>
       ownsPublisher(/*username*/"richard", pub, Ok(views.html.harvest_create(pub, harvestForm)))

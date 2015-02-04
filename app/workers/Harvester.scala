@@ -30,6 +30,7 @@ import models.{Collection, Harvest, HubUtils, Item}
 class HarvestWorker extends Actor {
   def receive = {
     case h: Harvest => new Harvester().harvest(h)
+    case (oid: String, c: Collection, h: Harvest) => new Harvester().pullItem(oid, c, h)
     case _ => println("Unknown")
   }
 }
@@ -42,6 +43,14 @@ class Harvester {
       case "oai-pmh" => oaiHarvest(harvest)
       case _ => println("Unknown protocol")
     }
+  }
+
+  def pullItem(oid: String, coll: Collection, harvest: Harvest) = {
+    // TODO - verify OID validity at harvest site
+    val resUrl = harvest.resourceUrl.replace("${recordId}", oid)
+    val item = Item.make(coll.id, coll.ctypeId, "remote:" + resUrl, oid)
+    coll.recordDeposit
+    Harvester.cataloger ! item
   }
 
   def oaiHarvest(harvest: Harvest) = {
