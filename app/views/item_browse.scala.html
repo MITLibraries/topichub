@@ -27,7 +27,7 @@
      @pagination(page)
      <dl>
        @items.map { item =>
-         <dt><a href="@routes.Application.item(item.id)">@item.metadataValue("title")</a></dt>
+         <dt><a href="@routes.Application.item(item.id)">@Html(item.metadataValue("title"))</a></dt>
          <dd>@item.metadataValues("author").mkString("; ")</dd>
        }
      </dl>
