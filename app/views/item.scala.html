@@ -7,7 +7,7 @@
 @main("Item - TopicHub") {
   <div itemscope itemtype="http://schema.org/@item.contentType.get.label" class="jumbotron">
     <h3>~ @item.contentType.get.tag ~</h3>
-    <h2 itemprop="name">@item.metadataValue("title")</h2>
+    <h2 itemprop="name">@Html(item.metadataValue("title"))</h2>
     <p itemprop="author">@item.metadataValues("author").mkString("; ")</p>
     <p><span class="muted">@item.metadataValue("citation")</span></p>
     <p>@HubUtils.pluralize(item.transfers, "transfer") since @HubUtils.fmtDate(item.created). @if(item.transfers > 0){Most recent @HubUtils.fmtDate(item.updated)}</p>
