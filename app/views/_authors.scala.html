@@ -1,0 +1,13 @@
+@(item: List[String])
+
+@for(author <- item.zipWithIndex) {
+  @if(author._2 < 10) {
+    @author._1;
+  } else {
+    <span class="author_toggleable hidden">@author._1;</span>
+  }
+}
+
+@if(item.length >= 10) {
+  <span class="author_etal">et al.</span>
+}

@@ -22,14 +22,15 @@
 }
 
 @main("Item Browse -  TopicHub") {
-     <h2>Browse Items by @filter</h2>
-     <h3>@description</h3>
-     @pagination(page)
-     <dl>
-       @items.map { item =>
-         <dt><a href="@routes.Application.item(item.id)">@Html(item.metadataValue("title"))</a></dt>
-         <dd>@item.metadataValues("author").mkString("; ")</dd>
-       }
-     </dl>
-     @pagination(page)
+  <h2>Browse Items by @filter</h2>
+  <h3>@description</h3>
+
+  @pagination(page)
+    <dl>
+      @items.map { item =>
+        <dt><a href="@routes.Application.item(item.id)">@Html(item.metadataValue("title"))</a></dt>
+        <dd>@_authors(item.metadataValues("author"))</dd>
+      }
+    </dl>
+  @pagination(page)
 }
