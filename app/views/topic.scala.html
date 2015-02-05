@@ -30,7 +30,7 @@
      <dl>
      	@topic.recentItems(6).map { item =>
      	  <dt><a href="@routes.Application.item(item.id)">@Html(item.metadataValue("title"))</a></dt>
-        <dd>@item.metadataValues("author").mkString("; ")</dd>
+        <dd>@_authors(item.metadataValues("author"))</dd>
       }
      </dl>
 }

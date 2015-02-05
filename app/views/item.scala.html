@@ -8,7 +8,10 @@
   <div itemscope itemtype="http://schema.org/@item.contentType.get.label" class="jumbotron">
     <h3>~ @item.contentType.get.tag ~</h3>
     <h2 itemprop="name">@Html(item.metadataValue("title"))</h2>
-    <p itemprop="author">@item.metadataValues("author").mkString("; ")</p>
+    <p itemprop="author">
+      @_authors(item.metadataValues("author"))
+      <span class="hidden author_toggler btn">[show all @item.metadataValues("author").length authors]<span>
+    </p>
     <p><span class="muted">@item.metadataValue("citation")</span></p>
     <p>@HubUtils.pluralize(item.transfers, "transfer") since @HubUtils.fmtDate(item.created). @if(item.transfers > 0){Most recent @HubUtils.fmtDate(item.updated)}</p>
     <p>Appears in collection: <a href="@routes.Application.itemBrowse("collection", item.collectionId)">@Collection.findById(item.collectionId).get.description</a></p>
@@ -41,3 +44,25 @@
       }
   </div>
 }
+
+<script>
+$(function() {
+  var hidable_authors = $(".author_toggleable").length;
+  var author_toggle_text = $(".author_toggler").text();
+
+  if (hidable_authors > 0) {
+    $(".author_toggler").removeClass("hidden");
+  }
+
+  $(".author_toggler").click(function() {
+    $(".author_etal").toggle();
+    if ($(".author_toggleable").is(":visible")) {
+      $(".author_toggleable").addClass("hidden");
+      $(".author_toggler").text(author_toggle_text);      
+    } else {
+      $(".author_toggleable").removeClass("hidden");
+      $(".author_toggler").text("Hide");
+    }
+  });
+});
+</script>
