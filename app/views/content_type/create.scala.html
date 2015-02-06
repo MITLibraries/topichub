@@ -1,0 +1,16 @@
+@************************************************************************
+ * Page with form to create a new Content Type                          *
+ * Copyright (c) 2015 MIT Libraries                                     *
+ ************************************************************************@
+@(ctypeForm: Form[ContentType])@*(implicit hubContext: HubContext)*@
+@import helper._
+@layout.main("Content Types - TopicHub") {
+     <h2>Add a new content type</h2>
+    @form(routes.Application.createContentType) {
+        @inputText(ctypeForm("tag"))
+        @inputText(ctypeForm("label"))
+        @inputText(ctypeForm("description"))
+        @inputText(ctypeForm("logo"))
+        <input type="submit" value="Create">
+    }
+}

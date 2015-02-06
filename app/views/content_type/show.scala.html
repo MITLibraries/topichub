@@ -1,0 +1,45 @@
+@*****************************************************************************
+ * Page for display and editing of content types                             *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(ctype: ContentType, scForm: Form[(Int, Int)])@*(implicit hubContext: HubContext)*@
+@import helper._
+@layout.main("Content Types - TopicHub") {
+  <h2>Content Type: @ctype.tag</h2>
+  <h3>Metadata Schema</h3>
+  <ul>
+    @ctype.schemes("meta").map { scheme =>
+      <li><a href="@routes.Application.scheme(scheme.id)">@scheme.tag</a>: @scheme.description
+      <a href="@routes.Application.removeContentTypeScheme(ctype.id, scheme.id, "meta")">remove</a></li>
+    }
+  </ul>
+  <h4>Add a new metadata scheme</h4>
+    @form(routes.Application.addContentTypeScheme(ctype.id, "meta")) {
+      @select(scForm("scheme_id"), options(Scheme.mapView))
+      <input type="submit" value="Create">
+    }
+  <h3>Index Schema</h3>
+  <ul>
+    @ctype.schemes("index").map { scheme =>
+      <li><a href="@routes.Application.scheme(scheme.id)">@scheme.tag</a>: @scheme.description
+      <a href="@routes.Application.removeContentTypeScheme(ctype.id, scheme.id, "index")">remove</a></li>
+    }
+  </ul>
+  <h4>Add a new index scheme</h4>
+    @form(routes.Application.addContentTypeScheme(ctype.id, "index")) {
+      @select(scForm("scheme_id"), options(Scheme.mapView))
+      <input type="submit" value="Create">
+    }
+  <h3>Topic Schema</h3>
+  <ul>
+    @ctype.schemes("topic").map { scheme =>
+      <li><a href="@routes.Application.scheme(scheme.id)">@scheme.tag</a>: @scheme.description
+      <a href="@routes.Application.removeContentTypeScheme(ctype.id, scheme.id, "topic")">remove</a></li>
+    }
+  </ul>
+  <h4>Add a new topic scheme</h4>
+    @form(routes.Application.addContentTypeScheme(ctype.id, "topic")) {
+      @select(scForm("scheme_id"), options(Scheme.mapView))
+      <input type="submit" value="Create">
+    }
+}

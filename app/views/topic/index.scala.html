@@ -1,0 +1,27 @@
+@*****************************************************************************
+* Entry page for topic browsing                                              *
+* Copyright (c) 2015 MIT Libraries                                           *
+*****************************************************************************@
+@(schemes: List[Scheme])@*(implicit hubContext: HubContext)*@
+@layout.main("Topics -  TopicHub") {
+  <div class="container-fluid">
+  	<div class="row-fluid">
+      <div class="col-md-4">
+      	<div class="well sidebar-nav">
+      		<ul class="nav nav-list">
+      			<li class="nav-header">Schemes</li>
+      		  @schemes.map { scheme =>
+         			<li><a href="@routes.Application.topicBrowse(scheme.id)">@scheme.tag: @scheme.description</a> (@HubUtils.pluralize(scheme.topicCount.toInt, "topic"))</li>
+       			}
+      		</ul>
+      	</div>
+      </div>
+      <div class="col-md-8">
+        <div class="jumbotron">
+          <h2>Understanding Topics</h2>
+          <p>Topics are at the heart of how TopicHub helps you discover content. Each topic is an identifier or term belonging to a standard vocabulary or name-space, known as its scheme. Relative to this scheme, the topic describes, characterizes or classifies the item. Topics help organize items into groups that are of interest to subscribers: all articles in a particular journal, everything written by a certain author, etc. Explore the topics within a scheme by clicking on one of the scheme browse links at the left.
+        </div>
+      </div>
+    </div>
+  </div>
+}

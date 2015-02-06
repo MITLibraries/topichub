@@ -1,0 +1,38 @@
+@*****************************************************************************
+ * Page with form to create new Publisher                                    *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(pub: Publisher, pubForm: Form[Publisher])@*(implicit hubContext: HubContext)*@
+
+@import helper._
+@layout.main("Create Publisher - TopicHub") {
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4">
+      @form(routes.Application.createPublisher) {
+        @select(pubForm("category"), options(Map("STM publisher" -> "STM publisher", "Subject Repository" -> "Subject Repository", "OA Journal" -> "OA Journal", "Other" -> "Other")))
+        @inputText(pubForm("tag"))
+        @inputText(pubForm("name"))
+        @textarea(pubForm("description"))
+        @inputText(pubForm("link"))
+        @inputText(pubForm("logo"))
+        <input type="submit" value="Create">
+      }
+      </div>
+      <div class="col-md-8">
+        <div class="jumbotron">
+          <h2>Define your publisher profile</h2>
+          <p>Choose a category that best describes the type of publisher, or 'other' if none fits.</p>
+          <p>Fill in the fields at left making sure that you select a 'tag' that:
+          <ul>
+            <li>is not already in use on the hub.</li>
+            <li>is a short <em>handle</em> containing no spaces</li>
+            <li>is mnemonically helpful</li>
+          </ul></p>
+          <p>Put the full name in the name field, and add a terse description in the next one.</p>
+          <p>Add a URL to your main site in the link field, and a URL for a logo if you have one.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+}

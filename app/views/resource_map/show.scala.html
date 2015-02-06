@@ -1,0 +1,25 @@
+@*****************************************************************************
+ * Page with form to manage a Resource Map                                   *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(resmap: ResourceMap, rmform: Form[(Int, Int, String, Int)])@*(implicit hubContext: HubContext)*@
+@import helper._
+@layout.main("Resource Map - TopicHub") {
+  <h2>Resource Map: @resmap.tag</h2>
+  <h3>Mappings</h3>
+  <ul>
+    @resmap.schemes.map { scheme =>
+      @resmap.mappingsForScheme(scheme).map { mapping =>
+        <li><a href="@routes.Application.scheme(scheme.id)">@scheme.tag</a>: @scheme.description
+        <a href="@routes.Application.removeResourceMapping(resmap.id, scheme.id, mapping._1)">remove</a></li>
+      }
+    }
+  </ul>
+  <h4>Add a new mapping</h4>
+    @form(routes.Application.newResourceMapping(resmap.id)) {
+      @select(rmform("scheme_id"), options(Scheme.mapView))
+      @select(rmform("format_id"), options(ContentFormat.mapView))
+      @inputText(rmform("source"))
+      <input type="submit" value="Create">
+    }
+}
