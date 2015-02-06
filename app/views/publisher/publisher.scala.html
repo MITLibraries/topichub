@@ -1,0 +1,33 @@
+@*****************************************************************************
+ * Page for displaying publisher information including collections           *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(pub: Publisher, user: Option[User])@*(implicit hubContext: HubContext)*@
+@layout.main("Publisher - TopicHub") {
+  <div itemscope itemtype="http://schema.org/Organization" class="jumbotron">
+    <h3>~ Publisher ~</h3>
+    <h2 itemprop="name">@pub.name</h2>
+    <p>@pub.description</p>
+    <p>Registered @HubUtils.fmtDate(pub.created)</P>
+    <p>@HubUtils.pluralize(pub.itemCount, "article") deposited</p>
+    <span>
+      @if(! pub.link.isEmpty) {
+        <a rel="tooltip" title="Visit publisher site" href="@pub.link" class="btn btn-primary btn-large">Site &raquo;</a>
+      }
+      @if(!user.isEmpty && user.get.hasPublisher(pub.id)) {
+         <a rel="tooltip" title="manage publisher account" href="@routes.Application.editPublisher(pub.id)" class="btn btn-primary btn-large pull-right">Manage &raquo;</a>
+      }
+    </span>
+  </div>
+  <h3>Collections</h3>
+  @if(pub.collectionCount > 0) {
+    <dl>
+      @Collection.findByPublisher(pub.id).map { coll =>
+      <dt><a href="@routes.Application.itemBrowse("collection", coll.id)">@coll.description</a></dt>
+      <dd>Enrolled on @HubUtils.fmtDate(coll.created). @HubUtils.pluralize(coll.deposits, "deposit") - most recent @HubUtils.fmtDate(coll.updated)</dd>
+    }
+    </dl>
+  } else {
+    <p>None registered</p>
+  }
+}
