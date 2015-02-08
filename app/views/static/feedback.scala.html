@@ -1,0 +1,21 @@
+@*****************************************************************************
+ * Page to display a form to gather user comments                            *
+ * which are emailed to the site administrator                               *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+ @(fbform: Form[(String,Boolean,String)])@*(implicit hubContext: HubContext, flash: Flash)*@
+ @import helper._
+ @layout.main("Feedback - TopicHub") {
+   <h2>Feedback</h2>
+   <p>We'd love to hear from you!</p>
+   <p>Please record any comments, questions, suggestions, etc you have in the field below. You may check the 'send reply' box if you would like a reply sent to the email supplied. You may comment on application design and usability, or on the content you find (or don't).</p>
+   @form(routes.Application.takeFeedback) {
+     @inputText(fbform("email"), '_label -> "your email")
+     @checkbox(fbform("reply"), '_label -> "send reply", '_help -> "")
+     @textarea(fbform("comment"), 'rows -> 8, 'cols -> 40)
+     <p>
+       <button type="submit" id="sendbutton">Send</button>
+     </p>
+   }
+   <p>Thanks for helping make SCOAP3 TopicHub a more valuable service!</p>
+ }

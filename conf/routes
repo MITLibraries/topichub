@@ -6,6 +6,8 @@
 GET     /                           controllers.Application.index
 #GET     /explain                    controllers.Application.explain
 GET     /about                      controllers.Application.about
+GET     /feedback                   controllers.Application.feedback
+POST    /feedback                   controllers.Application.takeFeedback
 
 # Publisher pages
 GET     /publishers                 controllers.Application.publishers

@@ -24,6 +24,7 @@ import play.api.Play.current
 import models._
 import services.contentModelJson._
 import services.publisherModelJson._
+import services.Emailer
 
 case class HubContext(user: Option[User])
 
@@ -47,6 +48,30 @@ object Application extends Controller {
 
   def workbench = Action { implicit request =>
     Ok(views.html.static.workbench())
+  }
+
+  val feedbackForm = Form(
+    tuple(
+      "email" -> email,
+      "reply" -> boolean,
+      "comment" -> nonEmptyText
+    ) verifying("Invalid Email address", result => true)
+  )
+
+  def feedback = Action { implicit request =>
+    Ok(views.html.static.feedback(feedbackForm))
+  }
+
+  def takeFeedback = Action { implicit request =>
+    feedbackForm.bindFromRequest.fold(
+      errors =>
+        BadRequest(views.html.static.feedback(errors)),
+      value => {
+        Emailer.feedback(value._1, value._3, value._2)
+        //val user = User.findByName(session.get("username").get).get
+        Redirect(routes.Application.index)
+      }
+    )
   }
 
   def item(id: Int) = Action { implicit request =>
