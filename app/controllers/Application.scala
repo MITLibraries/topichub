@@ -218,10 +218,10 @@ object Application extends Controller {
     ).getOrElse(NotFound(views.html.static.trouble("No such harvest: " + id)))
   }
 
-  def pullKnownItem(cid: Int, hid: Int, oid: String) = Action { implicit request =>
+  def pullKnownItem(cid: Int, hid: Int, oid: String, force: Boolean) = Action { implicit request =>
     Collection.findById(cid).map ( coll =>
       Harvest.findById(hid).map( harvest => {
-        harvester ! (oid, coll, harvest)
+        harvester ! (oid, coll, harvest, force)
         Ok(views.html.harvest.index("pulled: " + oid))
       }).getOrElse(NotFound(views.html.static.trouble("No such harvest: " + hid)))
     ).getOrElse(NotFound(views.html.static.trouble("No such collection: " + cid)))
