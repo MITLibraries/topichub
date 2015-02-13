@@ -30,7 +30,7 @@ import models.{Collection, Harvest, HubUtils, Item}
 class HarvestWorker extends Actor {
   def receive = {
     case h: Harvest => new Harvester().harvest(h)
-    case (oid: String, c: Collection, h: Harvest) => new Harvester().pullItem(oid, c, h)
+    case (oid: String, c: Collection, h: Harvest, force: Boolean) => new Harvester().pullItem(oid, c, h, force)
     case _ => println("Unknown")
   }
 }
@@ -45,11 +45,13 @@ class Harvester {
     }
   }
 
-  def pullItem(oid: String, coll: Collection, harvest: Harvest) = {
+  def pullItem(oid: String, coll: Collection, harvest: Harvest, force: Boolean) = {
     // TODO - verify OID validity at harvest site
-    val resUrl = harvest.resourceUrl.replace("${recordId}", oid)
+    val resUrl = harvest.resourceUrl.replace("${recordId}", oid.substring(oid.lastIndexOf(":") + 1))
+    val curItem = Item.findByKey(oid)
+    if (force && curItem.isDefined) Item.delete(curItem.get.id)
     val item = Item.make(coll.id, coll.ctypeId, "remote:" + resUrl, oid)
-    coll.recordDeposit
+    if (curItem.isEmpty) coll.recordDeposit
     Harvester.cataloger ! item
   }
 
