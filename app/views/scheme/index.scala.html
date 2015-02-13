@@ -8,7 +8,7 @@
   <div class="row">
     <div class="col-md-4">
       <div class="well-lg sidebar-nav">
-        <ul class="navbar-nav nav-list">
+        <ul class="nav nav-list">
           <li class="nav-header">Schemes (@schemes.size)</li>
           @schemes.map { scheme =>
             <li>@scheme.tag <a href="@routes.Application.scheme(scheme.id)">@scheme.description</a></li>

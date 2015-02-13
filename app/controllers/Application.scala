@@ -24,6 +24,7 @@ import play.api.Play.current
 import models._
 import services.contentModelJson._
 import services.publisherModelJson._
+import workers.Cataloger
 
 case class HubContext(user: Option[User])
 
@@ -672,6 +673,31 @@ object Application extends Controller {
       value => {
         buildPublisherModel(Json.parse(value))
         Redirect(routes.Application.newHubModel)
+      }
+    )
+  }
+
+  val sandboxForm = Form(
+    tuple(
+      "expression" -> nonEmptyText,
+      "xquery" -> boolean,
+      "resourceUrl" -> nonEmptyText
+    )
+  )
+
+  // sandbox for testing finder logic
+  def sandbox = Action { implicit request =>
+    Ok(views.html.static.sandbox(sandboxForm, List("<empty>")))
+  }
+
+  def testExpression = Action { implicit request =>
+    sandboxForm.bindFromRequest.fold(
+      errors => BadRequest(views.html.static.sandbox(errors, List("<error>"))),
+      value => {
+        val exprType = if (value._2) "XQuery" else "XPath"
+        val results = Cataloger.testExpression(value._1, exprType, value._3)
+        val filledForm = sandboxForm.bindFromRequest
+        Ok(views.html.static.sandbox(filledForm, results))
       }
     )
   }

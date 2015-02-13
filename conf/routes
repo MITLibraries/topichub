@@ -89,6 +89,8 @@ POST    /topic/:sid/validate         controllers.Application.topicValidate(sid: 
 #GET     /reindex/:dtype             controllers.Application.reindex(dtype: String)
 GET     /workbench                   controllers.Application.workbench
 GET     /purge                       controllers.Application.purge
+GET     /sandbox                     controllers.Application.sandbox
+POST    /testExpression              controllers.Application.testExpression
 
 # hub model services & page
 GET     /cmodel                      controllers.Application.contentModel

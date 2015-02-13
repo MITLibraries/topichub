@@ -13,9 +13,11 @@ import scala.xml.factory.XMLLoader
 import akka.actor.Actor
 
 import java.io.{File, InputStream}
-import java.util.Date
+import java.net.URL
+import java.util.{Date, Properties}
 
 import javax.xml.parsers.SAXParser
+import javax.xml.xquery.{XQExpression, XQDataSource, XQException, XQSequence}
 
 import org.xml.sax.InputSource
 
@@ -24,6 +26,8 @@ import scales.xml._
 import scales.utils._
 import ScalesUtils._
 import ScalesXml._
+
+import com.saxonica.xqj.SaxonXQDataSource
 
 import services.{Store, StoredContent}
 import models.{Collection, ContentType, Finder, Item, ResourceMap, Scheme, Topic}
@@ -338,6 +342,49 @@ object Cataloger {
     (filteredName, fileInfo._2)
   }
   */
+
+  def testExpression(expr: String, exprType: String, source: String) = {
+    val srcStream = new URL(source).openConnection.getInputStream
+    val results = exprType match {
+      case "XPath" => testXPathExpression(expr, srcStream)
+      case "XQuery" => testXQueryExpression(expr, srcStream)
+      case _ => List()
+    }
+    srcStream.close
+    results
+  }
+
+  def testXPathExpression(expr: String, in: InputStream) = {
+    val doc = convertFromScalaXml(LooseXml.load(in))
+    val xp = new ScalesXPath(expr).withNameConversion(ScalesXPath.localOnly)
+    val hits = xp.evaluate(top(doc)) map ( hit =>
+      hit match {
+        case Left(x) => x.attribute.value
+        case Right(x) => x.foldLeft("")(_+_.item().value)
+      }
+    )
+    hits.toList
+  }
+
+  def testXQueryExpression(query: String, in: InputStream) = {
+    val conn = (new SaxonXQDataSource).getConnection
+    //XQPreparedExpression expr = conn.prepareExpression(expr);
+    //XQResultSequence result = expr.executeQuery();
+    // - or -
+    val expr: XQExpression = conn.createExpression
+    expr.bindDocument(new javax.xml.namespace.QName("doc"), in, null, null)
+    val fullQuery = "declare variable $doc external;" + query
+    val result: XQSequence = expr.executeQuery(fullQuery)
+    var resList: List[String] = List()
+    while (result.next()) {
+      resList = resList :+ result.getItemAsString(new Properties)
+      //resList = resList :+ result.getAtomicValue
+    }
+    result.close
+    expr.close
+    conn.close
+    resList
+  }
 
   def testFinder(item: Item, source: String, finder: Finder) = {
     val coll = Collection.findById(item.collectionId).get

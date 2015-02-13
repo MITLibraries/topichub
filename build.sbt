@@ -16,5 +16,6 @@ libraryDependencies ++= Seq(
   "com.amazonaws" % "aws-java-sdk-s3" % "1.9.14",
   "org.scalesxml" %% "scales-xml" % "0.6.0-M3",
   "org.scalesxml" %% "scales-jaxen" % "0.6.0-M3" intransitive(),
-  "jaxen" % "jaxen" % "1.1.6" intransitive()
+  "jaxen" % "jaxen" % "1.1.6" intransitive(),
+  "net.sf.saxon" % "Saxon-HE" % "9.6.0-4"
 )
