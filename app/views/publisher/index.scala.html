@@ -8,17 +8,17 @@
 @layout.main("Publishers -  TopicHub") {
   <div class="container-fluid">
   	<div class="row">
-      <div class="col-md-4">
-      	<div class="well-lg sidebar-nav">
-      		<ul class="navbar-nav nav-list">
-      			<li class="nav-header">Categories</li>
-      		  @for(cat <- Publisher.categories) {
-         	    <li><a href="@routes.Application.publisherBrowse("category", cat)">@cat</a> (@HubUtils.pluralize(Publisher.categoryCount(cat), "publisher"))</li>
-       			}
-      		</ul>
-      	</div>
+      <div class="col-md-5">
+        <div class="list-group">
+          <h3>Categories</h3>
+
+          @for(cat <- Publisher.categories) {
+            <a href="@routes.Application.publisherBrowse("category", cat)" class="list-group-item">@cat</a>
+          }
+          
+        </div>
       </div>
-      <div class="col-md-8">
+      <div class="col-md-7">
         <div class="jumbotron">
           <h2>Contribute your content to TopicHub</h2>
           <p>Secondary use of content has created a much more complex environment for publishers, where funding mandates, institutional policies, etc often mean making copies (and related metadata) available to a number of parties. Put the content on TopicHub, and all these coordination costs disappear, since it functions as a one-stop location for any consumer of content, and you don't need to track or manage who they are: they interact with the hub, not you. Browse publishers and their collections at left.</p>

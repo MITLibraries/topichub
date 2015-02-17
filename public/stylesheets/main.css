@@ -2,3 +2,11 @@ body {
   padding-top: 60px;
   padding-bottom: 70px;
 }
+
+a.list-group-item {
+  text-decoration: underline;
+}
+
+a.list-group-item:hover {
+  text-decoration: underline !important;
+}
