@@ -7,21 +7,23 @@
 @layout.main("SCOAP3 -  TopicHub") {
   <div class="container-fluid">
     <div class="row-fluid">
-      <div class="col-md-5">
+      <div class="col-md-4">
 
         <div class="list-group">
           <h3>Schemes</h3>
           
           @schemes.map { scheme =>
             <a href="@routes.Application.topicBrowse(scheme.id)" class="list-group-item">
-            @scheme.description (@scheme.tag.toUpperCase)
+            @scheme.description
+            <br />
+            (@scheme.tag.toUpperCase)
             <span class="badge">@scheme.topicCount</span>
             </a>
           }
 
         </div>
       </div>
-      <div class="col-md-7">
+      <div class="col-md-8">
         <div class="jumbotron">
           <h2>Welcome to SCOAP<sup>3</sup> TopicHub!</h2>
           <p>SCOAP<sup>3</sup> (Sponsoring Consortium for Open Access Publishing in Particle Physics) is a <a href="http://cern.ch">CERN</a>-managed service to deliver High-Energy Physics articles as open access. Visit them <a href="http://repo.scoap3.org">here</a>.</p>
