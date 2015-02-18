@@ -8,20 +8,18 @@
   <div class="container-fluid">
   	<div class="row">
       <div class="col-md-4">
-      	<div class="well sidebar-nav">
-      		<ul class="nav nav-list">
-      			<li class="nav-header">Tools</li>
-            <li><a href="@routes.Application.newHubModel" class="btn btn-primary">Models</a></li>
-            <li><a href="@routes.Application.schemes" class="btn btn-primary">Schemes</a></li>
-            <li><a href="@routes.Application.contentTypes" class="btn btn-primary">Content Types</a></li>
-            <li><a href="@routes.Application.contentFormats" class="btn btn-primary">Content Formats</a></li>
-            <li><a href="@routes.Application.resourceMaps" class="btn btn-primary">Resource Maps</a></li>
+        <div class="list-group">
+          <h3>Tools</h3>
+          <a href="@routes.Application.newHubModel" class="list-group-item">Models</a>
+          <a href="@routes.Application.schemes" class="list-group-item">Schemes</a>
+          <a href="@routes.Application.contentTypes" class="list-group-item">Content Types</a>
+          <a href="@routes.Application.contentFormats" class="list-group-item">Content Formats</a>
+          <a href="@routes.Application.resourceMaps" class="list-group-item">Resource Maps</a>
             @* next choice specific to a UI bound, like SCOAP3, to a single publisher: need a place to set it up *@
             @* In the multi-publisher case, this link is at the top level *@
-            <li><a href="@routes.Application.publishers" class="btn btn-primary">Publishers</a></li>
-            @*<li><a href="@routes.Application.pkgmaps">Packages</a></li>*@
-      		</ul>
-      	</div>
+          <a href="@routes.Application.publishers" class="list-group-item">Publishers</a>
+          @*<a href="@routes.Application.pkgmaps" class="list-group-item">Packages</a>*@
+        </div>
       </div>
       <div class="col-md-8">
         <div class="jumbotron">

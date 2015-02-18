@@ -1,5 +1,5 @@
 @*****************************************************************************
- *  Page to display list of defined content types                            *
+ * Page to display list of defined content types                            *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
 @(ctypes: List[ContentType])@*(implicit hubContext: HubContext)*@
@@ -7,13 +7,15 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col-md-4">
-      <div class="well-lg sidebar-nav">
-        <ul class="navbar-nav nav-list">
-          <li class="nav-header">Content Types (@ctypes.size)</li>
-          @ctypes.map { ctype =>
-            <li>@ctype.tag <a href="@routes.Application.contentType(ctype.id)">@ctype.description</a></li>
-          }
-        </ul>
+      <div class="list-group">
+        <h3>Content Types</h3>
+
+        @ctypes.map { ctype =>
+          <a href="@routes.Application.contentType(ctype.id)" class="list-group-item">
+          @ctype.description (@ctype.tag)
+          </a>
+        }
+
       </div>
     </div>
     <div class="col-md-8">

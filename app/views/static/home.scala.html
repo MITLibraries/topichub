@@ -8,13 +8,19 @@
   <div class="container-fluid">
     <div class="row-fluid">
       <div class="col-md-4">
-        <div class="well sidebar-nav">
-          <ul class="nav nav-list">
-            <li class="nav-header">Schemes</li>
-            @schemes.map { scheme =>
-              <li><a href="@routes.Application.topicBrowse(scheme.id)">@scheme.tag: @scheme.description</a> (@HubUtils.pluralize(scheme.topicCount.toInt, "topic"))</li>
-            }
-          </ul>
+
+        <div class="list-group">
+          <h3>Schemes</h3>
+          
+          @schemes.map { scheme =>
+            <a href="@routes.Application.topicBrowse(scheme.id)" class="list-group-item">
+            @scheme.description
+            <br />
+            (@scheme.tag.toUpperCase)
+            <span class="badge">@scheme.topicCount</span>
+            </a>
+          }
+
         </div>
       </div>
       <div class="col-md-8">

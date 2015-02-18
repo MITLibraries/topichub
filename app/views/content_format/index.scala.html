@@ -1,5 +1,5 @@
 @*****************************************************************************
- *  Page to display list of defined content formats                          *
+ * Page to display list of defined content formats                          *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
 @(cformats: List[ContentFormat])@*(implicit hubContext: HubContext)*@
@@ -7,13 +7,15 @@
 <div class="container-fluid">
   <div class="row">
     <div class="col-md-4">
-      <div class="well-lg sidebar-nav">
-        <ul class="navbar-nav nav-list">
-          <li class="nav-header">Content Formats (@cformats.size)</li>
-          @cformats.map { cfmt =>
-            <li>@cfmt.tag <a href="@routes.Application.contentFormat(cfmt.id)">@cfmt.description</a></li>
-          }
-        </ul>
+      <div class="list-group">
+        <h3>Content Formats</h3>
+     
+        @cformats.map { cfmt =>
+          <a href="@routes.Application.contentFormat(cfmt.id)" class="list-group-item">
+            @cfmt.description (@cfmt.tag)
+          </a>
+        }
+
       </div>
     </div>
     <div class="col-md-8">
