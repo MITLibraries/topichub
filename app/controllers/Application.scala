@@ -74,10 +74,10 @@ object Application extends Controller {
     )
   }
 
-  def item(id: Int) = Action { implicit request =>
-    Item.findById(id).map( item =>
+  def item(obj_key: String) = Action { implicit request =>
+    Item.findByKey(obj_key).map( item =>
       Ok(views.html.item.show(item))
-    ).getOrElse(NotFound(views.html.static.trouble("No such item: " + id)))
+    ).getOrElse(NotFound(views.html.static.trouble("No such item: " + obj_key)))
   }
 
   def itemBrowse(filter: String, id: Int, page: Int) = Action { implicit request =>

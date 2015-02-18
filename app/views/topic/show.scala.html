@@ -29,7 +29,7 @@
      <h3>Recent Articles <a href="@routes.Application.itemBrowse("topic", topic.id, 0)">Browse All</a></h3>
      <dl>
      	@topic.recentItems(6).map { i =>
-     	  <dt><a href="@routes.Application.item(i.id)">@Html(i.metadataValue("title"))</a></dt>
+     	  <dt><a href="@routes.Application.item(i.objKey)">@Html(i.metadataValue("title"))</a></dt>
         <dd>@tags.item_authors(i.metadataValues("author"))</dd>
       }
      </dl>
