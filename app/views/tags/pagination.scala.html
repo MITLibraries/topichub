@@ -1,0 +1,26 @@
+@(page: Int, perpage: Int, total: Long, urlpattern: String, length: Int)
+@* perpage is currently not implemented but is here as a placeholder *@
+
+@next_page_url = {
+  @urlpattern.concat("&page=").concat((page + 1).toString)
+}
+
+@prev_page_url = {
+  @urlpattern.concat("&page=").concat((page - 1).toString)
+}
+
+<span>
+  @if(page > 0) {
+    <a href="@prev_page_url">&laquo; Previous</a>
+  } else {
+    <span class="disabled">&laquo; Previous</span>
+  }
+
+  Viewing @(page * 10 + 1) - @(page * 10 + length) of @total
+
+  @if(page < total/10) {
+    <a href="@next_page_url">Next &raquo;</a>
+  } else {
+    <span class="disabled">Next &raquo;</span>
+  }
+</span>
