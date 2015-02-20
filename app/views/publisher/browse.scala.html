@@ -7,8 +7,11 @@
  @(value: String, pubs: List[Publisher], description: String, page: Int, total: Long)@*(implicit hubContext: HubContext)*@
 
 @layout.main("Publisher Browse -  TopicHub") {
-  <h2>Browse Publishers by Category</h2>
-  <h3>@description</h3>
+  <div class="page-header">
+    <h2>Browse Publishers by Category</h2>
+    <h3>@description</h3>
+    @tags.summary(page, 10, total, pubs.length)
+  </div>
   <ul>
     @pubs.map { pub =>
       <li><a href="@routes.Application.publisher(pub.id)">@pub.name</a></li>

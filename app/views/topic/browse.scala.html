@@ -1,13 +1,17 @@
 @(id: Int, topics: List[Topic], description: String, page: Int, total: Long)@*(implicit hubContext: HubContext)*@
 
 @layout.main("Topic Browse -  TopicHub") {
-     <h2>Browse Topics by Scheme</h2>
-     <h3>@description</h3>
-     <ul>
-       @topics.map { topic =>
-         <li><a href="@routes.Application.topic(topic.id)">@topic.tag</a> @topic.name</li>
-       }
-     </ul>
+  <div class="page-header">
+    <h2>Browse Topics by Scheme</h2>
+    <h3>@description</h3>
+
+    @tags.summary(page, 10, total, topics.length)
+  </div>
+  <ul>
+    @topics.map { topic =>
+      <li><a href="@routes.Application.topic(topic.id)">@topic.tag</a> @topic.name</li>
+    }
+  </ul>
 
   @tags.pagination(page, 10, total, routes.Application.topicBrowse(id).toString, topics.length)
 }

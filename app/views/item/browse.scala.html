@@ -6,8 +6,11 @@
  @(id: Int, items: List[Item], filter: String, description: String, page: Int, total: Long)@*(implicit hubContext: HubContext)*@
 
 @layout.main("Item Browse -  TopicHub") {
-  <h2>Browse Items by @filter</h2>
-  <h3>@description</h3>
+  <div class="page-header">
+    <h2>Browse Items by @filter</h2>
+    <h3>@description</h3>
+    @tags.summary(page, 10, total, items.length)
+  </div>
   <dl>
     @items.map { item =>
       <dt><a href="@routes.Application.item(item.id)">@Html(item.metadataValue("title"))</a></dt>

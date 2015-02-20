@@ -1,0 +1,7 @@
+@(page: Int, perpage: Int, total: Long, length: Int)
+
+@if(length >= total){
+  Viewing all @length records.
+} else {
+  Viewing @(page * 10 + 1) - @(page * 10 + length) of @total
+} 
