@@ -1,0 +1,13 @@
+language: scala
+scala:
+ - "2.11.1"
+jdk:
+ - oraclejdk8
+sudo: false
+env:
+  - MAILGUN_API_KEY=notarealkey DATABASE_URL=jdbc:postgresql://localhost/travis_ci_test
+addons:
+  postgresql: "9.3"
+
+before_script:
+  - psql -c 'create database travis_ci_test;' -U postgres
