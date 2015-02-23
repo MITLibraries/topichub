@@ -24,6 +24,7 @@ import play.api.Play.current
 import models._
 import services.contentModelJson._
 import services.publisherModelJson._
+import services.subscriberModelJson._
 import services.Emailer
 
 case class HubContext(user: Option[User])
@@ -106,14 +107,26 @@ object Application extends Controller {
 
   def topic(id: Int) = Action { implicit request =>
     Topic.findById(id).map( t =>
-      Ok(views.html.topic.show(t))
+      Ok(views.html.topic.show(t, Subscriber.findByUserId(1)))
     ).getOrElse(NotFound(views.html.static.trouble("No such topic: " + id)))
   }
 
   def topicBrowse(scheme_id: Int, page: Int) = Action { implicit request =>
     Scheme.findById(scheme_id).map( scheme =>
       Ok(views.html.topic.browse(scheme.id, Topic.withScheme(scheme.id, page), scheme.description, page, scheme.topicCount))
-    ).getOrElse(NotFound(views.html.static.trouble("No such scheme")))
+    ).getOrElse(NotFound(views.html.static.trouble("No such scheme: " + scheme_id)))
+  }
+
+  def topicSubscribe(id: Int) = Action { implicit request => //= mustAuthenticate { username => implicit request =>
+    Topic.findById(id).map( topic =>
+      topicSubIfSubscriber(User.findByName("richard").get, topic)
+    ).getOrElse(NotFound(views.html.static.trouble("No such topic: " + id)))
+  }
+
+  private def topicSubIfSubscriber(user: User, topic: Topic)(implicit request: Request[AnyContent]): Result = {
+    Subscriber.findByUserId(user.id).map( sub =>
+      Redirect(routes.Application.topic(topic.id))
+    ).getOrElse(Redirect(routes.Application.subscribers))
   }
 
   def topicValidate(scheme_id: Int) = /*isAuthenticated { username => */  Action { implicit request =>
@@ -655,6 +668,99 @@ object Application extends Controller {
     ).getOrElse(NotFound(views.html.static.trouble("Unknown scheme: " + tag)))
   }
 
+  val subscriberForm = Form(
+    mapping(
+      "id" -> ignored(0),
+      "user_id" -> ignored(0),
+      "name" -> nonEmptyText,
+      "category" -> nonEmptyText,
+      "contact" -> nonEmptyText,
+      "link" -> optional(text),
+      "logo" -> optional(text),
+      "created" -> ignored(new Date)
+    )(Subscriber.apply)(Subscriber.unapply)
+  )
+
+  def subscribers = Action { implicit request =>
+    Ok(views.html.subscriber.index())
+  }
+
+  def subscriber(id: Int) = Action { implicit request => {
+    val userName = "richard"//session.get("username").getOrElse("")
+    Subscriber.findById(id).map( sub =>
+      Ok(views.html.subscriber.show(sub, User.findByName(userName)))
+    ).getOrElse(NotFound(views.html.static.trouble("No such subscriber: " + id)))
+    }
+  }
+
+  def newSubscriber = Action { implicit request =>//mustAuthenticate { username => implicit request =>
+    Ok(views.html.subscriber.create(subscriberForm))
+  }
+
+  def createSubscriber = Action { implicit request => //isAuthenticated { username => implicit request =>
+    subscriberForm.bindFromRequest.fold(
+      errors => BadRequest(views.html.subscriber.create(errors)),
+      value => {
+        val user = User.findById(1).get
+        val sub = Subscriber.make(user.id, value.name, value.category, value.contact, value.link, value.logo)
+        Redirect(routes.Application.editSubscriber(sub.id))
+      }
+    )
+  }
+
+  private def ownsSubscriber(username: String, sub: Subscriber, result: Result)(implicit request: Request[AnyContent]): Result = {
+    val user = User.findByName(username).get
+    //if (user.hasPublisher(pub.id)) {
+      result
+    //} else {
+    //  Unauthorized(views.html.static.trouble("You are not authorized"))
+    //}
+  }
+
+  def editSubscriber(id: Int) = Action { implicit request => //isAuthenticated { username => implicit request =>
+    Subscriber.findById(id).map( sub =>
+      ownsSubscriber("richard", sub, Ok(views.html.subscriber.edit(sub, interestForm)))
+    ).getOrElse(NotFound(views.html.static.trouble("No such subscriber: " + id)))
+  }
+
+  def subscriberBrowse(filter: String, value: String, page: Int) = Action { implicit request =>
+    filter match {
+      case "category" => Ok(views.html.subscriber.browse(value, Subscriber.inCategory(value, page), value, page, Subscriber.categoryCount(value))) //publisherBrowseCategory(value, page)
+      case _ => NotFound(views.html.static.trouble("No such filter"))
+    }
+  }
+
+  val interestForm = Form(
+    single(
+      "scheme_id" -> number
+    )
+  )
+
+  def addSubscriberInterest(id: Int, action: String) = Action { implicit request =>
+    interestForm.bindFromRequest.fold(
+      errors => {
+        val sub = Subscriber.findById(id).get
+        BadRequest(views.html.subscriber.edit(sub, errors))
+      },
+      value => {
+        val sub2 = Subscriber.findById(id).get
+        val schemeId = interestForm.bindFromRequest.get
+        val scheme = Scheme.findById(schemeId).get
+        sub2.addInterest(scheme, action)
+        Redirect(routes.Application.editSubscriber(id))
+      }
+    )
+  }
+
+  def removeSubscriberInterest(id: Int, sid: Int) = Action { implicit request =>
+    Subscriber.findById(id).map( sub =>
+      Scheme.findById(sid).map( scheme => {
+        sub.removeInterest(scheme)
+        Redirect(routes.Application.editSubscriber(sub.id))
+      }).getOrElse(NotFound(views.html.static.trouble("No such scheme: " + sid)))
+    ).getOrElse(NotFound(views.html.static.trouble("No such subscriber: " + id)))
+  }
+
   val modelForm = Form(
     single(
       "model" -> nonEmptyText
@@ -673,6 +779,10 @@ object Application extends Controller {
     Ok(jsonPublisherModel)
   }
 
+  def subscriberModel = Action { implicit request =>
+    Ok(jsonSubscriberModel)
+  }
+
   def addContentModel = Action { implicit request =>
     // read a content model from posted data and update system in cases where
     // model components are not already installed. Note that
@@ -688,7 +798,7 @@ object Application extends Controller {
   }
 
   def addPublisherModel = Action { implicit request =>
-    // read a content model from posted data and update system in cases where
+    // read a publisher model from posted data and update system in cases where
     // model components are not already installed. Note that
     // this relies on the uniqueness of scheme, etc tags across hubs
     modelForm.bindFromRequest.fold(
@@ -696,6 +806,20 @@ object Application extends Controller {
       BadRequest(views.html.utils.cmodel_create(errors)),
       value => {
         buildPublisherModel(Json.parse(value))
+        Redirect(routes.Application.newHubModel)
+      }
+    )
+  }
+
+  def addSubscriberModel = Action { implicit request =>
+    // read a subscriber model from posted data and update system in cases where
+    // model components are not already installed. Note that
+    // this relies on the uniqueness of scheme, etc tags across hubs
+    modelForm.bindFromRequest.fold(
+      errors =>
+      BadRequest(views.html.utils.cmodel_create(errors)),
+      value => {
+        buildSubscriberModel(Json.parse(value))
         Redirect(routes.Application.newHubModel)
       }
     )

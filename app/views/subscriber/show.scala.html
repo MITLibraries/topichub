@@ -1,0 +1,22 @@
+@*****************************************************************************
+ * Page for displaying subscriber information including collections          *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(sub: Subscriber, user: Option[User])@*(implicit hubContext: HubContext)*@
+@layout.main("Subscriber - TopicHub") {
+  <div itemscope itemtype="http://schema.org/Organization" class="jumbotron">
+    <h3>~ Subscriber ~</h3>
+    <h2 itemprop="name">@sub.name</h2>
+    <p>Registered @HubUtils.fmtDate(sub.created)</P>
+    <span>
+      @if(! sub.link.isEmpty) {
+        <a rel="tooltip" title="Visit subscriber site" href="@sub.link.get" class="btn btn-primary btn-large">Site &raquo;</a>
+      }
+      @*
+      @if(!user.isEmpty && user.get.hasPublisher(sub.id)) {
+         <a rel="tooltip" title="manage subscriber account" href="@routes.Application.editPublisher(sub.id)" class="btn btn-primary btn-large pull-right">Manage &raquo;</a>
+      }
+      *@
+    </span>
+  </div>
+}

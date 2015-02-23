@@ -1,0 +1,49 @@
+@*****************************************************************************
+ * Page for editing subscriber information                                   *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(sub: Subscriber, intForm: Form[Int])@*(implicit hubContext: HubContext)*@
+@import helper._
+@editInterest(action: String) = {
+  <ul>
+    @sub.interestsWithAction(action).map { interest =>
+      <li><a href="@routes.Application.scheme(interest.scheme.get.id)">@interest.scheme.get.tag</a>: @interest.scheme.get.description
+      <a href="@routes.Application.removeSubscriberInterest(interest.subscriberId, interest.schemeId)">remove</a></li>
+    }
+  </ul>
+  <h4>Add a new @action interest</h4>
+  @form(routes.Application.addSubscriberInterest(sub.id, action)) {
+    @select(intForm("scheme_id"), options(Scheme.gentypeMapView("topic")))
+    <input type="submit" value="Create">
+  }
+}
+@layout.main("Edit Subscriber - TopicHub") {
+  <div class="jumbotron">
+     <h3>~ Subscriber ~</h3>
+     <h2>@sub.name</h2>
+     @if(!sub.link.isEmpty) {
+        <p><a href="@sub.link">subscriber site</a></p>
+     }
+     <p>Registered @HubUtils.fmtDate(sub.created)</P>
+     @*<p>@HubUtils.pluralize(pub.itemCount, "article") deposited</p>
+     <p><a class="btn btn-primary btn-large pull-right" href="@routes.Application.newHarvest(pub.id)">Establish Harvest</a></p>
+     *@
+  </div>
+  <h3>Interests</h3>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4">
+        <h4>Deliver</h4>
+        @editInterest("deliver")
+      </div>
+      <div class="col-md-4">
+        <h4>Notify</h4>
+        @editInterest("notify")
+      </div>
+      <div class="col-md-4">
+        <h4>Review</h4>
+        @editInterest("review")
+      </div>
+    </div>
+  </div>
+}
