@@ -1,0 +1,30 @@
+@*****************************************************************************
+ * Page with form to create new Subscriber                                   *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(subForm: Form[Subscriber])@*(implicit hubContext: HubContext)*@
+@import helper._
+@layout.main("Create Subscriber - TopicHub") {
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4">
+      @form(routes.Application.createSubscriber) {
+        @select(subForm("category"), options(Map("Institutional Repository" -> "Institutional Repository", "Subject Repository" -> "Subject Repository", "Other" -> "Other")))
+        @inputText(subForm("name"))
+        @inputText(subForm("contact"))
+        @inputText(subForm("link"))
+        @inputText(subForm("logo"))
+        <input type="submit" value="Create">
+      }
+      </div>
+      <div class="col-md-8">
+        <div class="jumbotron">
+          <h2>Define your subscriber profile</h2>
+          <p>Choose a category that best describes the type of subscriber, or 'other' if none fits.</p>
+          <p>Put the full name in the name field, and supply a contact email where notifications will be sent.</p>
+          <p>Add a URL to your main site in the link field, and a URL for a logo if you have one.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+}

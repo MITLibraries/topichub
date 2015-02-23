@@ -25,10 +25,19 @@
           <input type="submit" value="Publisher Model">
         }
       </div>
+      <div class="col-md-4">
+        @form(routes.Application.addSubscriberModel) {
+          @textarea(modForm("model"),
+          'rows -> 12,
+          'cols -> 50
+          )
+          <input type="submit" value="Subscriber Model">
+        }
+      </div>
       <div class="col-md-8">
         <div class="jumbotron">
           <h2>If you know what you are doing, read on!</h2>
-          <p>You may use these forms to install either a content or a publisher model</p>
+          <p>You may use these forms to install either a content, a publisher or a subscriber model</p>
           <p>NB: the content model must be installed first on an empty hub, since publisher elements
             rely on content model elements</p>
           <p>Paste a valid JSON model in the appropriate form and submit to install</p>

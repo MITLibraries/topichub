@@ -82,4 +82,8 @@ object Scheme {
   def mapView: Map[String, String] = {
     all map (sc => sc.id.toString -> sc.tag) toMap
   }
+
+  def gentypeMapView(gtype: String): Map[String, String] = {
+    all filter(_.gentype.equals(gtype)) map (sc => sc.id.toString -> sc.tag) toMap
+  }
 }

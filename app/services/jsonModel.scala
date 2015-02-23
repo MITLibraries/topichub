@@ -11,12 +11,12 @@ import play.api.libs.json._
 import play.api.libs.json.Json._
 import play.api.Play.current
 
-import models.{Collection, ContentFormat, ContentType, Finder, Harvest, Publisher, ResourceMap, Scheme, Validator}
+import models.{Collection, ContentFormat, ContentType, Finder, Harvest, Interest, Publisher, ResourceMap, Scheme, Subscriber, Validator}
 
 import jsonHelpers._
 
 /** Utility methods for serializing and deserializing various data models as
-  * JSON objects. Currently supported: content and publisher models
+  * JSON objects. Currently supported: content, publisher and subscriber models
   *
   * @author richardrodgers
   */
@@ -341,6 +341,70 @@ object publisherModelJson {
     Harvest.create(pid, forName(jss, "name"), forName(jss, "protocol"),
                    forName(jss, "serviceUrl"), forName(jss, "resourceUrl"),
                    forNum(jss, "freq"), new Date)
+  }
+}
+
+object subscriberModelJson {
+
+  //serialization methods
+  def jsonSubscriberModel = {
+    val model = Map(
+      "subscribers" -> jsonSubscribers
+    )
+    Json.stringify(toJson(model))
+  }
+
+  def prettySubscriberModel = {
+    val model = Map(
+      "subscribers" -> jsonSubscribers
+    )
+    Json.prettyPrint(toJson(model))
+  }
+
+  def jsonSubscribers = {
+    val msg = Subscriber.all.map( s =>
+      Map("name" -> toJson(s.name),
+          "category" -> toJson(s.category),
+          "contact" -> toJson(s.contact),
+          "link" -> toJson(s.link),
+          "logo" -> toJson(s.logo),
+          "interests" -> jsonInterests(s.id) //,
+          //"harvests" -> jsonHarvests(p.id)
+      )
+    )
+    toJson(msg)
+  }
+
+  def jsonInterests(sid: Int) = {
+    val msg = Interest.findBySubscriber(sid).map ( i =>
+      Map("scheme" -> toJson(Scheme.findById(i.schemeId).get.tag),
+          "action" -> toJson(i.action)
+      )
+    )
+    toJson(msg)
+  }
+
+  // deserialization methods
+  def buildSubscriberModel(model: JsValue) = {
+    val subs = (model \ "subscribers")
+    procJsArray(subs, 0, subFromSubscriberModel)
+    println("finished subscribers")
+  }
+
+  def subFromSubscriberModel(jss: JsValue) {
+    // need to inject an owning user here -dummy value of 1
+    val sub = Subscriber.make(1, forName(jss, "name"), forName(jss, "category"),
+                              forName(jss, "contact"), forNameOption(jss, "link"),
+                              forNameOption(jss, "logo"))
+    val interests = (jss \ "interests")
+    procJsArray(interests, 0, intFromSubscriberModel(sub.id))
+  }
+
+  def intFromSubscriberModel(sid: Int)(jss: JsValue) {
+    // only create if dependencies found
+    Scheme.findByTag(forName(jss, "scheme")).map { sc =>
+      Interest.create(sid, sc.id, forName(jss, "action"))
+    }
   }
 }
 

@@ -1,0 +1,29 @@
+@*****************************************************************************
+ * Entry page for subscriber browsing. Includes a link to forms              *
+ * for new subscriber account creation                                       *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@()@**(implicit hubContext: HubContext)**@
+@layout.main("Publishers -  TopicHub") {
+  <div class="container-fluid">
+  	<div class="row">
+      <div class="col-md-4">
+      	<div class="well-lg sidebar-nav">
+      		<ul class="navbar-nav nav-list">
+      			<li class="nav-header">Categories</li>
+      		  @for(cat <- Subscriber.categories) {
+         	    <li><a href="@routes.Application.subscriberBrowse("category", cat)">@cat</a> (@HubUtils.pluralize(Subscriber.categoryCount(cat), "subscriber"))</li>
+       			}
+      		</ul>
+      	</div>
+      </div>
+      <div class="col-md-8">
+        <div class="jumbotron">
+          <h2>Become a Subscriber</h2>
+          <p>TopicHub can make items available to you, but only if you subscribe. Browse subscribers and their activities at left.</p>
+          <p><a rel="tooltip" title="register to subscribe to content on the hub" href="@routes.Application.newSubscriber" class="btn btn-primary btn-large pull-right">Sign Up &raquo;</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+}
