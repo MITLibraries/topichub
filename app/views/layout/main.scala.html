@@ -47,6 +47,10 @@
               <!-- For single-publisher sites, just display collections  -->
               <li><a href="@routes.Application.collections">Collections</a></li>
               *@
+              @* Temporary link to (sole) subscriber edit page - will change when logins enabled *@
+              @if(Subscriber.findById(1).isDefined) {
+                <li><a id="nav_workbench" href="@routes.Application.editSubscriber(1)">Interests</a></li>
+              }
               <li><a id="nav_workbench" href="@routes.Application.workbench">Workbench</a></li>
             </ul>
           </div>
