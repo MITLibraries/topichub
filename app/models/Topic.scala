@@ -86,6 +86,12 @@ object Topic {
     }
   }
 
+  def all: List[Topic] = {
+    DB.withConnection { implicit c =>
+      SQL("select * from topic").as(topic *)
+    }
+  }
+
   def withScheme(scheme_id: Int, page: Int): List[Topic] = {
       val offset = page * 10
       DB.withConnection { implicit c =>

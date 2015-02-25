@@ -124,6 +124,12 @@ object Item {
     }
   }
 
+  def all: List[Item] = {
+    DB.withConnection { implicit c =>
+      SQL("select * from item").as(item *)
+    }
+  }
+
   def findByKey(key: String): Option[Item] = {
     DB.withConnection { implicit c =>
       SQL("select * from item where obj_key = {key}").on('key -> key).as(item.singleOpt)

@@ -174,7 +174,7 @@ idHits = revList
   def createTopic(scheme: Scheme, tag: String, title: String): Topic = {
     Topic.create(scheme.id, tag, title)
     val topic = Topic.forSchemeAndTag(scheme.tag, tag).get
-    //Indexer.index(topic)
+    Indexer.index(topic)
     topic
   }
 
@@ -318,9 +318,9 @@ object Cataloger {
       })
       println("Found some topics")
     }
-    // next indexing schemes (which may have already been found as metadata)
+    // next indexing schemes (which will have already been found as metadata)
     // must follow topic extraction, since items' topics are indexed
-    //Indexer.index(item, Some(cataloger))
+    Indexer.index(item)
     // finally, should this be delivered on behalf of subscriptions?
     //Conveyor.newItem(item)
     //item.changeState("cataloged")
