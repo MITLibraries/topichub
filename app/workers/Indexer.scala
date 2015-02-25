@@ -68,7 +68,28 @@ object Indexer {
     // also add all topics
     dataMap += "topicSchemeTag" -> toJson(item.topics.map(_.scheme.get.tag))
     dataMap += "topicTag" -> toJson(item.topics.map(_.tag))
-    WS.url(indexSvc + "item/" + item.id).put(stringify(toJson(dataMap)))
+    println("Item index: " + dataMap)
+    println(indexSvc + "item/" + item.id)
+
+    if (indexSvc.contains("bonsai.io")) {
+      println("use basic auth for WS elasticsearch call")
+      WS.url(indexSvc.concat("item/").concat(item.id.toString))
+        .withAuth(extractCredentials("username", indexSvc),
+                  extractCredentials("password", indexSvc),
+                  WSAuthScheme.BASIC).put(stringify(toJson(dataMap)))
+    } else {
+      println("no auth for WS elasticsearch call")
+      WS.url(indexSvc.concat("item/").concat(item.id.toString)).put(stringify(toJson(dataMap)))
+    }
+  }
+
+  private def extractCredentials(x: String, url: String): String = {
+    val Array(indexUsername, indexPassword, _) = indexSvc.stripPrefix("https://").split(":|@")
+    if (x == "username") {
+      indexUsername
+    } else {
+      indexPassword
+    }
   }
 
   private def addMetadata(scheme: Scheme, item: Item) = {
