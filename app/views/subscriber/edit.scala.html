@@ -13,7 +13,7 @@
   </ul>
   <h4>Add a new @action interest</h4>
   @form(routes.Application.addSubscriberInterest(sub.id, action)) {
-    @select(intForm("scheme_id"), options(Scheme.gentypeMapView("topic")))
+    @select(intForm("scheme_id"), options(sub.newInterestMapView))
     <input type="submit" value="Create">
   }
 }

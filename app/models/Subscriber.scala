@@ -50,6 +50,11 @@ case class Subscriber(id: Int,  // DB key
     }
   }
 
+  // map of interests that could be added (not current interests)
+  def newInterestMapView: Map[String, String] = {
+    Scheme.all filter(_.gentype.equals("topic")) filter (sc => ! hasInterest(sc.id)) map (sc => sc.id.toString -> sc.tag) toMap
+  }
+
   def addInterest(scheme: Scheme, action: String) = {
     Interest.create(id, scheme.id, action)
   }
