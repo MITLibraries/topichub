@@ -6,6 +6,7 @@ import play.api.Play.current
 import play.api.libs.ws._
 import play.api.libs.concurrent.Execution.Implicits._
 import play.utils.UriEncoding
+import models.HubUtils._
 import models._
 
 object Search extends Controller {
@@ -18,9 +19,18 @@ object Search extends Controller {
     val indexSvc = Play.configuration.getString("hub.index.url").get
     val encQuery = UriEncoding.encodePathSegment(q, "UTF-8")
     val offset = (page) * perpage
-
-    val req = WS.url(indexSvc +  target + "/_search?q=" + encQuery 
-                    + "&from=" + offset + "&size=" + perpage)
+    val elastic_url = indexSvc +  target + "/_search?q=" + encQuery + "&from="
+                      + offset + "&size=" + perpage
+    val req = if (indexSvc.contains("bonsai.io")) { 
+      println("DEBUG: use basic auth for WS elasticsearch call")
+      WS.url(elastic_url)
+        .withAuth(extractCredentials("username", indexSvc),
+                  extractCredentials("password", indexSvc),
+                  WSAuthScheme.BASIC) 
+    } else {
+      println("DEBUG: no auth for WS elasticsearch call")
+      WS.url(elastic_url)
+    }
 
     println(req)
 
