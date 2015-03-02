@@ -1,12 +1,11 @@
 @(page: Int, perpage: Int, total: Long, urlpattern: String, length: Int)
-@* perpage is currently not implemented but is here as a placeholder *@
 
 @next_page_url = {
-  @urlpattern.concat("&page=").concat((page + 1).toString)
+  @urlpattern.concat("&page=").concat((page + 1).toString).concat("&perpage=").concat(perpage.toString)
 }
 
 @prev_page_url = {
-  @urlpattern.concat("&page=").concat((page - 1).toString)
+  @urlpattern.concat("&page=").concat((page - 1).toString).concat("&perpage=").concat(perpage.toString)
 }
 
 <nav>

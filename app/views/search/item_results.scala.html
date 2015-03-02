@@ -1,0 +1,41 @@
+@*****************************************************************************
+* Search results page                                                        *
+* Copyright (c) 2015 MIT Libraries                                           *
+*****************************************************************************@
+@(q: String, target: String, page: Int, perpage: Int, items: Seq[Item], total: Long)@*(implicit hubContext: HubContext)*@
+
+@layout.main("Search - TopicHub") {
+  <div class="container-fluid">
+    <div class="row-fluid">
+      <div class="col-md-12">
+          @searchform(q, target)
+
+          <p>Searchterm: @q</p>
+
+          <p>@tags.summary(page, perpage, total, items.length)</p>
+
+          <ol start="@(page * perpage + 1)">
+          
+            @for(i <- items) {
+              <li>Title: <a href="@routes.Application.item(i.id)">@i.metadataValue("title")</a></li>
+
+              Topics:
+              <ul>
+              @for(tc <- i.regularTopics) {
+                <li>@tc._1
+                  <ul>
+                  @for(t <- tc._2) {
+                    <a href="@routes.Application.topic(t.id)">@t.tag</a> | 
+                  }
+                  </ul>
+                </li>                 
+              }
+              </ul>
+            }
+          </ol>
+      </div>
+
+      @tags.pagination(page, perpage, total, routes.Search.results(q, target).toString, items.length)
+    </div>
+  </div>
+}
