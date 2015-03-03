@@ -59,4 +59,12 @@ object HubUtils {
     else user.get.role.indexOf("analyst") >= 0 || user.get.role.indexOf("admin") >= 0
   }
 
+  def extractCredentials(x: String, url: String): String = {
+    val Array(indexUsername, indexPassword, _) = url.stripPrefix("https://").split(":|@")
+    if (x == "username") {
+      indexUsername
+    } else {
+      indexPassword
+    }
+  }
 }
