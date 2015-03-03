@@ -19,8 +19,7 @@ object Search extends Controller {
     val indexSvc = Play.configuration.getString("hub.index.url").get
     val encQuery = UriEncoding.encodePathSegment(q, "UTF-8")
     val offset = (page) * perpage
-    val elastic_url = indexSvc +  target + "/_search?q=" + encQuery + "&from="
-                      + offset + "&size=" + perpage
+    val elastic_url = indexSvc +  target + "/_search?q=" + encQuery + "&from=" + offset + "&size=" + perpage
     val req = if (indexSvc.contains("bonsai.io")) { 
       println("DEBUG: use basic auth for WS elasticsearch call")
       WS.url(elastic_url)
@@ -36,7 +35,7 @@ object Search extends Controller {
 
     req.get().map { response =>
       val json = response.json
-      //println(json)
+      println(json)
       val total_results = (json \ "hits" \\ "total")(0).as[Long]
 
       println(total_results)
