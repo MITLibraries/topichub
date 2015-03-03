@@ -12,7 +12,7 @@ import play.api.Play.current
 import play.api.libs.json._
 import play.api.libs.json.Json
 import play.api.libs.ws._
-
+import models.HubUtils._
 import models.{ContentType, Item, Scheme, Topic}
 
 /** Indexer is a worker responsible for updating the index
@@ -54,21 +54,46 @@ object Indexer {
                    "tag" -> toJson(topic.tag),
                    "name" -> toJson(topic.name))
     val jdata = stringify(toJson(data))
+    val elastic_url = indexSvc.concat("topic/").concat(topic.id.toString)
     // debug
     println("Topic index: " + jdata)
-    WS.url(indexSvc + "topic/" + topic.id).put(jdata)
+
+    if (indexSvc.contains("bonsai.io")) {
+      println("DEBUG: use basic auth for WS elasticsearch call")
+      WS.url(elastic_url)
+        .withAuth(extractCredentials("username", indexSvc),
+                  extractCredentials("password", indexSvc),
+                  WSAuthScheme.BASIC).put(jdata)
+    } else {
+      println("DEBUG: no auth for WS elasticsearch call")
+      WS.url(elastic_url).put(jdata)
+    }
   }
 
   def index(item: Item) = {
     var dataMap = Map[String, JsValue]()
     val ctype = ContentType.findById(item.ctypeId).get
+    val elastic_url = indexSvc.concat("item/").concat(item.id.toString)
     dataMap += "dbId" -> toJson(item.id)
     // add all defined index fields
     ctype.schemes("index").foreach(dataMap += addMetadata(_, item))
     // also add all topics
     dataMap += "topicSchemeTag" -> toJson(item.topics.map(_.scheme.get.tag))
     dataMap += "topicTag" -> toJson(item.topics.map(_.tag))
-    WS.url(indexSvc + "item/" + item.id).put(stringify(toJson(dataMap)))
+    val jdata = stringify(toJson(dataMap))
+    println("Item index: " + dataMap)
+    println(indexSvc + "item/" + item.id)
+
+    if (indexSvc.contains("bonsai.io")) {
+      println("DEBUG: use basic auth for WS elasticsearch call")
+      WS.url(elastic_url)
+        .withAuth(extractCredentials("username", indexSvc),
+                  extractCredentials("password", indexSvc),
+                  WSAuthScheme.BASIC).put(jdata)
+    } else {
+      println("DEBUG: no auth for WS elasticsearch call")
+      WS.url(elastic_url).put(jdata)
+    }
   }
 
   private def addMetadata(scheme: Scheme, item: Item) = {
