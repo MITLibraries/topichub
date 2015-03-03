@@ -1,10 +1,8 @@
 @*****************************************************************************
- * Display information on a topic. Include links for content or email        *
- * subscriptions                                                             *
+ * Display information on a topic. Include buttons for subscription actions  *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
 @(topic: Topic, sub: Option[Subscriber])@*(implicit hubContext: HubContext)*@
-
 @layout.main("Topic - TopicHub") {
     <div class="jumbotron">
        <h3>~ Topic ~</h3>
@@ -18,18 +16,21 @@
        <p>@HubUtils.pluralize(topic.itemCount, "article")</p>
        @*<p>@HubUtils.pluralize(topic.subscriptionCount, "subscriber")</p>*@
        <p>Added @HubUtils.fmtDate(topic.created) @HubUtils.pluralize(topic.transfers, "transfer") - latest @HubUtils.fmtDate(topic.updated)</p>
-       @if(sub.isDefined && sub.get.hasInterest(topic.scheme_id)) {
-         <span><a rel="tooltip" title="Subscribe to this topic" href="@routes.Application.topicSubscribe(topic.id)" class="btn btn-primary btn-large">Subscribe &raquo;</a>
-          @* <a rel="tooltip" title="Send an email alert when new items appear for this topic" href="@routes.Application.topicSubscribe(topic.id, "alert")" class="btn btn-primary btn-large pull-right">Notify Me &raquo;</a>*@
-         </span>
+       @if(sub.isDefined) {
+         @if(sub.get.subscribesTo(topic.id)) {
+           <span><a rel="tooltip" title="Cancel subscription to this topic" href="@routes.Application.topicSubscribe(topic.id, true)" class="btn btn-primary btn-large">Unsubscribe &raquo;</a></span>
+         } else {
+           @if(sub.get.hasInterest(topic.scheme_id)) {
+             <span><a rel="tooltip" title="Subscribe to this topic" href="@routes.Application.topicSubscribe(topic.id)" class="btn btn-primary btn-large">Subscribe &raquo;</a></span>
+           }
+         }
        }
     </div>
-
-     <h3>Recent Articles <a href="@routes.Application.itemBrowse("topic", topic.id, 0)">Browse All</a></h3>
-     <dl>
+    <h3>Recent Articles <a href="@routes.Application.itemBrowse("topic", topic.id, 0)">Browse All</a></h3>
+    <dl>
      	@topic.recentItems(6).map { i =>
      	  <dt><a href="@routes.Application.item(i.id)">@Html(i.metadataValue("title"))</a></dt>
         <dd>@tags.item_authors(i.metadataValues("author"))</dd>
       }
-     </dl>
+    </dl>
 }

@@ -36,11 +36,26 @@ case class Subscriber(id: Int,  // DB key
     }
   }
 
-  def hasInterest(schemeId: Int) = {
+  def interestIn(schemeId: Int) = {
     DB.withConnection { implicit c =>
       SQL("select * from interest where subscriber_id = {sub_id} and scheme_id = {scheme_id}")
-      .on('sub_id -> id, 'scheme_id -> schemeId).as(Interest.interest.singleOpt).isDefined
+      .on('sub_id -> id, 'scheme_id -> schemeId).as(Interest.interest.singleOpt)
     }
+  }
+
+  def hasInterest(schemeId: Int) = interestIn(schemeId).isDefined
+
+  def subscriptionFor(topicId: Int): Option[Subscription] = {
+    DB.withConnection { implicit c =>
+      SQL("select * from subscription where subscriber_id = {sub_id} and topic_id = {topic_id} and active = true")
+      .on('sub_id -> id, 'topic_id -> topicId).as(Subscription.subscrip.singleOpt)
+    }
+  }
+
+  def subscribesTo(topicId: Int) = subscriptionFor(topicId).isDefined
+
+  def subscribeTo(topic: Topic) = {
+    Subscription.create(id, topic.id, interestIn(topic.scheme_id).get.action, new Date, new Date)
   }
 
   def interestsWithAction(action: String): List[Interest] = {

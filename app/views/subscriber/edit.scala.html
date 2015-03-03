@@ -8,7 +8,9 @@
   <ul>
     @sub.interestsWithAction(action).map { interest =>
       <li><a href="@routes.Application.scheme(interest.scheme.get.id)">@interest.scheme.get.tag</a>: @interest.scheme.get.description
-      <a href="@routes.Application.removeSubscriberInterest(interest.subscriberId, interest.schemeId)">remove</a></li>
+      <a href="@routes.Application.removeSubscriberInterest(interest.subscriberId, interest.schemeId)">remove</a>
+      <a href="@routes.Application.subscriptionBrowse("scheme",interest.scheme.get.id)">Browse subscriptions</a>
+      </li>
     }
   </ul>
   <h4>Add a new @action interest</h4>

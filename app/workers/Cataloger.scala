@@ -321,8 +321,8 @@ object Cataloger {
     // next indexing schemes (which will have already been found as metadata)
     // must follow topic extraction, since items' topics are indexed
     Indexer.index(item)
-    // finally, should this be delivered on behalf of subscriptions?
-    //Conveyor.newItem(item)
+    // finally, are there any subscriptions to fulfill?
+    Conveyor.newItem(item)
     //item.changeState("cataloged")
   }
 

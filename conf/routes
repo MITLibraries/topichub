@@ -84,7 +84,7 @@ GET     /item/:id                    controllers.Application.item(id: Int)
 # Topic pages
 GET     /topics                      controllers.Application.topics
 GET     /topic/:id                   controllers.Application.topic(id: Int)
-GET     /topic/:id/subscribe         controllers.Application.topicSubscribe(id: Int)
+GET     /topic/:id/subscribe         controllers.Application.topicSubscribe(id: Int, cancel: Boolean ?= false)
 GET     /topics/browse               controllers.Application.topicBrowse(id: Int, page: Int ?= 0)
 POST    /topic/:sid/validate         controllers.Application.topicValidate(sid: Int)
 
@@ -97,10 +97,12 @@ GET     /subscriber/:id             controllers.Application.subscriber(id: Int)
 POST    /subscriber/:id/addInterest controllers.Application.addSubscriberInterest(id: Int, action: String)
 GET     /subscriber/:id/removeInt/:sid  controllers.Application.removeSubscriberInterest(id: Int, sid: Int)
 #GET     /channel/:id                controllers.Application.channel(id: Long)
-#GET     /subscription/:id/cancel    controllers.Application.cancelSubscription(id: Long)
 #GET     /channels/:sid/create       controllers.Application.newChannel(sid: Long)
 POST    /subscribers                controllers.Application.createSubscriber
 #POST    /subscriber/:sid/channels   controllers.Application.createChannel(sid: Long)
+
+# Subscription pages
+GET      /subscriptions/browse      controllers.Application.subscriptionBrowse(filter: String, value: Int, page: Int ?= 0)
 
 # Administrative services
 #GET     /reindex/:dtype             controllers.Application.reindex(dtype: String)
