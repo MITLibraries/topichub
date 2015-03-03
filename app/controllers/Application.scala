@@ -117,15 +117,21 @@ object Application extends Controller {
     ).getOrElse(NotFound(views.html.static.trouble("No such scheme: " + scheme_id)))
   }
 
-  def topicSubscribe(id: Int) = Action { implicit request => //= mustAuthenticate { username => implicit request =>
+  def topicSubscribe(id: Int, cancel: Boolean) = Action { implicit request => //= mustAuthenticate { username => implicit request =>
     Topic.findById(id).map( topic =>
-      topicSubIfSubscriber(User.findByName("richard").get, topic)
+      topicSubIfSubscriber(User.findByName("richard").get, topic, cancel)
     ).getOrElse(NotFound(views.html.static.trouble("No such topic: " + id)))
   }
 
-  private def topicSubIfSubscriber(user: User, topic: Topic)(implicit request: Request[AnyContent]): Result = {
-    Subscriber.findByUserId(user.id).map( sub =>
-      Redirect(routes.Application.topic(topic.id))
+  private def topicSubIfSubscriber(user: User, topic: Topic, cancel: Boolean)(implicit request: Request[AnyContent]): Result = {
+    Subscriber.findByUserId(user.id).map( sub => {
+        if (cancel) {
+          sub.subscriptionFor(topic.id).map (sc => sc.cancel)
+        } else {
+          sub.subscribeTo(topic)
+        }
+        Redirect(routes.Application.topic(topic.id))
+      }
     ).getOrElse(Redirect(routes.Application.subscribers))
   }
 
@@ -759,6 +765,13 @@ object Application extends Controller {
         Redirect(routes.Application.editSubscriber(sub.id))
       }).getOrElse(NotFound(views.html.static.trouble("No such scheme: " + sid)))
     ).getOrElse(NotFound(views.html.static.trouble("No such subscriber: " + id)))
+  }
+
+  def subscriptionBrowse(filter: String, value: Int, page: Int) = Action { implicit request =>
+    filter match {
+      case "scheme" => Ok(views.html.subscription.browse(1, Subscription.inScheme(1, value, page), filter, value, page, Subscription.schemeCount(1, value)))
+      case _ => NotFound(views.html.static.trouble("No such filter: " + filter))
+    }
   }
 
   val modelForm = Form(

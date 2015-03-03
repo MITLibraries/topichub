@@ -68,6 +68,12 @@ case class Topic(id: Int, scheme_id: Int, tag: String, name: String,
       count[Long]("c")
     }
   }
+
+  def subscriptions = {
+    DB.withConnection { implicit c =>
+      SQL("select * from subscription where topic_id = {id}").on('id -> id).as(Subscription.subscrip *)
+    }
+  }
 }
 
 object Topic {

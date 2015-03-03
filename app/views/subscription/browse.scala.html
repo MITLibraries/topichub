@@ -1,0 +1,19 @@
+@*****************************************************************************
+ * Page for browsing a subscriber's subscriptions filtered by subscribed     *
+ * topic's scheme or other filter                                            *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(id: Int, subs: List[Subscription], filter: String, value: Int, page: Int, total: Long)@*(implicit hubContext: HubContext)*@
+@layout.main("Subscription Browse - TopicHub") {
+  <div class="page-header">
+    <h2>Browse Subscriptions by @filter</h2>
+    <h3>@Scheme.findById(value).get.tag</h3>
+    @tags.summary(page, 10, total, subs.length)
+  </div>
+  <ul>
+    @subs.map { sub =>
+      <li><a href="@routes.Application.topic(sub.topic.get.id)">@sub.topic.get.tag</a> @sub.topic.get.name Transfers: @sub.transferCount</li>
+    }
+  </ul>
+  @tags.pagination(page, 10, total, routes.Application.subscriptionBrowse(filter, value).toString, subs.length)
+}

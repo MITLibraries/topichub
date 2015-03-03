@@ -11,7 +11,7 @@ import play.api.libs.json._
 import play.api.libs.json.Json._
 import play.api.Play.current
 
-import models.{Collection, ContentFormat, ContentType, Finder, Harvest, Interest, Publisher, ResourceMap, Scheme, Subscriber, Validator}
+import models._
 
 import jsonHelpers._
 
@@ -368,8 +368,8 @@ object subscriberModelJson {
           "contact" -> toJson(s.contact),
           "link" -> toJson(s.link),
           "logo" -> toJson(s.logo),
-          "interests" -> jsonInterests(s.id) //,
-          //"harvests" -> jsonHarvests(p.id)
+          "interests" -> jsonInterests(s.id),
+          "subscriptions" -> jsonSubscriptions(s.id)
       )
     )
     toJson(msg)
@@ -383,6 +383,18 @@ object subscriberModelJson {
     )
     toJson(msg)
   }
+
+  def jsonSubscriptions(sid: Int) = {
+    val msg = Subscription.withSubscriber(sid).map ( s => {
+      val topic = Topic.findById(s.topicId).get
+      Map("scheme" -> toJson(Scheme.findById(topic.scheme_id).get.tag),
+          "tag" -> toJson(topic.tag),
+          "action" -> toJson(s.action)
+      )
+    } )
+    toJson(msg)
+  }
+
 
   // deserialization methods
   def buildSubscriberModel(model: JsValue) = {
@@ -398,12 +410,23 @@ object subscriberModelJson {
                               forNameOption(jss, "logo"))
     val interests = (jss \ "interests")
     procJsArray(interests, 0, intFromSubscriberModel(sub.id))
+    val subscriptions = (jss \ "subscriptions")
+    procJsArray(subscriptions, 0, subscripFromSubscriberModel(sub.id))
   }
 
   def intFromSubscriberModel(sid: Int)(jss: JsValue) {
     // only create if dependencies found
     Scheme.findByTag(forName(jss, "scheme")).map { sc =>
       Interest.create(sid, sc.id, forName(jss, "action"))
+    }
+  }
+
+  def subscripFromSubscriberModel(sid: Int)(jss: JsValue) {
+    // only create if dependencies found
+    Scheme.findByTag(forName(jss, "scheme")).map { sc =>
+      Topic.forSchemeAndTag(sc.tag, forName(jss, "tag")).map { topic =>
+        Subscription.create(sid, topic.id, forName(jss, "action"), new Date, new Date)
+      }
     }
   }
 }
