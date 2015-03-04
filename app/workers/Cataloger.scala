@@ -81,8 +81,10 @@ class Cataloger(resmap: ResourceMap, content: StoredContent) {
           case Some(x) => x
           case _ => createTopic(scheme, id, lblHits(idx)) //Topic.create(scheme.id, id, lblHits(idx)); Topic.forSchemeAndId(scheme.schemeId, id).get
         }
-        item.addTopic(tp)
-        addedTopics += 1
+        if (! item.hasTopic(tp)) {
+          item.addTopic(tp)
+          addedTopics += 1
+        }
         idx += 1
       }
     }
