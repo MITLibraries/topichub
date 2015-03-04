@@ -31,6 +31,14 @@ case class Item(id: Int,            // DB key
                 updated: Date,      // Time of last transfer
                 transfers: Int)  {  // Number of transfers
 
+  def hasTopic(topic: Topic): Boolean = {
+    DB.withConnection { implicit c =>
+      val count = SQL("select count(*) as c from item_topic where topic_id = {topic_id} and item_id = {item_id}")
+      .on('topic_id -> topic.id, 'item_id -> id).apply.head
+      count[Long]("c") > 0
+    }
+  }
+
   def addTopic(topic: Topic) {
     DB.withConnection { implicit c =>
       SQL("insert into item_topic (item_id, item_created, topic_id) values ({item_id}, {item_created}, {topic_id})")
