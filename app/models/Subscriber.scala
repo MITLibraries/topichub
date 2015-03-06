@@ -80,6 +80,33 @@ case class Subscriber(id: Int,  // DB key
       .on('subscriber_id -> id, 'scheme_id -> scheme.id).executeUpdate()
     }
   }
+
+  def holdCount = {
+    DB.withConnection { implicit c =>
+      val count = SQL("select count(*) as c from hold where subscriber_id = {id}").on('id -> id).apply.head
+      count[Long]("c")
+    }
+  }
+
+  def holdOn(itemId: Int): Option[Hold] = {
+    DB.withConnection { implicit c =>
+      SQL("select * from hold where item_id = {item_id} and subscriber_id = {id}")
+      .on('item_id -> itemId, 'id -> id).as(Hold.hold.singleOpt)
+    }
+  }
+
+  def holds(page: Int) = {
+    val offset = page * 10
+    DB.withConnection { implicit c =>
+      SQL(
+        """
+          select * from hold where subscriber_id = {sub_id}
+          order by created desc
+          limit 10 offset {offset}
+        """
+      ).on('sub_id -> id, 'offset -> offset).as(Hold.hold *)
+    }
+  }
 }
 
 object Subscriber {

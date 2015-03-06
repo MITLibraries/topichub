@@ -104,6 +104,10 @@ POST    /subscribers                controllers.Application.createSubscriber
 # Subscription pages
 GET      /subscriptions/browse      controllers.Application.subscriptionBrowse(filter: String, value: Int, page: Int ?= 0)
 
+# Review (holds) pages
+GET     /holds/browse               controllers.Application.holdBrowse(id: Int, page: Int ?= 0)
+GET     /hold/:id/resolve           controllers.Application.resolveHold(id: Int, accept: Boolean)
+
 # Search pages
 GET     /search                     controllers.Search.index
 GET     /search/results             controllers.Search.results(q: String, target: String ?="topic", page: Int ?=0, perpage: Int ?=25)
