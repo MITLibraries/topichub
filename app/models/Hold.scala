@@ -27,6 +27,19 @@ case class Hold(id: Int,  // DB key
                 itemId: Int,   // DB key of item held
                 created: Date,  // when subscription established
                 released: Date) {    // is subscription currently active
+
+  def item = {
+    DB.withConnection { implicit c =>
+      SQL("select * from item where id = {item_id}").on('item_id -> itemId).as(Item.item.singleOpt).get
+    }
+  }
+
+  def resolve(accept: Boolean) = {
+    // not currently remembering state, so just delete
+    DB.withConnection { implicit c =>
+      SQL("delete from hold where id = {id}").on('id -> id).executeUpdate()
+    }
+  }
 }
 
 object Hold {

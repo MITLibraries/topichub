@@ -77,7 +77,7 @@ object Application extends Controller {
 
   def item(id: Int) = Action { implicit request =>
     Item.findById(id).map( item =>
-      Ok(views.html.item.show(item))
+      Ok(views.html.item.show(item, Subscriber.findByUserId(1)))
     ).getOrElse(NotFound(views.html.static.trouble("No such item: " + id)))
   }
 
@@ -772,6 +772,23 @@ object Application extends Controller {
       case "scheme" => Ok(views.html.subscription.browse(1, Subscription.inScheme(1, value, page), filter, value, page, Subscription.schemeCount(1, value)))
       case _ => NotFound(views.html.static.trouble("No such filter: " + filter))
     }
+  }
+
+  def holdBrowse(id: Int, page: Int) = Action { implicit request =>
+    Subscriber.findById(id).map( sub =>
+      Ok(views.html.hold.browse(sub.id, sub.holds(page), page, sub.holdCount))
+    ).getOrElse(NotFound(views.html.static.trouble("No such subscriber: " + id)))
+  }
+
+  def resolveHold(id: Int, accept: Boolean) = Action { implicit request =>
+    Hold.findById(id).map( hold => {
+      val action = if (accept) "deliver" else "discard"
+      val transfer = Transfer.make(hold.subscriberId, hold.subscriptionId, hold.itemId, action)
+      // fire off delivery - TODO
+      hold.resolve(accept)
+      Redirect(routes.Application.holdBrowse(1, 0))
+    }
+    ).getOrElse(NotFound(views.html.static.trouble("No such hold: " + id)))
   }
 
   val modelForm = Form(

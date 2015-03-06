@@ -3,7 +3,7 @@
  * topics organized by scheme                                                *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(item: Item)@*(implicit hubContext: HubContext)*@
+@(item: Item, sub: Option[Subscriber])@*(implicit hubContext: HubContext)*@
 @layout.main("Item - TopicHub") {
   <div itemscope itemtype="http://schema.org/@item.contentType.get.label" class="jumbotron">
     <h3>~ @item.contentType.get.tag ~</h3>
@@ -18,6 +18,12 @@
     <p>
       @if(item.hasMetadata("accessUrl")) {
         <a rel="tooltip" title="see article in new browser window" href="@item.metadataValue("accessUrl")" target="_blank" class="btn btn-primary btn-large">View &raquo;</a>
+      }
+      @if(sub.isDefined) {
+        @if(sub.get.holdOn(item.id).isDefined) {
+          <span><a rel="tooltip" title="Fulfill subscription for this item" href="@routes.Application.resolveHold(sub.get.holdOn(item.id).get.id, true)" class="btn btn-primary btn-large pull-right">Deliver &raquo;</a></span>
+          <span><a rel="tooltip" title="Forget this item" href="@routes.Application.resolveHold(sub.get.holdOn(item.id).get.id, false)" class="btn btn-primary btn-large pull-right">Forget &raquo;</a></span>
+        }
       }
       @*<a rel="tooltip" title="download whole package to desktop" href="@routes.Application.itemFile(item.id)" class="btn btn-primary btn-large">Download &raquo;</a>
       <a rel="tooltip" title="send an email notification with link to this item" href="@routes.Application.itemTransfer(item.id, "alert")" class="btn btn-primary btn-large pull-right">Remind Me &raquo;</a>
@@ -58,7 +64,7 @@ $(function() {
     $(".author_etal").toggle();
     if ($(".author_toggleable").is(":visible")) {
       $(".author_toggleable").addClass("hidden");
-      $(".author_toggler").text(author_toggle_text);      
+      $(".author_toggler").text(author_toggle_text);
     } else {
       $(".author_toggleable").removeClass("hidden");
       $(".author_toggler").text("Hide");
