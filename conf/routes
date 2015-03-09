@@ -67,6 +67,14 @@ GET     /cformat/:id                controllers.Application.contentFormat(id: In
 GET     /cformats/create            controllers.Application.newContentFormat
 POST    /cformats                   controllers.Application.createContentFormat
 
+# Content Profile pages
+GET     /cprofiles                   controllers.Application.contentProfiles
+GET     /cprofile/:id                controllers.Application.contentProfile(id: Int)
+GET     /cprofiles/create            controllers.Application.newContentProfile
+POST    /cprofiles                   controllers.Application.createContentProfile
+POST    /cprofile/:id/scheme         controllers.Application.addContentProfileScheme(id: Int)
+GET     /cprofile/:id/scheme         controllers.Application.removeContentProfileScheme(id: Int, sid: Int)
+
 # Resource Map pages
 GET     /resmaps                    controllers.Application.resourceMaps
 GET     /resmap/:id                 controllers.Application.resourceMap(id: Int)

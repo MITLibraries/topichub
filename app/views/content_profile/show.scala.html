@@ -1,0 +1,21 @@
+@*****************************************************************************
+ * Page for display and editing of content profiles                          *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(cprof: ContentProfile, scForm: Form[(Int, Int)])@*(implicit hubContext: HubContext)*@
+@import helper._
+@layout.main("Content Profiles - TopicHub") {
+  <h2>Content Profile: @cprof.tag</h2>
+  <h3>Profile Schema</h3>
+  <ul>
+    @cprof.schemes.map { scheme =>
+      <li><a href="@routes.Application.scheme(scheme.id)">@scheme.tag</a>: @scheme.description
+      <a href="@routes.Application.removeContentProfileScheme(cprof.id, scheme.id)">remove</a></li>
+    }
+  </ul>
+  <h4>Add a new scheme</h4>
+    @form(routes.Application.addContentProfileScheme(cprof.id)) {
+      @select(scForm("scheme_id"), options(Scheme.mapView))
+      <input type="submit" value="Create">
+    }
+}

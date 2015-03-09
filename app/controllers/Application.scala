@@ -514,6 +514,70 @@ object Application extends Controller {
     //)
   }
 
+  // content profiles
+  val cprofForm = Form(
+    mapping(
+      "id" -> ignored(0),
+      "tag" -> nonEmptyText,
+      "label" -> nonEmptyText,
+      "description" -> nonEmptyText
+    )(ContentProfile.apply)(ContentProfile.unapply)
+  )
+
+  def contentProfiles = Action { implicit request => //isAuthenticated { username => implicit request =>
+    //isAnalyst(username, Ok(views.html.ctype_list(ContentType.all)))
+    Ok(views.html.content_profile.index(ContentProfile.all))
+  }
+
+  def contentProfile(id: Int) = Action { implicit request => // isAuthenticated { username => implicit request =>
+    ContentProfile.findById(id).map( cprof =>
+      //isAnalyst(username, Ok(views.html.ctype(ctype, ctSchemeForm)))
+      Ok(views.html.content_profile.show(cprof, ctSchemeForm))
+    ).getOrElse(NotFound(views.html.static.trouble("No such content profile: " + id)))
+  }
+
+  def newContentProfile = Action { implicit request => //isAuthenticated { username => implicit request =>
+     //isAnalyst(username, Ok(views.html.new_ctype(ctypeForm)))
+     Ok(views.html.content_profile.create(cprofForm))
+  }
+
+  def createContentProfile = Action { implicit request => //isAuthenticated { username => implicit request =>
+    //isAnalyst(username,
+      cprofForm.bindFromRequest.fold(
+        errors => BadRequest(views.html.content_profile.create(errors)),
+        value => {
+          ContentProfile.create(value.tag, value.label, value.description)
+          Redirect(routes.Application.contentProfiles)
+        }
+      )
+    //)
+  }
+
+  def addContentProfileScheme(id: Int) = Action { implicit request =>
+    ctSchemeForm.bindFromRequest.fold(
+      errors => {
+        val cp = ContentProfile.findById(id).get
+        BadRequest(views.html.content_profile.show(cp, errors))
+      },
+      value => {
+        val cp2 = ContentProfile.findById(id).get
+        val (scheme_id, _) = ctSchemeForm.bindFromRequest.get
+        val scheme = Scheme.findById(scheme_id).get
+        cp2.addScheme(scheme)
+        Redirect(routes.Application.contentProfile(id))
+      }
+    )
+  }
+
+  def removeContentProfileScheme(pid: Int, sid: Int) = Action { implicit request =>
+    ContentProfile.findById(pid).map( cprof =>
+      Scheme.findById(sid).map( scheme => {
+        cprof.removeScheme(scheme)
+        Redirect(routes.Application.contentProfile(pid))
+      }).getOrElse(NotFound(views.html.static.trouble("No such scheme: " + sid)))
+    ).getOrElse(NotFound(views.html.static.trouble("No such content profile: " + pid)))
+  }
+
   // resource maps
   val resmapForm = Form(
     mapping(
