@@ -42,6 +42,13 @@ case class ResourceMap(id: Int, tag: String, description: String, swordUrl: Opti
     }
   }
 
+  def schemes(relation: String): List[Scheme] = {
+    DB.withConnection { implicit c =>
+      SQL("select scheme.* from scheme, resource_map_scheme, resource_map where scheme.id = resource_map_scheme.scheme_id and resource_map_scheme.resource_map_id = resource_map.id and resource_map.id = {resmap_id}")
+      .on('resmap_id -> id).as(Scheme.scheme *)
+    }
+  }
+
   def removeMapping(scheme: Scheme, source: String) {
     DB.withConnection { implicit c =>
       SQL("delete from resource_map_scheme where resource_map_id = {resmap_id} and scheme_id = {scheme_id} and source = {source}")
