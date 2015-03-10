@@ -101,6 +101,12 @@ object Application extends Controller {
     ).getOrElse(NotFound(views.html.static.trouble("No such collection")))
   }
 
+  def itemPackage(id: Int) = Action { implicit request =>
+    Item.findById(id).map( item =>
+      Ok(item.toMets)
+    ).getOrElse(NotFound(views.html.static.trouble("No such item: " + id)))
+  }
+
   def topics = Action { implicit request =>
     Ok(views.html.topic.index(Scheme.withGentype("topic").filter(!_.tag.equals("meta"))))
   }
