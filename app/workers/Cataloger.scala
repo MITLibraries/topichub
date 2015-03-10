@@ -296,14 +296,14 @@ object Cataloger {
     val coll = Collection.findById(item.collectionId).get
     val resmap = ResourceMap.findById(coll.resmapId).get
     val cataloger = new Cataloger(resmap, Store.content(item))
-    val ctype = ContentType.findById(item.ctypeId).get
+    val rmap = ResourceMap.findById(coll.resmapId).get
     // start with metadata schemes
-    ctype.schemes("meta").foreach( sch => {
+    rmap.schemes("meta").foreach( sch => {
       println("Found scheme:" + sch.tag)
       cataloger.metadata(sch, item) }
     )
     // next topic schemes
-    ctype.schemes("topic").foreach( cataloger.topics(_, item) )
+    rmap.schemes("topic").foreach( cataloger.topics(_, item) )
     // now assign to meta-topics as appropriate
     if (cataloger.addedTopics == 0) {
       // assign to 'null' meta-topic
