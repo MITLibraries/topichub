@@ -39,7 +39,17 @@ object Indexer {
 
   def reindex(dtype: String) = {
     // delete current index type
-    WS.url(indexSvc + dtype).delete()
+    if (indexSvc.contains("bonsai.io")) {
+      println("DEBUG: use basic auth for WS elasticsearch call")
+      WS.url(indexSvc + dtype)
+        .withAuth(extractCredentials("username", indexSvc),
+                  extractCredentials("password", indexSvc),
+                  WSAuthScheme.BASIC).delete()
+    } else {
+      println("DEBUG: no auth for WS elasticsearch call")
+      WS.url(indexSvc + dtype).delete()
+    }
+
     if ("topic".equals(dtype)) {
       Topic.all.foreach(index(_))
     } else if ("item".equals(dtype)) {
