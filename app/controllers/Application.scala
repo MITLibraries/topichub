@@ -26,6 +26,7 @@ import services.contentModelJson._
 import services.publisherModelJson._
 import services.subscriberModelJson._
 import services.Emailer
+import workers.Packager
 
 case class HubContext(user: Option[User])
 
@@ -104,7 +105,11 @@ object Application extends Controller {
 
   def itemPackage(id: Int) = Action { implicit request =>
     Item.findById(id).map( item =>
-      Ok(item.toMets)
+      //Ok(item.toMets)
+      Result(
+        header = ResponseHeader(200, Map(CONTENT_TYPE -> "application/zip")),
+        body = Enumerator.fromStream(Packager.packageItem(item))
+      )
     ).getOrElse(NotFound(views.html.static.trouble("No such item: " + id)))
   }
 
