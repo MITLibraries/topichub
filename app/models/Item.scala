@@ -103,6 +103,151 @@ case class Item(id: Int,            // DB key
       rows().map(row => row[String]("mdvalue")).toList
     }
   }
+
+  def filename(uri: String) = {
+    if( uri.endsWith("pdf") ) {
+      metadataValue("doi").split("/").last + ".pdf"
+    } else if( uri.endsWith("pdfa") ) {
+      metadataValue("doi").split("/").last + "_pdfa.pdf"
+    } else if( uri.endsWith("xml") ) {
+      metadataValue("doi").split("/").last + ".xml"
+    } else {
+      "filename_error"
+    }
+  }
+
+  def toMets = {
+    <mets xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.loc.gov/METS/"
+      xmlns:xlink="http://www.w3.org/TR/xlink"
+      xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd"
+      OBJID="sword-mets"
+      LABEL="DSpace SWORD Item"
+      PROFILE="DSpace METS SIP Profile 1.0">
+     
+      {metsHdr}
+      {mets_dmdSec}
+      {mets_fileSec}
+      {mets_structMap}
+    </mets>
+  }
+
+  private def metsHdr = {
+    <metsHdr CREATEDATE={metadataValue("title")}>
+      <agent ROLE="CREATOR" TYPE="ORGANIZATION">
+        <name>TopicHub</name>
+      </agent>
+    </metsHdr>
+  }
+
+  private def mets_dmdSec = {
+    <dmdSec ID="sword-mets-dmd-1" GROUPID="sword-mets-dmd-1_group-1">
+        <mdWrap LABEL="SWAP Metadata" MDTYPE="OTHER" OTHERMDTYPE="EPDCX" MIMETYPE="text/xml">
+          <xmlData>
+            <epdcx:descriptionSet xmlns:epdcx="http://purl.org/eprint/epdcx/2006-11-16/" xmlns:MIOJAVI="http://purl.org/eprint/epdcx/2006-11-16/" xsi:schemaLocation="http://purl.org/eprint/epdcx/2006-11-16/ http://purl.org/eprint/epdcx/xsd/2006-11-16/epdcx.xsd">
+              <epdcx:description epdcx:resourceId="sword-mets-epdcx-1">
+                <epdcx:statement epdcx:propertyURI="http://purl.org/dc/elements/1.1/type" epdcx:valueURI="http://purl.org/eprint/entityType/ScholarlyWork"/>
+
+                { if( hasMetadata("title") )
+                  <epdcx:statement epdcx:propertyURI="http://purl.org/dc/elements/1.1/title">
+                    <epdcx:valueString>{ metadataValue("title") }</epdcx:valueString>
+                  </epdcx:statement>
+                }
+
+                { if( hasMetadata("author") )
+                  { for ( author <- metadataValues("author") ) yield
+                    <epdcx:statement epdcx:propertyURI="http://purl.org/dc/elements/1.1/creator">
+                      <epdcx:valueString>{ author }</epdcx:valueString>
+                    </epdcx:statement>
+                  }
+                }
+
+                { if( hasMetadata("additional_author") )
+                  { for ( author <- metadataValues("additional_author") ) yield
+                    <epdcx:statement epdcx:propertyURI="http://purl.org/dc/elements/1.1/creator">
+                      <epdcx:valueString>{ author }</epdcx:valueString>
+                    </epdcx:statement>
+                  }
+                }
+
+                { if( hasMetadata("abstract") ) 
+                  <epdcx:statement epdcx:propertyURI="http://purl.org/dc/terms/abstract">
+                    <epdcx:valueString>{ metadataValue("abstract") }</epdcx:valueString>
+                  </epdcx:statement>
+                }
+                
+                <epdcx:statement epdcx:propertyURI="http://purl.org/eprint/terms/isExpressedAs" epdcx:valueRef="sword-mets-expr-1"/>
+              </epdcx:description>
+
+              <epdcx:description epdcx:resourceId="sword-mets-expr-1">
+                <epdcx:statement epdcx:propertyURI="http://purl.org/dc/elements/1.1/type" epdcx:valueURI="http://purl.org/eprint/entityType/Expression"/>
+
+                <epdcx:statement epdcx:propertyURI="http://purl.org/dc/elements/1.1/type" epdcx:vesURI="http://purl.org/eprint/terms/Type" epdcx:valueURI="http://purl.org/eprint/type/JournalArticle"/>
+                
+                { if( hasMetadata("publisher") )
+                  <epdcx:statement epdcx:propertyURI="http://purl.org/dc/elements/1.1/publisher">
+                  <epdcx:valueString>{ metadataValue("publisher") }</epdcx:valueString>
+                </epdcx:statement>
+                }
+
+                { if( hasMetadata("copyright_uri") )
+                  <epdcx:statement epdcx:propertyURI="http://purl.org/dc/terms/license">
+                    <epdcx:valueString>{ metadataValue("copyright_uri") }</epdcx:valueString>
+                  </epdcx:statement>
+                }
+
+                { if( hasMetadata("copyright_holder") )
+                  <epdcx:statement epdcx:propertyURI="http://purl.org/eprint/terms/copyrightHolder">
+                    <epdcx:valueString>{ metadataValue("copyright_holder") }</epdcx:valueString>
+                  </epdcx:statement>
+                }
+
+                { if( hasMetadata("doi") )
+                  <epdcx:statement epdcx:propertyURI="http://purl.org/dc/elements/1.1/identifier">
+                    <epdcx:valueString epdcx:sesURI="http://purl.org/dc/terms/URI">
+                      http://dx.doi.org/{ metadataValue("doi") }
+                    </epdcx:valueString>
+                  </epdcx:statement>
+                }
+
+              </epdcx:description>
+            </epdcx:descriptionSet>
+          </xmlData>
+        </mdWrap>
+      </dmdSec>
+  }
+
+  private def mets_fileSec = {
+    <fileSec>
+      <fileGrp ID="sword-mets-fgrp-1" USE="CONTENT">
+        { for ( uri <- metadataValues("accessUri") ) yield
+          if( uri.endsWith("pdf") || uri.endsWith("pdfa") ) {
+            <file ID={ uri } MIMETYPE="application/pdf">
+              <FLocat LOCTYPE="URL" xlink:href={ filename(uri) }/>
+            </file>
+          } else if( uri.endsWith("xml") ) {
+            <file ID={ uri } MIMETYPE="text/xml">
+              <FLocat LOCTYPE="URL" xlink:href={ filename(uri) }/>
+            </file>
+          }
+        }
+      </fileGrp>
+    </fileSec>
+  }
+
+  private def mets_structMap = {
+    <structMap ID="sword-mets-struct-1" LABEL="structure" TYPE="LOGICAL">
+      <div ID="sword-mets-div-1" DMDID="sword-mets-dmd-1" TYPE="SWORD Object">
+
+      { for( uri <- metadataValues("accessUri") ) yield
+        <div TYPE="File">
+          <fptr FILEID={ filename(uri) }/>
+        </div>
+      }
+
+      </div>
+    </structMap>
+  }
 }
 
 object Item {

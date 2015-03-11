@@ -88,6 +88,7 @@ GET     /resmap/:id/scheme          controllers.Application.removeResourceMappin
 #GET     /items/search                controllers.Application.itemSearch(topicId: String, page: Int)
 GET     /items/browse                controllers.Application.itemBrowse(filter: String, id: Int, page: Int ?= 0)
 GET     /item/:id                    controllers.Application.item(id: Int)
+GET     /item/package/:id            controllers.Application.itemPackage(id: Int)
 
 # Topic pages
 GET     /topics                      controllers.Application.topics
