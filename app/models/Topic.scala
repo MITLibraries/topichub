@@ -105,7 +105,7 @@ object Topic {
         """
           select * from topic
           where scheme_id = {scheme_id}
-          order by name
+          order by tag
           limit 10 offset {offset}
         """
       ).on('scheme_id -> scheme_id, 'offset -> offset).as(topic *)
