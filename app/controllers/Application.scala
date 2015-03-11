@@ -32,6 +32,7 @@ case class HubContext(user: Option[User])
 object Application extends Controller {
 
   val harvester = Akka.system.actorOf(Props[workers.HarvestWorker], name="harvester")
+  val indexer = Akka.system.actorOf(Props[workers.IndexWorker], name="indexer")
 
   def index = Action {
     // Create dummy user if not allready there
@@ -917,6 +918,11 @@ object Application extends Controller {
         Redirect(routes.Application.newHubModel)
       }
     )
+  }
+
+  def reindex(dtype: String) = Action { implicit request =>
+    indexer ! dtype
+    Ok("Reindexing " + dtype + "s")
   }
 
   // convenience method for now - refine for real use later
