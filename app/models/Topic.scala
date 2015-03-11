@@ -86,9 +86,33 @@ object Topic {
     }
   }
 
-  def findById(id: Int): Option[Topic] = {
+  def findById(id: Int, substatus: String = "any", subscriber: Int = 0): Option[Topic] = {
     DB.withConnection { implicit c =>
-      SQL("select * from topic where id = {id}").on('id -> id).as(topic.singleOpt)
+      if( substatus == "false" && subscriber != 0 ) {
+        SQL("""
+              SELECT * FROM topic
+              WHERE id = {id}
+              AND id NOT IN(
+              SELECT subscription.topic_id
+              FROM subscription
+              WHERE subscription.subscriber_id = {subscriber}
+              AND subscription.active = true )
+            """
+          ).on('id -> id, 'subscriber -> subscriber).as(topic.singleOpt)
+      } else if ( substatus == "true"  && subscriber != 0 ) {
+        SQL("""
+              SELECT * FROM topic
+              WHERE id = {id}
+              AND id IN(
+              SELECT subscription.topic_id
+              FROM subscription
+              WHERE subscription.subscriber_id = {subscriber}
+              AND subscription.active = true )
+            """
+          ).on('id -> id, 'subscriber -> subscriber).as(topic.singleOpt)
+      } else {
+        SQL("select * from topic where id = {id}").on('id -> id).as(topic.singleOpt)
+      }
     }
   }
 

@@ -121,7 +121,7 @@ GET     /hold/:id/resolve           controllers.Application.resolveHold(id: Int,
 
 # Search pages
 GET     /search                     controllers.Search.index
-GET     /search/results             controllers.Search.results(q: String, target: String ?="topic", page: Int ?=0, perpage: Int ?=25)
+GET     /search/results             controllers.Search.results(q: String, target: String ?="topic", substatus: String ?="any", page: Int ?=0, perpage: Int ?=25)
 
 # Administrative services
 GET     /reindex/:dtype              controllers.Application.reindex(dtype: String)

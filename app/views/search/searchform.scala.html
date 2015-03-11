@@ -1,4 +1,4 @@
-@(q: String, target: String)
+@(q: String, target: String, substatus: String)
 <form class="form-horizontal" action="/search/results">
   <div class="form-group">
     <label for="inputQuery" class="col-sm-2 control-label">Searchterm</label>
@@ -18,5 +18,22 @@
         <input type="radio" name="target" id="target_item" value="item" @if(target=="item"){checked}> Item
       </label>
     </div>
+  </div>
+
+  <div class="form-group">
+    <div class="col-sm-2 control-label"><label for="target">Subscription Status</label></div>
+    <div class="col-sm-10">
+      <label class="radio-inline">
+        <input type="radio" name="substatus" id="substatus_any" value="any" @if(substatus=="any"){checked}> Any
+      </label>
+      <label class="radio-inline">
+        <input type="radio" name="substatus" id="substatus_false" value="false" @if(substatus=="false"){checked}> Only Unsubcribed
+      </label>
+      <label class="radio-inline">
+        <input type="radio" name="substatus" id="substatus_true" value="true" @if(substatus=="true"){checked}> Only Subscribed
+      </label>
+      <span id="helpBlock" class="help-block">This only affects Topic Searches.</span>
+    </div>
+
   </div>
 </form>

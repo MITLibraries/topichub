@@ -2,13 +2,13 @@
 * Search results page                                                        *
 * Copyright (c) 2015 MIT Libraries                                           *
 *****************************************************************************@
-@(q: String, target: String, page: Int, perpage: Int, items: Seq[Item], total: Long)@*(implicit hubContext: HubContext)*@
+@(q: String, target: String, page: Int, perpage: Int, items: Seq[Item], total: Long, substatus: String)@*(implicit hubContext: HubContext)*@
 
 @layout.main("Search - TopicHub") {
   <div class="container-fluid">
     <div class="row-fluid">
       <div class="col-md-12">
-          @searchform(q, target)
+          @searchform(q, target, substatus)
 
           <p>Searchterm: @q</p>
 
@@ -35,7 +35,7 @@
           </ol>
       </div>
 
-      @tags.pagination(page, perpage, total, routes.Search.results(q, target).toString, items.length)
+      @tags.pagination(page, perpage, total, routes.Search.results(q, target, "any").toString, items.length)
     </div>
   </div>
 }

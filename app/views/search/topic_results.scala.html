@@ -2,17 +2,24 @@
 * Search results page                                                        *
 * Copyright (c) 2015 MIT Libraries                                           *
 *****************************************************************************@
-@(q: String, target: String, page: Int, perpage: Int, topics: Seq[Topic], total: Long)@*(implicit hubContext: HubContext)*@
+@(q: String, target: String, page: Int, perpage: Int, topics: Seq[Topic], total: Long, substatus: String, sub: Option[Subscriber])@*(implicit hubContext: HubContext)*@
 
 @layout.main("Search - TopicHub") {
   <div class="container-fluid">
     <div class="row-fluid">
       <div class="col-md-12">
-        @searchform(q, target)
+        @searchform(q, target, substatus)
 
         <p>Searchterm: @q</p>
 
         <p>@tags.summary(page, perpage, total, topics.length)</p>
+
+        @if(substatus != "any" && target == "topic") {
+          <div class="alert alert-warning" role="alert">
+            <span class="glyphicon glyphicon-bullhorn" aria-hidden="true"></span>
+            Total number of results is inaccurate when Subscription Status radio button is any value other than "Any".
+          </div>
+        }
 
         Topic:
         <ol start="@(page * perpage + 1)">
@@ -22,7 +29,7 @@
         </ol>
       </div>
 
-      @tags.pagination(page, perpage, total, routes.Search.results(q, target).toString, topics.length)
+      @tags.pagination(page, perpage, total, routes.Search.results(q, target, substatus).toString, topics.length)
     </div>
   </div>
 }

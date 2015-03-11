@@ -15,7 +15,7 @@ object Search extends Controller {
     Ok(views.html.search.index())
   }
 
-  def results(q: String, target: String, page: Int, perpage: Int) = Action.async {
+  def results(q: String, target: String, substatus: String, page: Int, perpage: Int) = Action.async {
     val indexSvc = Play.configuration.getString("hub.index.url").get
     val encQuery = UriEncoding.encodePathSegment(q, "UTF-8")
     val offset = (page) * perpage
@@ -25,7 +25,7 @@ object Search extends Controller {
       WS.url(elastic_url)
         .withAuth(extractCredentials("username", indexSvc),
                   extractCredentials("password", indexSvc),
-                  WSAuthScheme.BASIC) 
+                  WSAuthScheme.BASIC)
     } else {
       println("DEBUG: no auth for WS elasticsearch call")
       WS.url(elastic_url)
@@ -45,10 +45,13 @@ object Search extends Controller {
 
       if (target == "item") {
         val items = hits flatMap ( id => Item.findById(id) )
-        Ok(views.html.search.item_results(q, target, page, perpage, items, total_results))
+        Ok(views.html.search.item_results(q, target, page, perpage, items, total_results, substatus))
       } else if (target == "topic") {
-        val topics = hits flatMap ( id => Topic.findById(id) )
-        Ok(views.html.search.topic_results(q, target, page, perpage, topics, total_results))
+        // this seems to be doing n queries whereas a it could be done with a single query
+        // if we created a method for Topic.findByIds that accepted a List of IDs
+        println(substatus)
+        val topics = hits flatMap ( id => Topic.findById(id, substatus, Subscriber.findByUserId(1).get.id) )
+        Ok(views.html.search.topic_results(q, target, page, perpage, topics, total_results, substatus, Subscriber.findByUserId(1)))
       } else {
         NotFound(views.html.static.trouble("Only Topic or Item searching are supported."))
       }
