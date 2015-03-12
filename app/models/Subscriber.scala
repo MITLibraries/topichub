@@ -107,6 +107,12 @@ case class Subscriber(id: Int,  // DB key
       ).on('sub_id -> id, 'offset -> offset).as(Hold.hold *)
     }
   }
+
+  def channels: List[Channel] = {
+    DB.withConnection { implicit c =>
+      SQL("select * from channel where subscriber_id = {id}").on('id -> id).as(Channel.channel *)
+    }
+  }
 }
 
 object Subscriber {
