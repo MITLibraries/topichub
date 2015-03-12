@@ -6,13 +6,15 @@ package workers
 
 import scala.collection.immutable.HashMap
 
-import java.io.ByteArrayInputStream
+import java.io.{ByteArrayInputStream, FileInputStream, InputStream, OutputStream}
+import java.nio.file.{Files, Path}
+import java.net.URL
+import java.util.zip.{ZipEntry, ZipOutputStream}
 
 import akka.actor.Actor
 
 import play.api.Play.current
 import play.api.libs.ws._
-//import play.api.libs.ws.ning.NingAsyncHttpClientConfigBuilder
 
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -29,57 +31,63 @@ import models.{Item, PackageMap}
 
 class PackageWorker extends Actor {
   def receive = {
-    case _ => Packager.packageItem
+    case item: Item => Packager.packageItem(item)
+    case _ => println("Unknown package command")
   }
 }
 
 class Packager {
 
-  def packageItem(item: Item, pkgMap: PackageMap) = {
-    // check the package cache - if already created, skip
-    if (! Packager.inCache("foo" /*item, pkgMap.pkgmapId */)) {
+  def packageItem(item: Item): InputStream = {
+    // check the package cache - if already created, skip build
+    if (! Packager.inCache(item.objKey)) {
       // build a new package & cache it
-      Packager.toCache("foo", "bar" /*buildPackage(item, pkgMap) */)
+      Packager.toCache(item.objKey, buildPackage(item))
     }
-    Packager.fromCache("foo")
+    Packager.fromCache(item.objKey)
   }
 
-  def buildPackage(item: Item, pkgMap: PackageMap) = {
-
-    // add each component in the map and put in a zip file
-    def parse(xml: XMLEventReader) = {
-      var objId: Option[String] = None
-      var readingId = false
-      var readingSpec = false
-      while (xml.hasNext) {
-        xml.next match {
-          case EvElemStart(_,"identifier",_,_) => readingId = true
-          case EvElemStart(_,"setSpec",_,_) => readingSpec = true
-          case EvText(text) if readingId => objId = Some(text); readingId = false
-          case EvText(text) if readingSpec => checkItem(objId, Some(text)); readingSpec = false
-          case _ =>
-        }
+  def buildPackage(item: Item) = {
+      val pkgName = Packager.pkgDir.resolve(item.objKey)
+      val zout = new ZipOutputStream(Files.newOutputStream(pkgName))
+      // mets file is an entry
+      writeEntry("mets.xml", new ByteArrayInputStream(item.toMets.toString.getBytes), zout)
+      // each item resource is a also an entry
+      item.metadataValues("accessUri").foreach { uri =>
+        writeEntry(item.filename(uri), new URL(uri).openStream, zout)
       }
-    }
+      zout.close
+      pkgName
+  }
 
-    def checkItem(objId: Option[String], collectionKey: Option[String]) = {
-      println("Got OID:" + objId.getOrElse("Unknown") + " in coll: " + collectionKey.getOrElse("Unknown"))
-    }
+  private def writeEntry(name: String, in: InputStream, zout: ZipOutputStream) = {
+    zout.putNextEntry(new ZipEntry(name))
+    streamCopy(in, zout)
+    in.close
+    zout.closeEntry
+  }
+
+  private def streamCopy(in: InputStream, out: OutputStream) = {
+    Iterator.continually(in.read).takeWhile(-1 !=).foreach(out.write)
   }
 }
 
 object Packager {
 
-  // temporary memory cache - will be moved to a persistent cache
-  var pkgCache: Map[String, String] = new HashMap
+  // temporary cache - maybe move to a persistent cache?
+  val pkgDir = Files.createTempDirectory("SWORDPKGS")
+
+  var pkgCache: Map[String, Path] = new HashMap
 
   def inCache(key: String) = pkgCache.contains(key)
 
-  def toCache(key: String, obj: String) = pkgCache += key -> obj
+  def toCache(key: String, pkg: Path) = pkgCache += key -> pkg
 
-  def fromCache(key: String) = pkgCache.get(key)
+  def fromCache(key: String): InputStream = {
+    Files.newInputStream(pkgCache.get(key).get)
+  }
 
-  def packageItem = {
-    new Packager().packageItem(null, null)
+  def packageItem(item: Item) = {
+    new Packager().packageItem(item)
   }
 }
