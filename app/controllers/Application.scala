@@ -812,6 +812,45 @@ object Application extends Controller {
     }
   }
 
+  val channelForm = Form(
+    mapping(
+      "id" -> ignored(0),
+      "subscriberId" -> ignored(0),
+      "protocol" -> nonEmptyText,
+      "mode" -> nonEmptyText,
+      "description" -> nonEmptyText,
+      "userId" -> nonEmptyText,
+      "password" -> nonEmptyText,
+      "channelUrl" -> nonEmptyText,
+      "created" -> ignored(new Date),
+      "updated" -> ignored(new Date),
+      "transfers" -> ignored(0)
+    )(Channel.apply)(Channel.unapply)
+  )
+
+  def channel(id: Int) = Action { implicit request => // isAuthenticated { username => implicit request =>
+    Channel.findById(id).map( chan =>
+      Ok(views.html.channel.show(chan))
+    ).getOrElse(NotFound(views.html.static.trouble("No such subscriber destination: " + id)))
+  }
+
+  def newChannel(sid: Int) = Action { implicit request => // isAuthenticated { username => implicit request =>
+    //ownsSubscriber(username, sid, Ok(views.html.new_channel(sid, channelForm)))
+    Ok(views.html.channel.create(sid, channelForm))
+  }
+
+  def createChannel(sid: Int) = Action { implicit request => //isAuthenticated { username => implicit request =>
+    //ownsSubscriber(username, sid, channelForm.bindFromRequest.fold (
+    channelForm.bindFromRequest.fold (
+      errors => BadRequest(views.html.channel.create(sid, errors)),
+      value => {
+        val chan = Channel.make(sid, value.protocol, value.mode, value.description, value.userId, value.password, value.channelUrl)
+        Redirect(routes.Application.subscriber(sid))
+      }
+    )
+    //)
+  }
+
   val interestForm = Form(
     single(
       "scheme_id" -> number
