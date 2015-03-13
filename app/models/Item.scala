@@ -119,12 +119,12 @@ case class Item(id: Int,            // DB key
   def toMets = {
     <mets xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xmlns="http://www.loc.gov/METS/"
-      xmlns:xlink="http://www.w3.org/TR/xlink"
+      xmlns:xlink="http://www.w3.org/1999/xlink" 
       xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd"
       OBJID="sword-mets"
       LABEL="DSpace SWORD Item"
       PROFILE="DSpace METS SIP Profile 1.0">
-     
+
       {metsHdr}
       {mets_dmdSec}
       {mets_fileSec}
@@ -222,12 +222,12 @@ case class Item(id: Int,            // DB key
       <fileGrp ID="sword-mets-fgrp-1" USE="CONTENT">
         { for ( uri <- metadataValues("accessUri") ) yield
           if( uri.endsWith("pdf") || uri.endsWith("pdfa") ) {
-            <file ID={ uri } MIMETYPE="application/pdf">
-              <FLocat LOCTYPE="URL" xlink:href={ filename(uri) }/>
+            <file ID={ filename(uri) } MIMETYPE="application/pdf">
+              <FLocat LOCTYPE="URL" xlink:href={ filename(uri) } />
             </file>
           } else if( uri.endsWith("xml") ) {
-            <file ID={ uri } MIMETYPE="text/xml">
-              <FLocat LOCTYPE="URL" xlink:href={ filename(uri) }/>
+            <file ID={ filename(uri) } MIMETYPE="text/xml">
+              <FLocat LOCTYPE="URL" xlink:href={ filename(uri) } />
             </file>
           }
         }
