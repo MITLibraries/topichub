@@ -20,7 +20,7 @@
   @if(pub.collectionCount > 0) {
     <dl>
       @Collection.findByPublisher(pub.id).map { coll =>
-      <dt><a href="@routes.Application.itemBrowse("collection", coll.id)">@coll.description</a></dt>
+      <dt><a href="@routes.ItemController.itemBrowse("collection", coll.id)">@coll.description</a></dt>
       <dd>Enrolled on @HubUtils.fmtDate(coll.created). @HubUtils.pluralize(coll.deposits, "deposit") - most recent @HubUtils.fmtDate(coll.updated)</dd>
     }
     </dl>

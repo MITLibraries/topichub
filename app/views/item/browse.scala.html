@@ -13,9 +13,9 @@
   </div>
   <dl>
     @items.map { item =>
-      <dt><a href="@routes.Application.item(item.id)">@Html(item.metadataValue("title"))</a></dt>
+      <dt><a href="@routes.ItemController.item(item.id)">@Html(item.metadataValue("title"))</a></dt>
       <dd>@tags.item_authors(item.metadataValues("author"))</dd>
    }
   </dl>
-  @tags.pagination(page, 10, total, routes.Application.itemBrowse(filter, id).toString, items.length)
+  @tags.pagination(page, 10, total, routes.ItemController.itemBrowse(filter, id).toString, items.length)
 }

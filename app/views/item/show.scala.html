@@ -14,7 +14,7 @@
     </p>
     <p><span class="muted">@Html(item.metadataValue("abstract"))</span></p>
     <p>@HubUtils.pluralize(item.transfers, "transfer") since @HubUtils.fmtDate(item.created). @if(item.transfers > 0){Most recent @HubUtils.fmtDate(item.updated)}</p>
-    <p>Appears in collection: <a href="@routes.Application.itemBrowse("collection", item.collectionId)">@Collection.findById(item.collectionId).get.description</a></p>
+    <p>Appears in collection: <a href="@routes.ItemController.itemBrowse("collection", item.collectionId)">@Collection.findById(item.collectionId).get.description</a></p>
     <p>
       @if(item.hasMetadata("accessUrl")) {
         <a rel="tooltip" title="see article in new browser window" href="@item.metadataValue("accessUrl")" target="_blank" class="btn btn-primary btn-large">View &raquo;</a>
@@ -25,10 +25,15 @@
           <span><a rel="tooltip" title="Forget this item" href="@routes.Application.resolveHold(sub.get.holdOn(item.id).get.id, false)" class="btn btn-primary btn-large pull-right">Forget &raquo;</a></span>
         }
       }
-      @*<a rel="tooltip" title="download whole package to desktop" href="@routes.Application.itemFile(item.id)" class="btn btn-primary btn-large">Download &raquo;</a>
-      <a rel="tooltip" title="send an email notification with link to this item" href="@routes.Application.itemTransfer(item.id, "alert")" class="btn btn-primary btn-large pull-right">Remind Me &raquo;</a>
-      *@
-      <a rel="tooltip" title="start a SWORD deposit of package to my repository" href="@routes.Application.itemPackage(item.id)" class="btn btn-primary btn-large pull-right">Deposit &raquo;</a>
+
+      <div class="pull-right">
+       <a rel="tooltip" title="view METS.xml" href="@routes.ItemController.itemMets(item.id)" class="btn btn-primary">View METS &raquo;</a>
+
+        <a rel="tooltip" title="download whole package to desktop" href="@routes.ItemController.itemPackage(item.id)" class="btn btn-primary">Download &raquo;</a>
+        @*<a rel="tooltip" title="send an email notification with link to this item" href="@routes.ItemController.itemTransfer(item.id, "alert")" class="btn btn-primary btn-large pull-right">Remind Me &raquo;</a>
+        *@
+        <a rel="tooltip" title="start a SWORD deposit of package to my repository" href="@routes.ItemController.itemDeposit(item.id)" class="btn btn-primary">Deposit &raquo;</a>
+      </div>
     </p>
   </div>
   <h3>Topics Arranged by Scheme</h3>
