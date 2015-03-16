@@ -185,12 +185,12 @@ object contentModelJson {
 
   def finderFromContentModel(scheme_id: Int)(jsf: JsValue) {
     val format = ContentFormat.findByTag(forName(jsf, "format")).get
-    // NB: does not check for duplicates properly! will only allow one finder per format
-    if (Finder.forSchemeAndFormat(scheme_id, format.id).isEmpty) {
+    // NB: does not check for duplicates properly!
+    //if (Finder.forSchemeAndFormat(scheme_id, format.id).isEmpty) {
       Finder.create(scheme_id, format.id, forName(jsf, "description"),
                     forName(jsf, "cardinality"), forName(jsf, "idKey"),
                     forName(jsf, "idLabel"), forName(jsf, "author"))
-    }
+    //}
   }
 
   def validatorFromContentModel(scheme_id: Int)(jsf: JsValue) {
@@ -369,6 +369,7 @@ object subscriberModelJson {
           "link" -> toJson(s.link),
           "logo" -> toJson(s.logo),
           "interests" -> jsonInterests(s.id),
+          "channels" -> jsonChannels(s),
           "subscriptions" -> jsonSubscriptions(s.id)
       )
     )
@@ -379,6 +380,19 @@ object subscriberModelJson {
     val msg = Interest.findBySubscriber(sid).map ( i =>
       Map("scheme" -> toJson(Scheme.findById(i.schemeId).get.tag),
           "action" -> toJson(i.action)
+      )
+    )
+    toJson(msg)
+  }
+
+  def jsonChannels(sub: Subscriber) = {
+    val msg = sub.channels.map ( c =>
+      Map("protocol" -> toJson(c.protocol),
+          "mode" -> toJson(c.mode),
+          "description" -> toJson(c.description),
+          "userId" -> toJson(c.userId),
+          "password" -> toJson(c.password),
+          "channelUrl" -> toJson(c.channelUrl)
       )
     )
     toJson(msg)
@@ -410,6 +424,8 @@ object subscriberModelJson {
                               forNameOption(jss, "logo"))
     val interests = (jss \ "interests")
     procJsArray(interests, 0, intFromSubscriberModel(sub.id))
+    val channels = (jss \ "channels")
+    procJsArray(channels, 0, chanFromSubscriberModel(sub.id))
     val subscriptions = (jss \ "subscriptions")
     procJsArray(subscriptions, 0, subscripFromSubscriberModel(sub.id))
   }
@@ -419,6 +435,11 @@ object subscriberModelJson {
     Scheme.findByTag(forName(jss, "scheme")).map { sc =>
       Interest.create(sid, sc.id, forName(jss, "action"))
     }
+  }
+
+  def chanFromSubscriberModel(sid: Int)(jss: JsValue) {
+    Channel.create(sid, forName(jss, "protocol"), forName(jss, "mode"), forName(jss, "description"),
+                   forName(jss, "userId"), forName(jss, "password"), forName(jss, "channelUrl"))
   }
 
   def subscripFromSubscriberModel(sid: Int)(jss: JsValue) {
