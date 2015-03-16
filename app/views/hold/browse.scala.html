@@ -10,7 +10,7 @@
   </div>
   <ul>
     @holds.map { hold =>
-      <li><a href="@routes.Application.item(hold.itemId)">@Html(hold.item.metadataValue("title"))</a></li>
+      <li><a href="@routes.ItemController.item(hold.itemId)">@Html(hold.item.metadataValue("title"))</a></li>
     }
   </ul>
   @tags.pagination(page, 10, total, routes.Application.holdBrowse(id).toString, holds.length)

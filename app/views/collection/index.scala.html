@@ -11,7 +11,7 @@
       		<ul class="navbar-nav nav-list">
       			<li class="nav-header">Collections</li>
       		  @for(coll <- Collection.findAll) {
-         	    <li><a href="@routes.Application.itemBrowse("collection", coll.id)">@coll.description</a> (@HubUtils.pluralize(coll.deposits, "deposit"))</li>
+         	    <li><a href="@routes.ItemController.itemBrowse("collection", coll.id)">@coll.description</a> (@HubUtils.pluralize(coll.deposits, "deposit"))</li>
        			}
       		</ul>
       	</div>

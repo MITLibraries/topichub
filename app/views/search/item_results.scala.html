@@ -17,7 +17,7 @@
           <ol start="@(page * perpage + 1)">
           
             @for(i <- items) {
-              <li>Title: <a href="@routes.Application.item(i.id)">@i.metadataValue("title")</a></li>
+              <li>Title: <a href="@routes.ItemController.item(i.id)">@i.metadataValue("title")</a></li>
 
               Topics:
               <ul>
