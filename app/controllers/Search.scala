@@ -8,6 +8,7 @@ import play.api.libs.concurrent.Execution.Implicits._
 import play.utils.UriEncoding
 import models.HubUtils._
 import models._
+import play.api.libs.json._
 
 object Search extends Controller {
 
@@ -15,12 +16,32 @@ object Search extends Controller {
     Ok(views.html.search.index())
   }
 
+  private def elastic_xml(q: String, offset: Int, perpage: Int) = {
+      s"""
+      {
+        "from" : ${offset}, "size" : ${perpage},
+        "query" : {
+          "match" : {
+            "_all" : {
+                "query" : "${q}",
+                "type" : "phrase"
+            }
+          }
+        }
+      }
+      """
+  }
+
   def results(q: String, target: String, substatus: String, page: Int, perpage: Int) = Action.async {
     val indexSvc = Play.configuration.getString("hub.index.url").get
     val encQuery = UriEncoding.encodePathSegment(q, "UTF-8")
     val offset = (page) * perpage
-    val elastic_url = indexSvc +  target + "/_search?q=" + encQuery + "&from=" + offset + "&size=" + perpage
-    val req = if (indexSvc.contains("bonsai.io")) { 
+    val elastic_url = indexSvc +  target + "/_search"
+    //val search_json = Json.toJson(elastic_xml(encQuery))
+    val search_json = elastic_xml(q, offset, perpage)
+    println(search_json)
+
+    val req = if (indexSvc.contains("bonsai.io")) {
       println("DEBUG: use basic auth for WS elasticsearch call")
       WS.url(elastic_url)
         .withAuth(extractCredentials("username", indexSvc),
@@ -33,7 +54,7 @@ object Search extends Controller {
 
     println(req)
 
-    req.get().map { response =>
+    req.post(search_json).map { response =>
       val json = response.json
       println(json)
       val total_results = (json \ "hits" \\ "total")(0).as[Long]
