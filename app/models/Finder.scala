@@ -54,10 +54,10 @@ object Finder {
     }
   }
 
-  def forSchemeAndFormat(schemeId: Int, formatId: Int): Option[Finder] = {
+  def forSchemeAndFormat(schemeId: Int, formatId: Int): List[Finder] = {
     DB.withConnection { implicit c =>
       SQL("select * from finder where scheme_id = {scheme_id} and content_format_id = {format_id}")
-      .on('scheme_id -> schemeId,'format_id -> formatId).as(finder.singleOpt)
+      .on('scheme_id -> schemeId,'format_id -> formatId).as(finder *)
     }
   }
 

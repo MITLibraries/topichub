@@ -4,15 +4,13 @@
   */
 package workers
 
-import scala.collection.Set
-import scala.collection.mutable.HashSet
 import scala.xml.{Elem, Node, NodeSeq, XML}
 import scala.util.matching.Regex
 import scala.xml.factory.XMLLoader
 
 import akka.actor.Actor
 
-import java.io.{File, InputStream}
+import java.io.InputStream
 import java.util.Date
 
 import javax.xml.parsers.SAXParser
@@ -43,46 +41,18 @@ class Cataloger(resmap: ResourceMap, content: StoredContent) {
   // count of added topics
   var addedTopics = 0
 
-  def topicsOld(scheme: Scheme, item: Item) = {
-    // where in the item package is data for this scheme?
-    val (source, format, rank) = resmap.mappingsForScheme(scheme).head
-    val (idHits, lblHits) = Finder.forSchemeAndFormat(scheme.id, format) match {
-      case Some(x) => process(source, x)
-      case None => (List(), List())
-    }
-    // add cardinality checking here
-    var idx = 0
-    println("IDHits size: " + idHits.size)
-    for (id <- idHits) {
-      // check for and utilize existing topics
-      var tp: Topic = Topic.forSchemeAndTag(scheme.tag, id) match {
-        case Some(x) => x
-        case _ => createTopic(scheme, id, lblHits(idx)) //Topic.create(scheme.id, id, lblHits(idx)); Topic.forSchemeAndId(scheme.schemeId, id).get
-      }
-      item.addTopic(tp)
-      addedTopics += 1
-      idx += 1
-    }
-  }
-
   def topics(scheme: Scheme, item: Item) = {
     // where in the item's resource map is data for this scheme? Skip if unmapped
     resmap.mappingsForScheme(scheme).map { case (source, format, rank) =>
-      val (idHits, lblHits) = Finder.forSchemeAndFormat(scheme.id, format) match {
-        case Some(x) => process(source, x)
-        case None => (List(), List())
-      }
+      val (idHits, lblHits) = findValues(Finder.forSchemeAndFormat(scheme.id, format), source)
       // add cardinality checking here
       var idx = 0
       println("IDHits size: " + idHits.size)
       for (id <- idHits) {
         // check for and utilize existing topics
-        var tp: Topic = Topic.forSchemeAndTag(scheme.tag, id) match {
-          case Some(x) => x
-          case _ => createTopic(scheme, id, lblHits(idx)) //Topic.create(scheme.id, id, lblHits(idx)); Topic.forSchemeAndId(scheme.schemeId, id).get
-        }
-        if (! item.hasTopic(tp)) {
-          item.addTopic(tp)
+        val topic = Topic.forSchemeAndTag(scheme.tag, id).getOrElse(createTopic(scheme, id, lblHits(idx)))
+        if (! item.hasTopic(topic)) {
+          item.addTopic(topic)
           addedTopics += 1
         }
         idx += 1
@@ -103,70 +73,63 @@ class Cataloger(resmap: ResourceMap, content: StoredContent) {
       val xp = new ScalesXPath(keyParts(0)).withNameConversion(ScalesXPath.localOnly)
       val hits = xp.evaluate(top(doc))
       println("Post eval num hits: " + hits.size)
-      if (keyParts.length == 2) {
-        val regX = keyParts(1).r
-        val theHits = hits map ( h =>
-          h match {
-            case Left(x) => val regX(l) = x.attribute.value; l
-            //case Right(x) => regX findFirstIn x.firstChild.get.item().value
-            case Right(x) => val regX(m) = concatText(x); m
-            //case Right(x) => val regX(m) = x.firstChild.get.item().value; m
-          }
-        )
-        //idHits = theHits.flatten.toSeq
-        idHits = theHits.toSeq
+      if (hits.size > 0) {
+        if (keyParts.length == 2) {
+          val regX = keyParts(1).r
+          val theHits = hits map ( h =>
+            h match {
+              case Left(x) => val regX(l) = x.attribute.value; l
+              //case Right(x) => regX findFirstIn x.firstChild.get.item().value
+              case Right(x) => val regX(m) = concatText(x); m
+              //case Right(x) => val regX(m) = x.firstChild.get.item().value; m
+            }
+          )
+          idHits = theHits.toSeq
+        } else {
+          val theHits2 = hits map ( h =>
+            h match {
+              case Left(x) => x.attribute.value
+              case Right(x) => concatText(x)
+              // case Right(x) => x.firstChild.get.item().value
+            }
+          )
+          idHits = theHits2.toSeq
+        }
       } else {
-        val theHits2 = hits map ( h =>
-          h match {
-            case Left(x) => x.attribute.value
-            case Right(x) => concatText(x)
-            // case Right(x) => x.firstChild.get.item().value
-          }
-        )
-        idHits = theHits2.toSeq
+        idHits = List()
       }
     }
-  /*
-  idHits = XPath.evaluate(keyParts(0), doc)
-  if (keyParts.length == 2) {
-  // hits need to be transformed by Regex
-  var Transformer = new Regex(keyParts(1))
-  var transList = List[String]()
-  for (hit <- idHits) {
-  var Transformer(x) = hit
-  //var result:String = x
-  transList = x :: transList
-}
-var revList = transList.reverse
-idHits = revList
-*/
-// also stow in infoCache
-  idHits.foreach(println)
-//infoCache += ("id" -> idHits)
-//}
-  val idl = finder.idLabel
-// if idl is an XPath, evaluate it
-  if (idl != null && idl.length > 0 && idl.indexOf("/") >= 0) {
-    //val xpl = new ScalesXPath(idl, Map())
-    lblHits = xpathFind(idl, source)
-    //lblHits =  XPath.evaluate(idl, doc)
-  } else if (idl != null && idl.length > 0) {
-    println("process filtered value; " + filteredValue(idl, 0))
-    var lblList = List[String]()
-    var count = 0
-    for (a <- idHits) {
-      lblList = filteredValue(idl, count) :: lblList
-      count += 1
+    // also stow in infoCache
+    idHits.foreach(println)
+    //infoCache += ("id" -> idHits)
+    if (idHits.size > 0) {
+      val idl = finder.idLabel
+      // if idl is an XPath, evaluate it
+      if (idl != null && idl.length > 0 && idl.indexOf("/") >= 0) {
+        println("in process about to evaluate label: " + idl)
+        lblHits = xpathFind(idl, doc)
+      } else if (idl != null && idl.length > 0) {
+        println("process filtered value; " + filteredValue(idl, 0))
+        var lblList = List[String]()
+        var count = 0
+        for (a <- idHits) {
+          lblList = filteredValue(idl, count) :: lblList
+          count += 1
+        }
+        lblHits = lblList.reverse
+      } else
+        lblHits = List("No label")
+    } else {
+      lblHits = List()
     }
-    //var revLblList = lblList.reverse
-    lblHits = lblList.reverse
-  } else
-    lblHits = List("No label")
-   //}
-   // equalize length if needed
-    if (idHits.length > lblHits.length) {
-      (idHits, lblHits.padTo(idHits.length, "No Label"))
-    } else (idHits, lblHits)
+    // equalize length if needed
+    normalizeHits(idHits, lblHits)
+  }
+
+  private def normalizeHits(hits: Seq[String], lbls: Seq[String]) = {
+    if (hits.size > lbls.size) (hits, lbls.padTo(hits.size, "No Label"))
+    else if (hits.size < lbls.size) (hits, lbls.take(hits.size))
+    else (hits, lbls)
   }
 
   private def concatText(node: XmlPath) = {
@@ -180,15 +143,21 @@ idHits = revList
     topic
   }
 
-  def metadata(scheme: Scheme, item: Item) {
+  def metadata(scheme: Scheme, item: Item) = {
     // get Finders for this scheme and format
     val label = scheme.tag
-    val (source, format, rank) = resmap.mappingsForScheme(scheme).head
-    val (idHits, _) = Finder.forSchemeAndFormat(scheme.id, format) match {
-      case Some(x) => process(source, x)
-      case None => lacksFinder(source, label, item)
+    resmap.mappingsForScheme(scheme).map { case (source, format, rank) =>
+      val finders = Finder.forSchemeAndFormat(scheme.id, format)
+      val (idHits, _) = if (finders.isEmpty) lacksFinder(source, label, item)
+                        else findValues(finders, source)
+      idHits foreach (item.addMetadata(label, _))
     }
-    idHits foreach (item.addMetadata(label, _))
+  }
+
+  private def findValues(finders: List[Finder], source: String) = {
+    finders.foldLeft((List[String](), List[String]()))((acc, finder) => {
+      val (l, r) = process(source, finder); (acc._1 ++ l, acc._2 ++ r)
+    })
   }
 
   private def lacksFinder(source: String, label: String, item: Item) = {
@@ -202,16 +171,15 @@ idHits = revList
     }
   }
 
-  def xpathFind(expr: String, source: String) = {
-    val xp = new ScalesXPath(expr, Map())
-    val hits = xp.evaluate(top(docToParse(source)))
+  def xpathFind(expr: String, doc: Doc) = {
+    val xp = new ScalesXPath(expr).withNameConversion(ScalesXPath.localOnly)
+    val hits = xp.evaluate(top(doc))
     val theHits = hits map ( h =>
       h match {
         case Left(x) => x.attribute.value
         case Right(x) => concatText(x)
       }
     )
-    //theHits.flatten.toSeq
     theHits.toSeq
   }
 
@@ -235,7 +203,7 @@ idHits = revList
       val scheme = Scheme.findByTag(token).get
       if (scheme != null) {
         val (source, format, rank) = resmap.mappingsForScheme(scheme).head
-        val finder = Finder.forSchemeAndFormat(scheme.id, format) match {
+        val finder = Finder.forSchemeAndFormat(scheme.id, format).headOption match {
           case Some(x) => x
           case None => null
         }
@@ -327,19 +295,6 @@ object Cataloger {
     Conveyor.newItem(item)
     //item.changeState("cataloged")
   }
-
-  /* obselete
-  def contentInfo(item: Item) = {
-    val coll = Collection.findById(item.collectionId).get
-    val resmap = ResourceMap.findById(coll.resmapId).get
-    val cataloger = new Cataloger(resmap, Store.content(item))
-    // OK look in map for name of content file in package
-    val scheme = Scheme.findByTag("meta").get
-    val fileInfo = resmap.mappingsForScheme(scheme).head
-    val filteredName = cataloger.filteredValue(fileInfo._1, 0)
-    (filteredName, fileInfo._2)
-  }
-  */
 
   def testFinder(item: Item, source: String, finder: Finder) = {
     val coll = Collection.findById(item.collectionId).get
