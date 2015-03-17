@@ -105,11 +105,11 @@ case class Item(id: Int,            // DB key
   }
 
   def filename(uri: String) = {
-    if( uri.endsWith("pdf") ) {
+    if( uri.endsWith("pdf") && hasMetadata("doi") ) {
       metadataValue("doi").split("/").last + ".pdf"
-    } else if( uri.endsWith("pdfa") ) {
+    } else if( uri.endsWith("pdfa") && hasMetadata("doi") ) {
       metadataValue("doi").split("/").last + "_pdfa.pdf"
-    } else if( uri.endsWith("xml") ) {
+    } else if( uri.endsWith("xml") && hasMetadata("doi") ) {
       metadataValue("doi").split("/").last + ".xml"
     } else {
       "filename_error"
@@ -119,7 +119,7 @@ case class Item(id: Int,            // DB key
   def toMets = {
     <mets xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xmlns="http://www.loc.gov/METS/"
-      xmlns:xlink="http://www.w3.org/1999/xlink" 
+      xmlns:xlink="http://www.w3.org/1999/xlink"
       xsi:schemaLocation="http://www.loc.gov/METS/ http://www.loc.gov/standards/mets/mets.xsd"
       OBJID="sword-mets"
       LABEL="DSpace SWORD Item"
@@ -170,12 +170,12 @@ case class Item(id: Int,            // DB key
                   }
                 }
 
-                { if( hasMetadata("abstract") ) 
+                { if( hasMetadata("abstract") )
                   <epdcx:statement epdcx:propertyURI="http://purl.org/dc/terms/abstract">
                     <epdcx:valueString>{ metadataValue("abstract") }</epdcx:valueString>
                   </epdcx:statement>
                 }
-                
+
                 <epdcx:statement epdcx:propertyURI="http://purl.org/eprint/terms/isExpressedAs" epdcx:valueRef="sword-mets-expr-1"/>
               </epdcx:description>
 
@@ -183,7 +183,7 @@ case class Item(id: Int,            // DB key
                 <epdcx:statement epdcx:propertyURI="http://purl.org/dc/elements/1.1/type" epdcx:valueURI="http://purl.org/eprint/entityType/Expression"/>
 
                 <epdcx:statement epdcx:propertyURI="http://purl.org/dc/elements/1.1/type" epdcx:vesURI="http://purl.org/eprint/terms/Type" epdcx:valueURI="http://purl.org/eprint/type/JournalArticle"/>
-                
+
                 { if( hasMetadata("publisher") )
                   <epdcx:statement epdcx:propertyURI="http://purl.org/dc/elements/1.1/publisher">
                   <epdcx:valueString>{ metadataValue("publisher") }</epdcx:valueString>
@@ -319,7 +319,7 @@ object Item {
 
   def deleteBefore(date: Date) {
     DB.withConnection { implicit c =>
-      val rows = SQL("select id from item where created < {created}").on('created -> date)
+      val rows = SQL("select id from item where created <= {created}").on('created -> date)
       rows().map(row => row[Int]("id")).toList.foreach(delete)
     }
   }
