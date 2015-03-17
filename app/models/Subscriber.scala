@@ -54,8 +54,8 @@ case class Subscriber(id: Int,  // DB key
 
   def subscribesTo(topicId: Int) = subscriptionFor(topicId).isDefined
 
-  def subscribeTo(topic: Topic) = {
-    Subscription.create(id, topic.id, interestIn(topic.scheme_id).get.action, new Date, new Date)
+  def subscribeTo(topic: Topic): Subscription = {
+    Subscription.make(id, topic.id, interestIn(topic.scheme_id).get.action, created, new Date)
   }
 
   def interestsWithAction(action: String): List[Interest] = {

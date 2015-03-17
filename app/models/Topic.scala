@@ -34,6 +34,20 @@ case class Topic(id: Int, scheme_id: Int, tag: String, name: String,
     }
   }
 
+  def itemsSince(start: Date) = {
+    DB.withConnection { implicit c =>
+      SQL(
+        """
+          select item.* from item, item_topic
+          where item.id = item_topic.item_id and
+          item_topic.topic_id = {topic_id} and
+          item.created > {created}
+          order by item.created asc
+        """
+      ).on('topic_id -> id, 'created -> start).as(Item.item *)
+    }
+  }
+
   def pagedItems(page: Int, max: Int) = {
     val offset = page * max
     DB.withConnection { implicit c =>
@@ -123,6 +137,10 @@ object Topic {
         """
       ).on('scheme_id -> schemeId, 'tag -> tag, 'name -> name, 'created -> created, 'updated -> updated, 'transfers -> 0).executeInsert()
     }
+  }
+
+  def make(schemeId: Int, tag: String, name: String): Topic = {
+    findById(create(schemeId, tag, name).get.toInt).get
   }
 
   def forSchemeAndTag(schemeTag: String, topicTag: String): Option[Topic] = {

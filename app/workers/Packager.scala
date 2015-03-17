@@ -6,7 +6,7 @@ package workers
 
 import scala.collection.immutable.HashMap
 
-import java.io.{ByteArrayInputStream, FileInputStream, InputStream, OutputStream}
+import java.io.{ByteArrayInputStream, File, FileInputStream, InputStream, OutputStream}
 import java.nio.file.{Files, Path}
 import java.net.URL
 import java.util.zip.{ZipEntry, ZipOutputStream}
@@ -38,13 +38,22 @@ class PackageWorker extends Actor {
 
 class Packager {
 
-  def packageItem(item: Item): InputStream = {
+  def packageItemAsStream(item: Item): InputStream = {
     // check the package cache - if already created, skip build
     if (! Packager.inCache(item.objKey)) {
       // build a new package & cache it
       Packager.toCache(item.objKey, buildPackage(item))
     }
     Packager.fromCache(item.objKey)
+  }
+
+  def packageItemAsFile(item: Item): File = {
+    // check the package cache - if already created, skip build
+    if (! Packager.inCache(item.objKey)) {
+      // build a new package & cache it
+      Packager.toCache(item.objKey, buildPackage(item))
+    }
+    Packager.fileFromCache(item.objKey)
   }
 
   def buildPackage(item: Item) = {
@@ -87,7 +96,15 @@ object Packager {
     Files.newInputStream(pkgCache.get(key).get)
   }
 
+  def fileFromCache(key: String): File = {
+    pkgCache.get(key).get.toFile
+  }
+
   def packageItem(item: Item) = {
-    new Packager().packageItem(item)
+    new Packager().packageItemAsStream(item)
+  }
+
+  def packageItemAsFile(item: Item) = {
+    new Packager().packageItemAsFile(item)
   }
 }
