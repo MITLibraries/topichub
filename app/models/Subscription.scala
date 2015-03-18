@@ -45,6 +45,12 @@ case class Subscription(id: Int,  // DB key
     }
   }
 
+  def subscriber = {
+    DB.withConnection { implicit c =>
+      SQL("select * from subscriber where id = {sid}").on('sid -> subscriberId).as(Subscriber.sub.singleOpt)
+    }
+  }
+
   def transferCount = {
     DB.withConnection { implicit c =>
       val count = SQL("select count(*) as c from transfer where subscription_id = {id}").on('id -> id).apply.head
@@ -72,6 +78,13 @@ object Subscription {
   def withSubscriber(sid: Int): List[Subscription] = {
     DB.withConnection { implicit c =>
       SQL("select * from subscription where subscriber_id = {sid}").on('sid -> sid).as(subscrip *)
+    }
+  }
+
+  def withSubscriberAndTopic(sid: Int, tid: Int): List[Subscription] = {
+    DB.withConnection { implicit c =>
+      SQL("select * from subscription where subscriber_id = {sid} and topic_id = {tid}")
+      .on('sid -> sid, 'tid -> tid).as(subscrip *)
     }
   }
 
@@ -105,5 +118,9 @@ object Subscription {
       SQL("insert into subscription (subscriber_id, topic_id, action, created, updated, cancelled, earliest, latest, active) values ({subscriber_id}, {topic_id}, {action}, {created}, {updated}, {cancelled}, {earliest}, {latest}, {active})")
       .on('subscriber_id -> subscriberId, 'topic_id -> topicId, 'action -> action, 'created -> created, 'updated -> updated, 'cancelled -> cancelled, 'earliest -> earliest, 'latest -> latest, 'active -> true).executeInsert()
     }
+  }
+
+  def make(subscriberId: Int, topicId: Int, action: String, earliest: Date, latest: Date) = {
+    findById(create(subscriberId, topicId, action, earliest, latest).get.toInt).get
   }
 }

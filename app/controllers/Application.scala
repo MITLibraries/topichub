@@ -33,6 +33,7 @@ object Application extends Controller {
 
   val harvester = Akka.system.actorOf(Props[workers.HarvestWorker], name="harvester")
   val indexer = Akka.system.actorOf(Props[workers.IndexWorker], name="indexer")
+  val conveyor = Akka.system.actorOf(Props[workers.ConveyorWorker], name="conveyor")
 
   def index = Action {
     // Create dummy user if not allready there
@@ -103,7 +104,7 @@ object Application extends Controller {
         if (cancel) {
           sub.subscriptionFor(topic.id).map (sc => sc.cancel)
         } else {
-          sub.subscribeTo(topic)
+          conveyor ! sub.subscribeTo(topic)
         }
         Redirect(routes.Application.topic(topic.id))
       }
@@ -860,10 +861,7 @@ object Application extends Controller {
 
   def resolveHold(id: Int, accept: Boolean) = Action { implicit request =>
     Hold.findById(id).map( hold => {
-      val action = if (accept) "deliver" else "discard"
-      val transfer = Transfer.make(hold.subscriberId, hold.subscriptionId, hold.itemId, action)
-      // fire off delivery - TODO
-      hold.resolve(accept)
+      conveyor ! (hold, accept)
       Redirect(routes.Application.holdBrowse(1, 0))
     }
     ).getOrElse(NotFound(views.html.static.trouble("No such hold: " + id)))

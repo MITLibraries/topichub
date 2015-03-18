@@ -61,27 +61,10 @@ object ItemController extends Controller {
       throw new RuntimeException("You must define a Channel")
     }
 
-    var req = WS.url(channel.channelUrl)
-      .withHeaders(CONTENT_TYPE -> "application/zip",
-                 "X-packaging" -> "http://purl.org/net/sword-types/METSDSpaceSIP")
-      .withAuth(channel.userId, channel.password, WSAuthScheme.BASIC)
-
-    println(req)
-
-    Item.findById(id).map( item =>
-      {
-        val content = Packager.packageItem(item)
-        val bytesOut = new ByteArrayOutputStream
-        val buf = new Array[Byte](2048)
-        var read = content.read(buf)
-        while(read != -1) {
-          bytesOut.write(buf, 0, read)
-          read = content.read(buf)
-        }
-        var resp = req.post(bytesOut.toByteArray)
-      }
+    Item.findById(id).map( item => {
+      Application.conveyor ! (item, Subscriber.findById(1).get)
+      Ok("That may have worked.")
+    }
     ).getOrElse(NotFound(views.html.static.trouble("No such item: " + id)))
-
-    Ok("That may have worked.")
   }
 }

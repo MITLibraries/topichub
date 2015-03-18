@@ -34,6 +34,12 @@ case class Hold(id: Int,  // DB key
     }
   }
 
+  def subscription = {
+    DB.withConnection { implicit c =>
+      SQL("select * from subscription where id = {sub_id}").on('sub_id -> subscriptionId).as(Subscription.subscrip.singleOpt).get
+    }
+  }
+
   def resolve(accept: Boolean) = {
     // not currently remembering state, so just delete
     DB.withConnection { implicit c =>
