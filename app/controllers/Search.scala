@@ -48,7 +48,7 @@ object Search extends Controller {
         Ok(views.html.search.item_results(q, target, page, perpage, items, total_results))
       } else if (target == "topic") {
         val topics = hits flatMap ( id => Topic.findById(id) )
-        Ok(views.html.search.topic_results(q, target, page, perpage, topics, total_results))
+        Ok(views.html.search.topic_results(q, target, page, perpage, topics, total_results, Subscriber.findById(1)))
       } else {
         NotFound(views.html.static.trouble("Only Topic or Item searching are supported."))
       }

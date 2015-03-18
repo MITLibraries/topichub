@@ -10,3 +10,13 @@ a.list-group-item {
 a.list-group-item:hover {
   text-decoration: underline !important;
 }
+
+.subscribed {
+  color: gray;
+  text-decoration: underline;
+}
+
+.not_subscribed {
+  font-weight: bold;
+  text-decoration: underline;
+}

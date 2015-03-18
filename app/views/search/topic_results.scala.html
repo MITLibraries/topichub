@@ -2,7 +2,29 @@
 * Search results page                                                        *
 * Copyright (c) 2015 MIT Libraries                                           *
 *****************************************************************************@
-@(q: String, target: String, page: Int, perpage: Int, topics: Seq[Topic], total: Long)@*(implicit hubContext: HubContext)*@
+@(q: String, target: String, page: Int, perpage: Int, topics: Seq[Topic], total: Long, sub: Option[Subscriber])@*(implicit hubContext: HubContext)*@
+
+@start = @{(page * perpage + 1)}
+
+@subscribed(t: Topic, sub: Subscriber) = @{
+  if(sub.hasInterest(t.scheme_id) && sub.subscribesTo(t.id) ) {
+    "subscribed"
+  } else {
+    "not_subscribed"
+  }
+}
+
+@star(t: Topic, sub: Subscriber) = @{
+  if(sub.hasInterest(t.scheme_id) && sub.subscribesTo(t.id) ) {
+    <span class="badge alert-success" data-toggle="tooltip" title="You are subscribed to this Topic">
+      <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+    </span>
+  } else {
+    <span class="badge progress-bar-danger" data-toggle="tooltip" title="You are NOT subscribed to this Topic">
+      <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
+    </span>
+  }
+}
 
 @layout.main("Search - TopicHub") {
   <div class="container-fluid">
@@ -15,14 +37,24 @@
         <p>@tags.summary(page, perpage, total, topics.length)</p>
 
         Topic:
-        <ol start="@(page * perpage + 1)">
-          @for(t <- topics) {
-            <li><a href="@routes.Application.topic(t.id)">@t.tag</a></li>
+        <ul class="list-group">
+          @for((t, i) <- topics.zip((Stream from start))) {
+            <li class="list-group-item">
+              @i.
+              <a href="@routes.Application.topic(t.id)" class="@subscribed(t, sub.get)">@t.tag</a>
+              @star(t, sub.get)
+            </li>
           }
-        </ol>
+        </ul>
       </div>
 
       @tags.pagination(page, perpage, total, routes.Search.results(q, target).toString, topics.length)
     </div>
   </div>
 }
+
+<script>
+$(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+})
+</script>

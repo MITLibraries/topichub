@@ -4,6 +4,8 @@
 *****************************************************************************@
 @(q: String, target: String, page: Int, perpage: Int, items: Seq[Item], total: Long)@*(implicit hubContext: HubContext)*@
 
+@start = @{(page * perpage + 1)}
+
 @layout.main("Search - TopicHub") {
   <div class="container-fluid">
     <div class="row-fluid">
@@ -14,25 +16,23 @@
 
           <p>@tags.summary(page, perpage, total, items.length)</p>
 
-          <ol start="@(page * perpage + 1)">
-          
-            @for(i <- items) {
-              <li>Title: <a href="@routes.ItemController.item(i.id)">@i.metadataValue("title")</a></li>
+          <ul class="list-group">
 
-              Topics:
-              <ul>
-              @for(tc <- i.regularTopics) {
-                <li>@tc._1
-                  <ul>
-                  @for(t <- tc._2) {
-                    <a href="@routes.Application.topic(t.id)">@t.tag</a> | 
-                  }
-                  </ul>
-                </li>                 
-              }
-              </ul>
+            @for((item, index) <- items.zip((Stream from start))) {
+              <li class="list-group-item">
+                <h4 class="list-group-item-heading">@index. Title: <a href="@routes.ItemController.item(item.id)">@item.metadataValue("title")</a></h4>
+
+              <p class="list-group-item-text">
+                @for(tc <- item.regularTopics) {
+                  <p style="text-indent: -10px; padding-left: 10px;"><strong>@tc._1</strong>
+                    @for(t <- tc._2) {
+                      <a href="@routes.Application.topic(t.id)">@t.tag</a> |
+                    }
+                  </p>
+                }
+              </p>
             }
-          </ol>
+          </ul>
       </div>
 
       @tags.pagination(page, perpage, total, routes.Search.results(q, target).toString, items.length)
