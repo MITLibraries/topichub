@@ -8,6 +8,7 @@ env:
   - MAILGUN_API_KEY=notarealkey DATABASE_URL=jdbc:postgresql://localhost/travis_ci_test
 addons:
   postgresql: "9.3"
-
+script: "sbt clean coverage test"
+after_success: "sbt coveralls"
 before_script:
   - psql -c 'create database travis_ci_test;' -U postgres
