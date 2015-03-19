@@ -108,6 +108,10 @@ class TopicSpec extends Specification {
       skipped
     }
 
+    "#itemCountSince" in {
+      skipped
+    }
+
     "#scheme" in {
       skipped
     }
