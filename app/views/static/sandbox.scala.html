@@ -1,0 +1,28 @@
+@*****************************************************************************
+ * Page for testing XPath/XQuery expressions against target resources        *
+ * Useful for authoring Finders                                              *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(sbForm: Form[(String, String)], results: List[String])@*(implicit hubContext: HubContext)*@
+@import helper._
+@layout.main("Sandbox - TopicHub") {
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4">
+      @form(routes.Application.testExpression()) {
+        @textarea(sbForm("expression"), 'rows -> 8, 'cols -> 40)
+        @inputText(sbForm("resourceUrl"), 'size -> 50)
+        <input type="submit" value="Test Expression">
+      }
+      <br/>
+      <a href="@routes.Application.sandbox" class="btn btn-primary">Start Over</a>
+      </div>
+      <div class="col-md-8">
+        <h2>Results:</h2>
+        <div class="jumbotron">
+          @for(res <- results){<p>@res</p>}
+        </div>
+      </div>
+    </div>
+  </div>
+}
