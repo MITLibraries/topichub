@@ -6,11 +6,13 @@ package workers
 
 import scala.xml.{Elem, Node, NodeSeq, XML}
 import scala.util.matching.Regex
+import scala.util.control.NonFatal
 import scala.xml.factory.XMLLoader
 
 import akka.actor.Actor
 
 import java.io.InputStream
+import java.net.URL
 import java.util.Date
 
 import javax.xml.parsers.SAXParser
@@ -295,6 +297,34 @@ object Cataloger {
     Conveyor.newItem(item)
     //item.changeState("cataloged")
   }
+
+  def testExpression(expr: String, exprType: String, source: String) = {
+    val srcStream = new URL(source).openConnection.getInputStream
+    val results = exprType match {
+      case "XPath" => testXPathExpression(expr, srcStream)
+      //case "XQuery" => testXQueryExpression(expr, srcStream)
+      case _ => List()
+    }
+    srcStream.close
+    results
+  }
+
+  def testXPathExpression(expr: String, in: InputStream) = {
+    val doc = convertFromScalaXml(LooseXml.load(in))
+    val xp = new ScalesXPath(expr).withNameConversion(ScalesXPath.localOnly)
+    try {
+      val hits = xp.evaluate(top(doc)) map ( hit =>
+        hit match {
+          case Left(x) => x.attribute.value
+          case Right(x) => x.foldLeft("")(_+_.item().value)
+        }
+      )
+      hits.toList
+    } catch {
+      case NonFatal(e) => List("<Error processing>")
+    }
+  }
+
 
   def testFinder(item: Item, source: String, finder: Finder) = {
     val coll = Collection.findById(item.collectionId).get

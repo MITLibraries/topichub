@@ -26,6 +26,7 @@ import services.contentModelJson._
 import services.publisherModelJson._
 import services.subscriberModelJson._
 import services.Emailer
+import workers.Cataloger
 
 case class HubContext(user: Option[User])
 
@@ -934,6 +935,29 @@ object Application extends Controller {
   def reindex(dtype: String) = Action { implicit request =>
     indexer ! dtype
     Ok("Reindexing " + dtype + "s")
+  }
+
+  val sandboxForm = Form(
+    tuple(
+      "expression" -> nonEmptyText,
+      "resourceUrl" -> nonEmptyText
+    )
+  )
+
+  // sandbox for testing finder logic
+  def sandbox = Action { implicit request =>
+    Ok(views.html.static.sandbox(sandboxForm, List("<empty>")))
+  }
+
+  def testExpression = Action { implicit request =>
+    sandboxForm.bindFromRequest.fold(
+      errors => BadRequest(views.html.static.sandbox(errors, List("<error>"))),
+      value => {
+        val results = Cataloger.testExpression(value._1, "XPath", value._2)
+        val filledForm = sandboxForm.bindFromRequest
+        Ok(views.html.static.sandbox(filledForm, results))
+      }
+    )
   }
 
   // convenience method for now - refine for real use later
