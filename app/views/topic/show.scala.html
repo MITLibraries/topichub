@@ -21,7 +21,7 @@
            <span><a rel="tooltip" title="Cancel subscription to this topic" href="@routes.Application.topicSubscribe(topic.id, true)" class="btn btn-primary btn-large">Unsubscribe &raquo;</a></span>
          } else {
            @if(sub.get.hasInterest(topic.scheme_id)) {
-             <span><a rel="tooltip" title="Subscribe to this topic" href="@routes.Application.topicSubscribe(topic.id)" class="btn btn-primary btn-large">Subscribe <span class="badge">@topic.itemCountSince(sub.get.created)</span> &raquo;</a></span>
+             <span><a rel="tooltip" title="Subscribe to this topic" href="@routes.Application.topicSubscribe(topic.id)" class="btn btn-primary btn-large">Subscribe <span class="badge">@sub.get.newItemCountFor(topic.id)</span> &raquo;</a></span>
            }
          }
        }
