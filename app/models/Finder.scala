@@ -35,7 +35,7 @@ object Finder {
   }
 
   def create(schemeId: Int, formatId: Int, description: String, cardinality: String,
-             idKey: String, idLabel: String, author: String) {
+             idKey: String, idLabel: String, author: String) = {
 		DB.withConnection { implicit c =>
 			SQL(
         """
@@ -44,8 +44,19 @@ object Finder {
         """
       ).on('scheme_id -> schemeId, 'format_id -> formatId, 'description -> description, 'cardinality -> cardinality,
            'idKey -> idKey, 'idLabel -> idLabel, 'author -> author, 'created -> new Date)
-      .executeUpdate()
+      .executeInsert()
 		}
+  }
+
+  def make(schemeId: Int, formatId: Int, description: String, cardinality: String,
+             idKey: String, idLabel: String, author: String): Finder = {
+    findById(create(schemeId, formatId, description, cardinality, idKey, idLabel, author).get.toInt).get
+  }
+
+  def findById(id: Int): Option[Finder] = {
+    DB.withConnection { implicit c =>
+      SQL("select * from finder where id = {id}").on('id -> id).as(finder.singleOpt)
+    }
   }
 
   def findByScheme(schemeId: Int): List[Finder] = {
