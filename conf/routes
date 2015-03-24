@@ -111,6 +111,7 @@ GET     /channel/:id                controllers.Application.channel(id: Int)
 GET     /channels/:sid/create       controllers.Application.newChannel(sid: Int)
 POST    /subscribers                controllers.Application.createSubscriber
 POST    /subscriber/:sid/channels   controllers.Application.createChannel(sid: Int)
+GET     /dashboard                  controllers.Application.subscriberDashboard
 
 # Subscription pages
 GET      /subscriptions/browse      controllers.Application.subscriptionBrowse(filter: String, value: Int, page: Int ?= 0)

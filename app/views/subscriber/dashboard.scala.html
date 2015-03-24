@@ -1,0 +1,123 @@
+@*****************************************************************************
+ * Subcriber Dashboard                                                       *
+ * Copyright 2015 MIT Libraries                                              *
+ *****************************************************************************@
+@(sub: Subscriber)
+@import java.time.YearMonth
+@import java.time.LocalDateTime
+@layout.main("Subscriber Dashboard -  TopicHub") {
+<div class="container-fluid">
+  <div class="row-fluid">
+    <div class="col-md-12">
+      <h2>Stuff you Care About&#8482;</h2>
+    </div>
+    <div class="col-md-3">
+      <h4>Review your Stuff</h4>
+      <ul class="list-group">
+        <li class="list-group-item">
+          <a href="@routes.Application.holdBrowse(1)">Total to review:
+          <span class="badge">@Subscriber.findById(1).get.holdCount</span>
+          </a>
+        </li>
+      </ul>
+
+      <h4>Last Harvest</h4>
+      <ul class="list-group">
+        @* todo: update logic to return all harvests for all publishers
+                 the subscriber has content flowing from *@
+        @* todo: alternately, don't worry about harvests for Subscribers
+                 and instead report on something more interesting such as
+                 number of items added since last visit, or total since some
+                 date, etc. *@
+        <li class="list-group-item">
+          <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
+          @Harvest.findById(1).get.updated
+          </li>
+      </ul>
+
+      <h4>Saved Searches (coming soon)</h4>
+        <ul class="list-group">
+          <li class="list-group-item alert-success">
+            <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+             <a href="">Run: Some name you made up</a>
+          </li>
+          <li class="list-group-item alert-success">
+            <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+             <a href="">Run: Another Search</a>
+          </li>
+          <li class="list-group-item alert-danger">
+             <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+             <a href="">Add a new Saved Search</a>
+          </li>
+        </ul>
+
+      <h4>Subscriptions by Interest</h4>
+      <h6>Note: deliveries and rejections can be seen as you click through the links below.</h6>
+      <ul class="list-group">
+      @for(s <- sub.interests) {
+        <li class="list-group-item">
+          <a href=@routes.Application.subscriptionBrowse("scheme", s.scheme.get.id)>@s.scheme.get.description <span class="badge">@Subscription.schemeCount(sub.id, s.scheme.get.id)</span></a>
+        </li>
+      }
+      </ul>
+
+      <h4>Suggested Subscriptions</h4>
+      <ul class="list-group"><li class="list-group-item">Coming (much) Later</li></ul>
+
+      <h4>Destinations</h4>
+      <ul class="list-group">
+        @sub.channels.map { chan =>
+          <li class="list-group-item alert-info">
+            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+            <a href="@routes.Application.channel(chan.id)">@chan.description</a>
+            <span class="badge">@chan.transfers</span>
+          </li>
+        }
+        <li class="list-group-item alert-danger">
+          <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+          <a href="@routes.Application.newChannel(sub.id)"> Add a new destination</a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="col-md-9">
+      <div id="chart_div2"></div>
+    </div>
+  </div>
+</div>
+}
+
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript">
+
+  // Load the Visualization API and the piechart package.
+  google.load('visualization', '1.1', {'packages':['corechart']});
+
+  // Set a callback to run when the Google Visualization API is loaded.
+  google.setOnLoadCallback(drawChart);
+
+  // Callback that creates and populates a data table,
+  // instantiates the pie chart, passes in the data and
+  // draws it.
+  function drawChart() {
+    // Create the data table.
+    var data2 = new google.visualization.DataTable();
+    data2.addColumn('string', 'Month');
+    data2.addColumn('number', 'Deliveries');
+    data2.addColumn('number', 'Discards');
+    data2.addRows([
+      @for(m <- sub.monthlyTransferSummary((YearMonth now).minusMonths(11).atDay(1).atStartOfDay, (YearMonth now).atEndOfMonth.atTime(23, 59, 59))) {
+        ['@m._1', @m._2(1), @m._2(2)],
+      }
+    ]);
+
+    // Set chart options
+    var options2 = {'title':'Discards and Deliveries',
+                   'width':600,
+                   'height':400};
+
+    // Instantiate and draw our chart, passing in some options.
+    var chart2 = new google.visualization.ColumnChart(document.getElementById('chart_div2'));
+    chart2.draw(data2, options2);
+  }
+</script>
