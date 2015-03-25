@@ -37,7 +37,7 @@ case class ResourceMap(id: Int, tag: String, description: String, swordUrl: Opti
 
   def schemes: List[Scheme] = {
     DB.withConnection { implicit c =>
-      SQL("select scheme.* from scheme, resource_map_scheme, resource_map where scheme.id = resource_map_scheme.scheme_id and resource_map_scheme.resource_map_id = resource_map.id and resource_map.id = {resmap_id}")
+      SQL("select distinct scheme.id, scheme.* from scheme, resource_map_scheme, resource_map where scheme.id = resource_map_scheme.scheme_id and resource_map_scheme.resource_map_id = resource_map.id and resource_map.id = {resmap_id}")
       .on('resmap_id -> id).as(Scheme.scheme *)
     }
   }
