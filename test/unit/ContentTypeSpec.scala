@@ -20,6 +20,15 @@ class ContentTypeSpec extends Specification {
       }
     }
 
+    "#make" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        ContentType.all must haveSize(0)
+        val ct = ContentType.make("tag", "label", "desc", Some("logo"))
+        ContentType.all must haveSize(1)
+        ct.tag must equalTo("tag")
+      }
+    }
+
     "#all" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         ContentType.create("tag", "label", "desc", Some("logo"))

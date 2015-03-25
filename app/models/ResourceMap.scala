@@ -58,11 +58,15 @@ object ResourceMap {
     }
   }
 
-  def create(tag: String, description: String, swordUrl: Option[String]) {
+  def create(tag: String, description: String, swordUrl: Option[String]) = {
 		DB.withConnection { implicit c =>
 			SQL("insert into resource_map (tag, description, sword_url) values ({tag}, {description}, {swordUrl})")
-      .on('tag -> tag, 'description -> description, 'swordUrl -> swordUrl).executeUpdate()
+      .on('tag -> tag, 'description -> description, 'swordUrl -> swordUrl).executeInsert()
 		}
+  }
+
+  def make(tag: String, description: String, swordUrl: Option[String]): ResourceMap = {
+    findById(create(tag, description, swordUrl).get.toInt).get
   }
 
   def all: List[ResourceMap] = {
