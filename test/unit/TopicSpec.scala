@@ -146,7 +146,7 @@ class TopicSpec extends Specification {
 
         Topic.deleteUnlinkedBefore(new Date)
         Topic.all must haveSize(1)
-      }.pendingUntilFixed(": See https://github.com/MITLibraries/scoap3hub/issues/141")
+      }
     }
 
     "#recentItems" in {

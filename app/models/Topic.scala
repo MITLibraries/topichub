@@ -160,7 +160,15 @@ object Topic {
 
   def deleteUnlinkedBefore(date: Date) {
     DB.withConnection { implicit c =>
-      SQL("delete from topic where created < {created}").on('created -> date).executeUpdate
+      SQL(
+        """
+        delete from topic where created < {created}
+        and not exists (
+          select 1 from item_topic
+          where item_topic.topic_id = topic.id
+        )
+        """
+      ).on('created -> date).executeUpdate
     }
   }
 }
