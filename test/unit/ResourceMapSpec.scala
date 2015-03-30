@@ -25,7 +25,7 @@ class ResourceMapSpec extends Specification {
         ResourceMap.create("tag", "desc", None)
         ResourceMap.all.size must equalTo(1)
       }
-    }.pendingUntilFixed("See https://github.com/MITLibraries/scoap3hub/issues/137")
+    }
 
     "#make" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {

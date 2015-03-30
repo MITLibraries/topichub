@@ -53,8 +53,8 @@ case class ResourceMap(id: Int, tag: String, description: String, swordUrl: Opti
 object ResourceMap {
 
   val resmap = {
-    get[Int]("id") ~ get[String]("tag") ~ get[String]("description") ~ get[String]("sword_url") map {
-      case id ~ tag ~ description ~ swordUrl => ResourceMap(id, tag, description, Some(swordUrl))
+    get[Int]("id") ~ get[String]("tag") ~ get[String]("description") ~ get[Option[String]]("sword_url") map {
+      case id ~ tag ~ description ~ swordUrl => ResourceMap(id, tag, description, swordUrl)
     }
   }
 
