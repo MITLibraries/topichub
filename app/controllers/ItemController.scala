@@ -12,7 +12,7 @@ import play.api.libs.iteratee.Enumerator
 import workers.Packager
 import java.io.{ByteArrayOutputStream, File, FileInputStream, FileOutputStream, InputStream}
 
-object ItemController extends Controller {
+object ItemController extends Controller with Security {
 
   def item(id: Int) = Action { implicit request =>
     Item.findById(id).map( item =>

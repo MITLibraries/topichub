@@ -2,6 +2,11 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
+# OAuth2 Stuff
+GET        /_oauth-callback        services.OAuth2.callback(code: Option[String], state: Option[String])
+GET        /_oauth-success         services.OAuth2.success
+GET        /login                  controllers.AuthenticationController.login
+
 # Home and informational page
 GET     /                           controllers.Application.index
 #GET     /explain                    controllers.Application.explain

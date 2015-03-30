@@ -19,6 +19,7 @@ import play.api.libs.concurrent.Akka
 import play.api.libs.iteratee.Enumerator
 import play.api.libs.json._
 import play.api.mvc._
+import play.api.mvc.Security._
 import play.api.Play.current
 
 import models._
@@ -30,19 +31,13 @@ import workers.Cataloger
 
 case class HubContext(user: Option[User])
 
-object Application extends Controller {
+object Application extends Controller with Security {
 
   val harvester = Akka.system.actorOf(Props[workers.HarvestWorker], name="harvester")
   val indexer = Akka.system.actorOf(Props[workers.IndexWorker], name="indexer")
   val conveyor = Akka.system.actorOf(Props[workers.ConveyorWorker], name="conveyor")
 
   def index = Action {
-    // Create dummy user if not allready there
-    val user = User.findById(1)
-    if (user.isEmpty) {
-      val dummy = new User(1, "richard", "rrodgers@mit.edu", "pwd", "admin", new Date, new Date) //User.findByName(username).get
-      User.create(dummy.name, dummy.email, dummy.password, dummy.role)
-    }
     Ok(views.html.static.home(Scheme.withGentype("topic").filter(!_.tag.equals("meta"))))
   }
 
@@ -50,8 +45,9 @@ object Application extends Controller {
     Ok(views.html.static.about())
   }
 
-  def workbench = Action { implicit request =>
-    Ok(views.html.static.workbench())
+  def workbench = isAnalyst { username =>
+    implicit request =>
+      Ok(views.html.static.workbench())
   }
 
   val feedbackForm = Form(
