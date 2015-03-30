@@ -27,14 +27,16 @@ case class ContentProfile(id: Int, tag: String, label: String, description: Stri
     }
   }
 
-  def addScheme(scheme: Scheme) {
-    DB.withConnection { implicit c =>
-      SQL("insert into content_profile_scheme (content_profile_id, scheme_id) values ({cprof_id}, {scheme_id})")
-      .on('cprof_id -> id, 'scheme_id -> scheme.id).executeUpdate()
+  def addScheme(scheme: Scheme) = {
+    if (! schemes.contains(scheme)) {
+      DB.withConnection { implicit c =>
+        SQL("insert into content_profile_scheme (content_profile_id, scheme_id) values ({cprof_id}, {scheme_id})")
+        .on('cprof_id -> id, 'scheme_id -> scheme.id).executeInsert()
+      }
     }
   }
 
-  def removeScheme(scheme: Scheme) {
+  def removeScheme(scheme: Scheme) = {
     DB.withConnection { implicit c =>
       SQL("delete from content_profile_scheme where content_profile_id = {cprof_id} and scheme_id = {scheme_id}")
       .on('cprof_id -> id, 'scheme_id -> scheme.id).executeUpdate()
@@ -50,7 +52,7 @@ object ContentProfile {
     }
   }
 
-  def create(tag: String, label: String, description: String) {
+  def create(tag: String, label: String, description: String) = {
 		DB.withConnection { implicit c =>
 			SQL("insert into content_profile (tag, label, description) values ({tag}, {label}, {description})")
       .on('tag -> tag, 'label -> label, 'description -> description).executeUpdate()
