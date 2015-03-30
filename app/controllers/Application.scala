@@ -11,7 +11,9 @@ import scala.concurrent.Await
 import akka.actor.Props
 
 import java.util.Date
+import java.util.UUID
 
+import services.OAuth2
 import play.api._
 import play.api.data._
 import play.api.data.Forms._
@@ -35,6 +37,16 @@ object Application extends Controller {
   val harvester = Akka.system.actorOf(Props[workers.HarvestWorker], name="harvester")
   val indexer = Akka.system.actorOf(Props[workers.IndexWorker], name="indexer")
   val conveyor = Akka.system.actorOf(Props[workers.ConveyorWorker], name="conveyor")
+
+  def login = Action { implicit request =>
+    val oauth2 = new OAuth2(Play.current)
+    val callbackUrl = services.routes.OAuth2.callback(None, None).absoluteURL()
+    val scope = "openid email profile"   // this is used auth the ticket to provide info we need later
+    val state = UUID.randomUUID().toString  // random confirmation string
+    val redirectUrl = oauth2.getAuthorizationUrl(callbackUrl, scope, state)
+    Ok(views.html.index("Your new application is ready.", redirectUrl)).
+      withSession("oauth-state" -> state)
+    }
 
   def index = Action {
     // Create dummy user if not allready there
