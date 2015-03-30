@@ -103,7 +103,7 @@ class ContentProfileSpec extends Specification {
         ContentProfile.findById(1).get.addScheme(Scheme.findByTag("tag").get)
         ContentProfile.findById(1).get.schemes.size must equalTo(1)
       }
-    }.pendingUntilFixed("See https://github.com/MITLibraries/scoap3hub/issues/136")
+    }
 
     "#removeScheme" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
