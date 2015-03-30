@@ -52,11 +52,15 @@ object ContentFormat {
     }
   }
 
-  def create(tag: String, label: String, description: String, url: String, mimetype: String, logo: Option[String]) {
+  def create(tag: String, label: String, description: String, url: String, mimetype: String, logo: Option[String]) = {
 		DB.withConnection { implicit c =>
 			SQL("insert into content_format (tag, label, description, url, mimetype, logo) values ({tag}, {label}, {description}, {url}, {mimetype}, {logo})")
-      .on('tag -> tag, 'label -> label, 'description -> description, 'url -> url, 'mimetype -> mimetype, 'logo -> logo).executeUpdate()
+      .on('tag -> tag, 'label -> label, 'description -> description, 'url -> url, 'mimetype -> mimetype, 'logo -> logo).executeInsert()
 		}
+  }
+
+  def make(tag: String, label: String, description: String, url: String, mimetype: String, logo: Option[String]): ContentFormat = {
+    findById(create(tag, label, description, url, mimetype, logo).get.toInt).get
   }
 
   def all: List[ContentFormat] = {

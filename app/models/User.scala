@@ -52,11 +52,15 @@ object User {
     }
   }
 
-  def create(name: String, email: String, password: String, role: String) {
+  def create(name: String, email: String, password: String, role: String) = {
     DB.withConnection { implicit c =>
       SQL("insert into hub_user (name, email, password, role, created, accessed) values ({name}, {email}, {password}, {role}, {created}, {accessed})")
-      .on('name -> name, 'email -> email, 'password -> password, 'role -> role, 'created -> new Date, 'accessed -> new Date).executeUpdate()
+      .on('name -> name, 'email -> email, 'password -> password, 'role -> role, 'created -> new Date, 'accessed -> new Date).executeInsert()
     }
+  }
+
+  def make(name: String, email: String, password: String, role: String): User = {
+    findById(create(name, email, password, role).get.toInt).get
   }
 
 }

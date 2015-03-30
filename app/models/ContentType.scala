@@ -49,11 +49,15 @@ object ContentType {
     }
   }
 
-  def create(tag: String, label: String, description: String, logo: Option[String]) {
+  def create(tag: String, label: String, description: String, logo: Option[String]) = {
 		DB.withConnection { implicit c =>
 			SQL("insert into content_type (tag, label, description, logo) values ({tag}, {label}, {description}, {logo})")
-      .on('tag -> tag, 'label -> label, 'description -> description, 'logo  -> logo).executeUpdate()
+      .on('tag -> tag, 'label -> label, 'description -> description, 'logo  -> logo).executeInsert()
 		}
+  }
+
+  def make(tag: String, label: String, description: String, logo: Option[String]): ContentType = {
+    findById(create(tag, label, description, logo).get.toInt).get
   }
 
   def all: List[ContentType] = {

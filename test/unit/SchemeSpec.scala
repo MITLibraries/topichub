@@ -19,6 +19,15 @@ class SchemeSpec extends Specification {
       }
     }
 
+    "#make" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        Scheme.all must haveSize(0)
+        val s = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        Scheme.all must haveSize(1)
+        s.tag must equalTo("tag")
+      }
+    }
+
     "#all" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         Scheme.all must haveSize(0)

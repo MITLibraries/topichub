@@ -88,6 +88,8 @@ object Subscription {
     }
   }
 
+  // todo: maybe a better name would be schemeTopicCount? The current name makes me expect a count
+  // of schemes... which would always be 1 as we pass in the Scheme to count.
   def schemeCount(subscriberId: Int, schemeId: Int) = {
     DB.withConnection { implicit c =>
       val count = SQL("select count(*) as c from subscription, topic where subscription.subscriber_id = {sub_id} and subscription.topic_id = topic.id and topic.scheme_id = {sch_id}")
@@ -111,9 +113,9 @@ object Subscription {
   }
 
   def create(subscriberId: Int, topicId: Int, action: String, earliest: Date, latest: Date) = {
-    val created = new Date
-    val updated = created
-    val cancelled = created
+    val created = new Date  // todo: should db defaults should handle this?
+    val updated = created   // todo: should db defaults should handle this?
+    val cancelled = created // todo: null might be better?
     DB.withConnection { implicit c =>
       SQL("insert into subscription (subscriber_id, topic_id, action, created, updated, cancelled, earliest, latest, active) values ({subscriber_id}, {topic_id}, {action}, {created}, {updated}, {cancelled}, {earliest}, {latest}, {active})")
       .on('subscriber_id -> subscriberId, 'topic_id -> topicId, 'action -> action, 'created -> created, 'updated -> updated, 'cancelled -> cancelled, 'earliest -> earliest, 'latest -> latest, 'active -> true).executeInsert()

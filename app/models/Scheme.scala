@@ -48,11 +48,15 @@ object Scheme {
     }
   }
 
-  def create(tag: String, gentype: String, category: String, description: String, link: Option[String], logo: Option[String]) {
+  def create(tag: String, gentype: String, category: String, description: String, link: Option[String], logo: Option[String]) = {
 		DB.withConnection { implicit c =>
 			SQL("insert into scheme (tag, gentype, category, description, link, logo, created) values ({tag}, {gentype}, {category}, {description}, {link}, {logo}, {created})")
-      .on('tag -> tag, 'gentype -> gentype, 'category -> category, 'description -> description, 'link -> link, 'logo -> logo, 'created -> new Date).executeUpdate()
+      .on('tag -> tag, 'gentype -> gentype, 'category -> category, 'description -> description, 'link -> link, 'logo -> logo, 'created -> new Date).executeInsert()
 		}
+  }
+
+  def make(tag: String, gentype: String, category: String, description: String, link: Option[String], logo: Option[String]): Scheme = {
+    findById(create(tag, gentype, category, description, link, logo).get.toInt).get
   }
 
   def all: List[Scheme] = {

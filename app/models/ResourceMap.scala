@@ -37,7 +37,7 @@ case class ResourceMap(id: Int, tag: String, description: String, swordUrl: Opti
 
   def schemes: List[Scheme] = {
     DB.withConnection { implicit c =>
-      SQL("select scheme.* from scheme, resource_map_scheme, resource_map where scheme.id = resource_map_scheme.scheme_id and resource_map_scheme.resource_map_id = resource_map.id and resource_map.id = {resmap_id}")
+      SQL("select distinct scheme.id, scheme.* from scheme, resource_map_scheme, resource_map where scheme.id = resource_map_scheme.scheme_id and resource_map_scheme.resource_map_id = resource_map.id and resource_map.id = {resmap_id}")
       .on('resmap_id -> id).as(Scheme.scheme *)
     }
   }
@@ -58,11 +58,15 @@ object ResourceMap {
     }
   }
 
-  def create(tag: String, description: String, swordUrl: Option[String]) {
+  def create(tag: String, description: String, swordUrl: Option[String]) = {
 		DB.withConnection { implicit c =>
 			SQL("insert into resource_map (tag, description, sword_url) values ({tag}, {description}, {swordUrl})")
-      .on('tag -> tag, 'description -> description, 'swordUrl -> swordUrl).executeUpdate()
+      .on('tag -> tag, 'description -> description, 'swordUrl -> swordUrl).executeInsert()
 		}
+  }
+
+  def make(tag: String, description: String, swordUrl: Option[String]): ResourceMap = {
+    findById(create(tag, description, swordUrl).get.toInt).get
   }
 
   def all: List[ResourceMap] = {

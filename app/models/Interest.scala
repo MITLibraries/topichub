@@ -67,7 +67,7 @@ object Interest {
         """
           select * from interest
           where scheme_id = {scheme_id}
-          order by name
+          order by id
           limit 10 offset {offset}
         """
       ).on('scheme_id -> schemeId, 'offset -> offset).as(interest *)
@@ -84,5 +84,9 @@ object Interest {
         """
       ).on('subscriber_id -> subscriberId, 'scheme_id -> schemeId, 'action -> action, 'created -> created).executeInsert()
     }
+  }
+
+  def make(subscriberId: Int, schemeId: Int, action: String): Interest = {
+    findById(create(subscriberId, schemeId, action).get.toInt).get
   }
 }

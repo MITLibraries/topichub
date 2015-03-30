@@ -17,6 +17,15 @@ class ContentFormatSpec extends Specification {
       }
     }
 
+    "#make" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        ContentFormat.all must haveSize(0)
+        val cf = ContentFormat.make("tag", "label", "desc", "http://www.example.com", "mimetype", Some("logo"))
+        ContentFormat.all must haveSize(1)
+        cf.tag must equalTo("tag")
+      }
+    }
+
     "#all" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         ContentFormat.all must haveSize(0)

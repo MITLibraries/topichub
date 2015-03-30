@@ -41,24 +41,24 @@ case class Topic(id: Int, scheme_id: Int, tag: String, name: String,
           select item.* from item, item_topic
           where item.id = item_topic.item_id and
           item_topic.topic_id = {topic_id} and
-          item.created > {created}
+          item.created >= {created}
           order by item.created asc
         """
       ).on('topic_id -> id, 'created -> start).as(Item.item *)
     }
   }
 
-  def pagedItems(page: Int, max: Int) = {
-    val offset = page * max
+  def pagedItems(page: Int, perPage: Int) = {
+    val offset = page * perPage
     DB.withConnection { implicit c =>
       SQL(
         """
           select item.* from item, item_topic
           where item.id = item_topic.item_id and item_topic.topic_id = {topic_id}
           order by item.created desc
-          limit {max} offset {offset}
+          limit {perPage} offset {offset}
         """
-      ).on('topic_id -> id, 'max -> max, 'offset -> offset).as(Item.item *)
+      ).on('topic_id -> id, 'perPage -> perPage, 'offset -> offset).as(Item.item *)
     }
   }
 
@@ -71,7 +71,7 @@ case class Topic(id: Int, scheme_id: Int, tag: String, name: String,
 
   def itemCountSince(start: Date) = {
     DB.withConnection { implicit c =>
-      val count = SQL("select count(*) as c from item_topic where topic_id = {id} and item_created > {created}")
+      val count = SQL("select count(*) as c from item_topic where topic_id = {id} and item_created >= {created}")
       .on('id -> id, 'created -> start).apply.head
       count[Long]("c")
     }
@@ -158,9 +158,9 @@ object Topic {
     }
   }
 
-  def deleteUnlinkedBefore(date: Date) = {
+  def deleteUnlinkedBefore(date: Date) {
     DB.withConnection { implicit c =>
-      SQL("delete from topic where created < {created}").on('created -> date)
+      SQL("delete from topic where created < {created}").on('created -> date).executeUpdate
     }
   }
 }
