@@ -115,6 +115,7 @@ object Conveyor {
         case "sword" => swordTransfer(item, chan, trans)
         case _ => println("Don't know how to transfer via: " + chan.protocol)
       }
+      chan.recordTransfer
     }
   }
 
