@@ -31,7 +31,7 @@ case class ContentProfile(id: Int, tag: String, label: String, description: Stri
     if (! schemes.contains(scheme)) {
       DB.withConnection { implicit c =>
         SQL("insert into content_profile_scheme (content_profile_id, scheme_id) values ({cprof_id}, {scheme_id})")
-        .on('cprof_id -> id, 'scheme_id -> scheme.id).executeInsert()
+        .on('cprof_id -> id, 'scheme_id -> scheme.id).executeUpdate()
       }
     }
   }
