@@ -49,8 +49,7 @@
               *@
               @* Temporary link to (sole) subscriber edit page - will change when logins enabled *@
               @if(Subscriber.findById(1).isDefined) {
-                <li><a id="nav_review" href="@routes.Application.holdBrowse(1)">Review <span class="badge">@{ val count = Subscriber.findById(1).get.holdCount; if (count > 0) count else ""}</span></a></li>
-                <li><a id="nav_sub_dashboard" href="@routes.Application.subscriberDashboard">Dashboard</a></li>
+                <li><a id="nav_sub_dashboard" href="@routes.Application.subscriberDashboard">Dashboard  <span class="badge">@{ val count = Subscriber.findById(1).get.holdCount; if (count > 0) count else ""}</span></a></li>
                 <li><a id="nav_workbench" href="@routes.Application.editSubscriber(1)">Interests</a></li>
               }
               <li><a id="nav_workbench" href="@routes.Application.workbench">Workbench</a></li>
