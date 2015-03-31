@@ -4,6 +4,7 @@ import org.junit.runner._
 
 import play.api.test._
 import play.api.test.Helpers._
+import play.api.libs.json._
 
 /**
  * Add your spec here.
@@ -26,5 +27,26 @@ class ApplicationSpec extends Specification {
       contentType(home) must beSome.which(_ == "text/html")
       contentAsString(home) must contain ("Welcome to SCOAP")
     }
+
+    "display a login screen" in new WithBrowser {
+      val action = route(FakeRequest(GET, "/login")).get
+      status(action) must equalTo(OK)
+      contentType(action) must beSome.which(_ == "text/html")
+      contentAsString(action) must contain ("Log in with MITID")
+    }
+
+//     "parse returned user json" in new WithBrowser {
+//       val action = route(
+//         FakeRequest(GET, "/_oauth-success")
+//           .withHeaders(CONTENT_TYPE -> "application/json")
+//           .withSession(("oauth-token", "asdffdsa"))
+//           .withBody("""
+// {"sub":"asdffdsa","name":"Some M User","preferred_username":"suser","given_name":"Some","family_name":"User","middle_name":"M","email":"suser@example.edu","email_verified":true}
+//             """)
+//         ).get
+//       status(action) must equalTo(OK)
+//       contentType(action) must beSome.which(_ == "application/json")
+//       contentAsString(action) must contain ("Log in with MITID")
+//     }
   }
 }
