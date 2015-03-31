@@ -816,6 +816,12 @@ object Application extends Controller {
     //)
   }
 
+  def subscriberDashboard = Action { implicit request => //isAuthenticated { username => implicit request =>
+    //ownsSubscriber(username, sid, channelForm.bindFromRequest.fold (
+    Ok(views.html.subscriber.dashboard(Subscriber.findById(1).get))
+    //)
+  }
+
   val interestForm = Form(
     single(
       "scheme_id" -> number

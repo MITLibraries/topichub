@@ -5,6 +5,10 @@
 package models
 
 import java.util.Date
+import java.time.format.DateTimeFormatter
+import java.time.LocalDateTime
+import java.sql.Timestamp
+import java.time.YearMonth
 
 import play.api.db.DB
 import play.api._
@@ -129,6 +133,48 @@ case class Subscriber(id: Int,  // DB key
   def channels: List[Channel] = {
     DB.withConnection { implicit c =>
       SQL("select * from channel where subscriber_id = {id}").on('id -> id).as(Channel.channel *)
+    }
+  }
+
+  def monthlyTransferSummary(start: LocalDateTime, end: LocalDateTime) = {
+    val monthyearformat = DateTimeFormatter.ofPattern("yyyy-M")
+    var sDate = start
+    val eDate = end
+    val map = scala.collection.mutable.HashMap.empty[String,List[Int]]
+    val md = scala.collection.mutable.ListBuffer.empty[String]
+    val counts = scala.collection.mutable.ListBuffer.empty[List[Int]]
+
+    while(!sDate.isAfter(eDate)) {
+      // edate used in this should be the end of the month in which sDate is the first of the month
+      map += (sDate.format(monthyearformat) ->
+        transferCountByAction(
+        sDate,
+        YearMonth.of(sDate.getYear, sDate.getMonth).atEndOfMonth.atTime(23, 59, 59)
+        )
+      )
+      md += sDate.format(monthyearformat)
+      counts += transferCountByAction(sDate, sDate.plusMonths(1))
+      sDate = sDate.plusMonths(1)
+    }
+
+    md.zip(counts).toList
+  }
+
+  def transferCountByAction(start: LocalDateTime, end: LocalDateTime) = {
+    val stimestamp = Timestamp.valueOf(start)
+    val etimestamp = Timestamp.valueOf(end)
+
+    DB.withConnection { implicit c =>
+      val rows = SQL(
+        """
+          SELECT count(*) as total,
+            COALESCE(sum(CASE WHEN action = 'deliver' then 1 else 0 end), 0) deliverCount,
+            COALESCE(sum(CASE WHEN action = 'discard' then 1 else 0 end), 0) discardCount
+          FROM transfer
+          WHERE subscriber_id = {id}
+          AND created BETWEEN {stimestamp} AND {etimestamp}
+        """).on('id -> id, 'stimestamp -> stimestamp, 'etimestamp -> etimestamp)
+    rows().map(row => List(row[Int]("total"), row[Int]("deliverCount"), row[Int]("discardCount"))).head
     }
   }
 }
