@@ -58,6 +58,24 @@ case class Subscriber(id: Int,  // DB key
     Subscription.make(id, topic.id, interestIn(topic.scheme_id).get.action, created, new Date)
   }
 
+  def newItemCountFor(topicId: Int) = {
+    DB.withConnection { implicit c =>
+      val count = SQL(
+        """
+        select count(*) as c from item_topic
+        where topic_id = {topic_id}
+        and item_created > {created}
+        and not exists (
+          select 1 from transfer
+          where subscriber_id = {sub_id}
+          and item_id = item_topic.item_id
+        )
+        """
+      ).on('topic_id -> topicId, 'created -> created, 'sub_id -> id).apply.head
+      count[Long]("c")
+    }
+  }
+
   def interestsWithAction(action: String): List[Interest] = {
     DB.withConnection { implicit c =>
       SQL("select * from interest where action = {action} and subscriber_id = {id}")
