@@ -1,6 +1,6 @@
 @(message: String, redirectUrl: String)
 
-@layout.main("Welcome to Play") {
+@layout.main("Login to SCOAP3 - TopicHub") {
     <h2>Not Yet Authenticated</h2>
-    <a href="@redirectUrl"><em><b>Log in with MITID!</b></em></a>
+    <a id="openid" href="@redirectUrl"><em><b>Log in with MITID!</b></em></a>
 }
