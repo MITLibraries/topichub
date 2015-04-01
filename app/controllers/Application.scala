@@ -18,8 +18,12 @@ import play.api.data.Forms._
 import play.api.libs.concurrent.Akka
 import play.api.libs.iteratee.Enumerator
 import play.api.libs.json._
+import play.api.libs.json.Json
 import play.api.mvc._
 import play.api.Play.current
+import org.pac4j.core.profile._
+import org.pac4j.play._
+import org.pac4j.play.scala._
 
 import models._
 import services.contentModelJson._
@@ -30,7 +34,7 @@ import workers.Cataloger
 
 case class HubContext(user: Option[User])
 
-object Application extends Controller {
+object Application extends ScalaController {
 
   val harvester = Akka.system.actorOf(Props[workers.HarvestWorker], name="harvester")
   val indexer = Akka.system.actorOf(Props[workers.IndexWorker], name="indexer")
@@ -50,8 +54,10 @@ object Application extends Controller {
     Ok(views.html.static.about())
   }
 
-  def workbench = Action { implicit request =>
-    Ok(views.html.static.workbench())
+  def workbench = RequiresAuthentication("GitHubClient") { profile =>
+    Action { implicit request =>
+      Ok(views.html.static.workbench())
+    }
   }
 
   val feedbackForm = Form(
@@ -134,7 +140,7 @@ object Application extends Controller {
   }
 
   val pubForm = Form(
-  	mapping(
+    mapping(
       "id" -> ignored(0),
       "userId" -> ignored(0),
       "tag" -> nonEmptyText,
@@ -149,7 +155,7 @@ object Application extends Controller {
   )
 
   def publishers = Action { implicit request =>
-  	Ok(views.html.publisher.index())
+    Ok(views.html.publisher.index())
   }
 
   def newPublisher =  Action { implicit request => //mustAuthenticate { username => implicit request =>

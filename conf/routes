@@ -4,6 +4,11 @@
 
 # Home and informational page
 GET     /                           controllers.Application.index
+
+GET     /callback                   org.pac4j.play.CallbackController.callback()
+POST    /callback                   org.pac4j.play.CallbackController.callback()
+GET     /logout                     org.pac4j.play.CallbackController.logoutAndRedirect()
+
 #GET     /explain                    controllers.Application.explain
 GET     /about                      controllers.Application.about
 GET     /feedback                   controllers.Application.feedback
