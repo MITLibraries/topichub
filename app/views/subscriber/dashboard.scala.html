@@ -62,7 +62,13 @@
       </ul>
 
       <h4>Suggested Subscriptions</h4>
-      <ul class="list-group"><li class="list-group-item">Coming (much) Later</li></ul>
+      <ul class="list-group">
+        <li class="list-group-item">
+          <a href="@routes.Application.pickBrowse(1)">Total to review:
+          <span class="badge">@Subscriber.findById(1).get.pickCount</span>
+          </a>
+        </li>
+      </ul>
 
       <h4>Destinations</h4>
       <ul class="list-group">

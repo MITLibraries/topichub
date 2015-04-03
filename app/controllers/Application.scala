@@ -874,6 +874,20 @@ object Application extends Controller {
     ).getOrElse(NotFound(views.html.static.trouble("No such hold: " + id)))
   }
 
+  def pickBrowse(id: Int, page: Int) = Action { implicit request =>
+    Subscriber.findById(id).map( sub =>
+      Ok(views.html.topic_pick.browse(sub.id, sub.picks(page), page, sub.pickCount))
+    ).getOrElse(NotFound(views.html.static.trouble("No such subscriber: " + id)))
+  }
+
+  def resolvePick(id: Int, accept: Boolean) = Action { implicit request =>
+    TopicPick.findById(id).map( pick => {
+      conveyor ! (pick, accept)
+      Redirect(routes.Application.pickBrowse(1, 0))
+    }
+    ).getOrElse(NotFound(views.html.static.trouble("No such topic pick: " + id)))
+  }
+
   val modelForm = Form(
     single(
       "model" -> nonEmptyText

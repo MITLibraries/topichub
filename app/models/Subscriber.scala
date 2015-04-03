@@ -130,6 +130,33 @@ case class Subscriber(id: Int,  // DB key
     }
   }
 
+  def pickCount = {
+    DB.withConnection { implicit c =>
+      val count = SQL("select count(*) as c from topic_pick where subscriber_id = {id}").on('id -> id).apply.head
+      count[Long]("c")
+    }
+  }
+
+  def picked(topicId: Int): Option[TopicPick] = {
+    DB.withConnection { implicit c =>
+      SQL("select * from topic_pick where topic_id = {topic_id} and subscriber_id = {id}")
+      .on('topic_id -> topicId, 'id -> id).as(TopicPick.pick.singleOpt)
+    }
+  }
+
+  def picks(page: Int) = {
+    val offset = page * 10
+    DB.withConnection { implicit c =>
+      SQL(
+        """
+          select * from topic_pick where subscriber_id = {sub_id}
+          order by created desc
+          limit 10 offset {offset}
+        """
+      ).on('sub_id -> id, 'offset -> offset).as(TopicPick.pick *)
+    }
+  }
+
   def channels: List[Channel] = {
     DB.withConnection { implicit c =>
       SQL("select * from channel where subscriber_id = {id}").on('id -> id).as(Channel.channel *)

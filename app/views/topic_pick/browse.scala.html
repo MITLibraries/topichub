@@ -1,0 +1,17 @@
+@*****************************************************************************
+* Entry page for topic pick browsing (Review)                                *
+* Copyright (c) 2015 MIT Libraries                                           *
+*****************************************************************************@
+@(id: Int, picks: List[TopicPick], page: Int, total: Long)@*(implicit hubContext: HubContext)*@
+@layout.main("Topic Picks Browse - TopicHub") {
+  <div class="page-header">
+    <h2>Review Topic Picks</h2>
+    @tags.summary(page, 10, total, picks.length)
+  </div>
+  <ul>
+    @picks.map { pick =>
+      <li><a href="@routes.Application.topic(pick.topicId)">@pick.topic.tag</a> @pick.topic.name</li>
+    }
+  </ul>
+  @tags.pagination(page, 10, total, routes.Application.pickBrowse(id).toString, picks.length)
+}
