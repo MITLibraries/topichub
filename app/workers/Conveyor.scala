@@ -14,7 +14,7 @@ import play.api.libs.ws._
 import play.api.mvc._
 import play.api.http.HeaderNames._
 
-import models.{Channel, Hold, Item, Scheme, Subscriber, Subscription, Topic, Transfer}
+import models.{Channel, Hold, Item, Scheme, Subscriber, Subscription, Topic, TopicPick, Transfer}
 import services.Emailer
 
 /** Conveyor is the worker responsible for transmitting notifications
@@ -29,6 +29,7 @@ class ConveyorWorker extends Actor {
     case sub: Subscription => Conveyor.fulfill(sub)
     case (item: Item, subscr: Subscriber) => Conveyor.transferItem(item, subscr)
     case (hold: Hold, accept: Boolean) => Conveyor.resolveHold(hold, accept)
+    case (pick: TopicPick, accept: Boolean) => Conveyor.resolvePick(pick, accept)
     case _ => println("I'm lost")
   }
 }
@@ -72,6 +73,18 @@ object Conveyor {
     }
     // clean up hold in any case
     hold.resolve(accept)
+  }
+
+  def resolvePick(pick: TopicPick, accept: Boolean) = {
+    // keep a record as a cancelled subscription? TODO
+    if (accept) {
+      val sub = Subscriber.findById(pick.subscriberId).get
+      val topic = Topic.findById(pick.topicId).get
+      // TODO derive action from topic's scheme plan
+      fulfill(Subscription.make(pick.subscriberId, pick.topicId, "review", sub.created, new Date))
+    }
+    // clean up pick in any case
+    pick.resolve(accept)
   }
 
   private def processSubs(item: Item, subMap: Map[String, List[Subscription]]) = {

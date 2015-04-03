@@ -2,9 +2,7 @@ import org.specs2.mutable._
 import play.api.test._
 import play.api.test.Helpers._
 
-import models.Channel
-import models.Collection
-import models.ContentType
+import models.{Agent, Channel, Collection, ContentType}
 import models.Hold
 import models.Interest
 import models.Item
@@ -13,7 +11,7 @@ import models.ResourceMap
 import models.Scheme
 import models.Subscriber
 import models.Subscription
-import models.Topic
+import models.{Topic, TopicPick}
 import models.Transfer
 import models.User
 
@@ -419,6 +417,94 @@ class SubscriberSpec extends Specification {
 
         s.holds(0).size must equalTo(10)
         s.holds(1).size must equalTo(1)
+      }
+    }
+
+    "#pickCount" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        Subscriber.all must haveSize(0)
+        User.create("bob", "bob@example.com", "pwd", "role1")
+        Scheme.create("tag", "topic", "cat", "desc", Some("link"), Some("logo"))
+        Scheme.create("tag2", "topic", "cat", "desc", Some("link"), Some("logo"))
+        Scheme.create("tag3", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        val s = Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        s.pickCount must equalTo(0)
+        val top = Topic.make(1, "tag", "name")
+        val top2 = Topic.make(1, "tag2", "name")
+        val agent = Agent.make("tag", "label", "description", "code", "params", Some("icon"))
+        TopicPick.create(s.id, top.id, agent.id)
+        s.pickCount must equalTo(1)
+        TopicPick.create(s.id, top2.id, agent.id)
+        s.pickCount must equalTo(2)
+      }
+    }
+
+    "#picked" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        Subscriber.all must haveSize(0)
+        User.create("bob", "bob@example.com", "pwd", "role1")
+        Scheme.create("tag", "topic", "cat", "desc", Some("link"), Some("logo"))
+        Scheme.create("tag2", "topic", "cat", "desc", Some("link"), Some("logo"))
+        Scheme.create("tag3", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        val s = Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        s.holdCount must equalTo(0)
+        val top = Topic.make(1, "tag", "name")
+        val top2 = Topic.make(1, "tag2", "name")
+        val agent = Agent.make("tag", "label", "description", "code", "params", Some("icon"))
+
+        val p1 = TopicPick.make(s.id, top.id, agent.id)
+        s.pickCount must equalTo(1)
+        s.picked(top.id) must equalTo(Some(p1))
+        s.picked(top2.id) must equalTo(None)
+
+        val p2 = TopicPick.make(s.id, top2.id, agent.id)
+        s.pickCount must equalTo(2)
+        s.picked(top.id) must equalTo(Some(p1))
+        s.picked(top2.id) must equalTo(Some(p2))
+      }
+    }
+
+    "#picks" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        Subscriber.all must haveSize(0)
+        User.create("bob", "bob@example.com", "pwd", "role1")
+        Scheme.create("tag", "topic", "cat", "desc", Some("link"), Some("logo"))
+        Scheme.create("tag2", "topic", "cat", "desc", Some("link"), Some("logo"))
+        Scheme.create("tag3", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        val s = Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        val agent = Agent.make("tag", "label", "description", "code", "params", Some("icon"))
+        s.pickCount must equalTo(0)
+        val t = Topic.make(1, "tag", "name")
+        val t2 = Topic.make(1, "tag2", "name")
+
+        val p1 = TopicPick.make(s.id, t.id, agent.id)
+        val p2 = TopicPick.make(s.id, t2.id, agent.id)
+        s.picks(0).size must equalTo(2)
+        s.picks(0)(0) must equalTo(p2)
+        s.picks(0)(1) must equalTo(p1)
+
+        val t3 = Topic.make(1, "tag3", "name")
+        val t4 = Topic.make(1, "tag4", "name")
+        val t5 = Topic.make(1, "tag5", "name")
+        val t6 = Topic.make(1, "tag6", "name")
+        val t7 = Topic.make(1, "tag7", "name")
+        val t8 = Topic.make(1, "tag8", "name")
+        val t9 = Topic.make(1, "tag9", "name")
+        val t10 = Topic.make(1, "tag10", "name")
+        val t11 = Topic.make(1, "tag11", "name")
+
+        TopicPick.create(s.id, t3.id, agent.id)
+        TopicPick.create(s.id, t4.id, agent.id)
+        TopicPick.create(s.id, t5.id, agent.id)
+        TopicPick.create(s.id, t6.id, agent.id)
+        TopicPick.create(s.id, t7.id, agent.id)
+        TopicPick.create(s.id, t8.id, agent.id)
+        TopicPick.create(s.id, t9.id, agent.id)
+        TopicPick.create(s.id, t10.id, agent.id)
+        TopicPick.create(s.id, t11.id, agent.id)
+
+        s.picks(0).size must equalTo(10)
+        s.picks(1).size must equalTo(1)
       }
     }
 

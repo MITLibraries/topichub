@@ -23,6 +23,9 @@
            @if(sub.get.hasInterest(topic.scheme_id)) {
              <span><a rel="tooltip" title="Subscribe to this topic" href="@routes.Application.topicSubscribe(topic.id)" class="btn btn-primary btn-large">Subscribe <span class="badge">@sub.get.newItemCountFor(topic.id)</span> &raquo;</a></span>
            }
+           @if(sub.get.picked(topic.id).isDefined) {
+             <span><a rel="tooltip" title="Forget this topic" href="@routes.Application.resolvePick(sub.get.picked(topic.id).get.id, false)" class="btn btn-primary btn-large pull-right">Meh &raquo;</a></span>
+           }
          }
        }
     </div>
