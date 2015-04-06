@@ -45,7 +45,7 @@ object Application extends Controller with Security {
     Ok(views.html.static.about())
   }
 
-  def workbench = isAnalyst { username =>
+  def workbench = isAnalyst { identity =>
     implicit request =>
       Ok(views.html.static.workbench())
   }
@@ -812,10 +812,15 @@ object Application extends Controller with Security {
     //)
   }
 
-  def subscriberDashboard = Action { implicit request => //isAuthenticated { username => implicit request =>
-    //ownsSubscriber(username, sid, channelForm.bindFromRequest.fold (
-    Ok(views.html.subscriber.dashboard(Subscriber.findById(1).get))
-    //)
+  def subscriberDashboard = isAuthenticated { identity =>
+    implicit request =>
+    println(identity)
+    val sub = Subscriber.findByUserId(identity.id)
+    if (sub == None) {
+      NotFound(views.html.static.trouble("No Subscriber found for your User Account"))
+    } else {
+      Ok(views.html.subscriber.dashboard(sub.get))
+    }
   }
 
   val interestForm = Form(

@@ -31,7 +31,7 @@ case class User(id: Int, name: String, email: String,
 
   def hasRole(role: String): Boolean = {
     DB.withConnection { implicit c =>
-      val count = SQL("select count(*) as c from hub_user where role LIKE {role}").on('role -> role).apply.head
+      val count = SQL("select count(*) as c from hub_user where role LIKE {role}").on('role -> ("%"+role+"%")).apply.head
       count[Long]("c") > 0
     }
   }
