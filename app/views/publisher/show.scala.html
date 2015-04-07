@@ -11,7 +11,7 @@
     <p>Registered @HubUtils.fmtDate(pub.created)</P>
     <p>@HubUtils.pluralize(pub.itemCount, "article") deposited</p>
     <span>
-      @if(! pub.link.isEmpty) {
+      @if(pub.link.isDefined) {
         <a rel="tooltip" title="Visit publisher site" href="@pub.link" class="btn btn-primary btn-large">Site &raquo;</a>
       }
       @if(!user.isEmpty && user.get.hasPublisher(pub.id)) {

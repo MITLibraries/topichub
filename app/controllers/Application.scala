@@ -148,24 +148,30 @@ object Application extends Controller with Security {
   	Ok(views.html.publisher.index())
   }
 
-  def newPublisher =  Action { implicit request => //mustAuthenticate { username => implicit request =>
+  def newPublisher =  isAuthenticated { identity =>
+    implicit request =>
     Ok(views.html.publisher.create(null, pubForm))
   }
 
   def publisher(id: Int) = Action { implicit request => {
-    val userName = "richard"//session.get("username").getOrElse("")
+    val user = if ( play.api.Play.isTest(play.api.Play.current) ) {
+        User.findById(1).get.identity
+      } else {
+        request.session.get("connected").getOrElse("")
+      }
+
     Publisher.findById(id).map( pub =>
-      Ok(views.html.publisher.show(pub, User.findByName(userName)))
+      Ok(views.html.publisher.show(pub, User.findByIdentity(user)))
     ).getOrElse(NotFound(views.html.static.trouble("No such publisher: " + id)))
     }
   }
 
-  def createPublisher = Action { implicit request => //isAuthenticated { username => implicit request =>
+  def createPublisher = isAuthenticated { identity =>
+    implicit request =>
     pubForm.bindFromRequest.fold(
       errors => BadRequest(views.html.publisher.create(null, errors)),
       value => {
-        val user = User.findById(1).get
-        val pub = Publisher.make(user.id, value.tag, value.name, value.description, value.category, value.status, value.link, value.logo)
+        val pub = Publisher.make(identity.id, value.tag, value.name, value.description, value.category, value.status, value.link, value.logo)
         Redirect(routes.Application.editPublisher(pub.id))
       }
     )
@@ -178,8 +184,7 @@ object Application extends Controller with Security {
     }
   }
 
-  private def ownsPublisher(username: String, pub: Publisher, result: Result)(implicit request: Request[AnyContent]): Result = {
-    val user = User.findByName(username).get
+  private def ownsPublisher(user: User, pub: Publisher, result: Result)(implicit request: Request[AnyContent]): Result = {
     if (user.hasPublisher(pub.id)) {
       result
     } else {
@@ -187,9 +192,10 @@ object Application extends Controller with Security {
     }
   }
 
-  def editPublisher(id: Int) = Action { implicit request => //isAuthenticated { username => implicit request =>
+  def editPublisher(id: Int) = isAuthenticated { identity =>
+    implicit request =>
     Publisher.findById(id).map( pub =>
-      ownsPublisher("richard", pub, Ok(views.html.publisher.edit(pub)))
+      ownsPublisher(identity, pub, Ok(views.html.publisher.edit(pub)))
     ).getOrElse(NotFound(views.html.static.trouble("No such publisher: " + id)))
   }
 
@@ -245,13 +251,13 @@ object Application extends Controller with Security {
 
   def newHarvest(id: Int) = Action { implicit request =>
     Publisher.findById(id).map( pub =>
-      ownsPublisher(/*username*/"richard", pub, Ok(views.html.harvest.create(pub, harvestForm)))
+      ownsPublisher(User.findById(1).get, pub, Ok(views.html.harvest.create(pub, harvestForm)))
     ).getOrElse(NotFound(views.html.static.trouble("No such publisher: " + id)))
   }
 
   def createHarvest(id: Int) = Action { implicit request =>
     val pub = Publisher.findById(id).get
-    ownsPublisher(/*username*/"richard", pub,
+    ownsPublisher(User.findById(1).get, pub,
       harvestForm.bindFromRequest.fold(
         errors => BadRequest(views.html.harvest.create(pub, errors)),
         value => {
@@ -299,13 +305,13 @@ object Application extends Controller with Security {
 
   def newCollection(id: Int) = Action { implicit request => //isAuthenticated { username => implicit request =>
     Publisher.findById(id).map( pub =>
-      ownsPublisher(/*username*/"richard", pub, Ok(views.html.collection.create(pub, collForm)))
+      ownsPublisher(User.findById(1).get, pub, Ok(views.html.collection.create(pub, collForm)))
     ).getOrElse(NotFound(views.html.static.trouble("No such publisher: " + id)))
   }
 
   def createCollection(id: Int) = Action { implicit request => //isAuthenticated { username => implicit request =>
     val pub = Publisher.findById(id).get
-    ownsPublisher(/*username*/"richard", pub,
+    ownsPublisher(User.findById(1).get, pub,
       collForm.bindFromRequest.fold(
         errors => BadRequest(views.html.collection.create(pub, errors)),
         value => {
