@@ -223,67 +223,77 @@ object Application extends Controller with Security {
     }
   )
 
-  def harvest(id: Int) = Action { implicit request =>
+  def harvest(id: Int) = isAuthenticated { identity =>
+    implicit request =>
     Harvest.findById(id).map( harvest =>
-      Ok(views.html.harvest.show(harvest, startHarvestForm))
+      ownsPublisher(identity, harvest.publisher.get,
+        Ok(views.html.harvest.show(harvest, startHarvestForm)))
     ).getOrElse(NotFound(views.html.static.trouble("No such harvest: " + id)))
   }
 
-  def startHarvest(id: Int) = Action { implicit request =>
+  def startHarvest(id: Int) = isAuthenticated { identity =>
+    implicit request =>
     Harvest.findById(id).map( harvest =>
-      startHarvestForm.bindFromRequest.fold(
-        errors => BadRequest(views.html.harvest.show(harvest, errors)),
-        value =>  {
-           val harv = harvest.copy(freq = value)
-           harvester ! harv
-           // optimistically update - so UI will show last harvest date
-           harv.complete
-           Redirect(routes.Application.harvest(id))
+      if (harvest.publisher.get.userId == identity.id) {
+        startHarvestForm.bindFromRequest.fold(
+          errors => BadRequest(views.html.harvest.show(harvest, errors)),
+          value =>  {
+             val harv = harvest.copy(freq = value)
+             harvester ! harv
+             // optimistically update - so UI will show last harvest date
+             harv.complete
+             Redirect(routes.Application.harvest(id))
+          }
+        )} else {
+          Unauthorized(views.html.static.trouble("You are not authorized"))
         }
-      )
     ).getOrElse(NotFound(views.html.static.trouble("No such harvest: " + id)))
   }
 
-  def pullKnownItem(cid: Int, hid: Int, oid: String, force: Boolean) = Action { implicit request =>
+  def pullKnownItem(cid: Int, hid: Int, oid: String, force: Boolean) =
+    isAuthenticated { identity => implicit request =>
     Collection.findById(cid).map ( coll =>
       Harvest.findById(hid).map( harvest => {
-        harvester ! (oid, coll, harvest, force)
-        Ok(views.html.harvest.index("pulled: " + oid))
+        if (harvest.publisher.get.userId == identity.id) {
+          harvester ! (oid, coll, harvest, force)
+          Ok(views.html.harvest.index("pulled: " + oid))
+        } else {
+          Unauthorized(views.html.static.trouble("You are not authorized"))
+        }
       }).getOrElse(NotFound(views.html.static.trouble("No such harvest: " + hid)))
     ).getOrElse(NotFound(views.html.static.trouble("No such collection: " + cid)))
   }
 
-  def newHarvest(id: Int) = Action { implicit request =>
+  def newHarvest(id: Int) = isAuthenticated { identity =>
+    implicit request =>
     Publisher.findById(id).map( pub =>
-      ownsPublisher(User.findById(1).get, pub, Ok(views.html.harvest.create(pub, harvestForm)))
+      ownsPublisher(identity, pub, Ok(views.html.harvest.create(pub, harvestForm)))
     ).getOrElse(NotFound(views.html.static.trouble("No such publisher: " + id)))
   }
 
-  def createHarvest(id: Int) = Action { implicit request =>
+  def createHarvest(id: Int) = isAuthenticated { identity => implicit request =>
     val pub = Publisher.findById(id).get
-    ownsPublisher(User.findById(1).get, pub,
+    ownsPublisher(identity, pub,
       harvestForm.bindFromRequest.fold(
         errors => BadRequest(views.html.harvest.create(pub, errors)),
         value => {
-          val harv = Harvest.make(id, value.name, value.protocol, value.serviceUrl, value.resourceUrl, value.freq, value.start)
-          // also create an inbound channel for this collection - currently limited to SWORD
-          // RLR TODO - not clear we need to make a channel if content is only harvested
-          /*
-          val chan = Channel.make("sword", "package", "inbound", pub.pubId + ":" + coll.description + " deposits", "user", "password", "/sword/collection/" + coll.id)
-          // make collection the channel owner
-          chan.setOwner("coll", coll.id)
-          conveyor ! coll
-          */
+          Harvest.make(id, value.name, value.protocol, value.serviceUrl,
+                       value.resourceUrl, value.freq, value.start)
           Redirect(routes.Application.publisher(id))
         }
       )
     )
   }
 
-  def deleteHarvest(id: Int) = Action { implicit request =>
+  def deleteHarvest(id: Int) = isAuthenticated { identity =>
+    implicit request =>
     Harvest.findById(id).map( harvest => {
-      Harvest.delete(id)
-      Redirect(routes.Application.publisher(harvest.publisher.get.id))
+      if (harvest.publisher.get.userId == identity.id) {
+        Harvest.delete(id)
+        Redirect(routes.Application.publisher(harvest.publisher.get.id))
+      } else {
+        Unauthorized(views.html.static.trouble("You are not authorized"))
+      }
     }
     ).getOrElse(NotFound(views.html.static.trouble("No such harvest: " + id)))
   }
