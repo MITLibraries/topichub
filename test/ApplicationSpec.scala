@@ -43,10 +43,11 @@ class ApplicationSpec extends Specification {
       redirectLocation(action) must beSome.which(_ == "/login")
     }
 
-    "display login screen when non analyst tries to access analyst protected page" in new WithApplication(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+    "display error screen when non analyst tries to access analyst protected page" in new WithApplication(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
       val user = create_user("schmuck")
       val action = route(FakeRequest(GET, "/workbench").withSession(("connected", user.identity))).get
-      redirectLocation(action) must beSome.which(_ == "/login")
+      redirectLocation(action) must beNone
+      contentAsString(action) must contain ("Reason: You are not authorized")
     }
 
     "display protected analyst page when analyst requests" in new WithApplication(FakeApplication(additionalConfiguration = inMemoryDatabase())) {

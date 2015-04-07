@@ -40,7 +40,8 @@ class IntegrationSpec extends Specification {
       browser.goTo("http://localhost:" + port)
       browser.$("body > nav > div > div.navbar-header > button").click();
       browser.$("a[href*='workbench']").click();
-      assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+      assertThat(browser.title()).isEqualTo("Error - TopicHub")
+      browser.pageSource must contain("You are not authorized")
     }
 
     "top navigation should deny Workbench access to not logged in user" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {

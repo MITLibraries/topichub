@@ -350,39 +350,34 @@ object Application extends Controller with Security {
     )(Scheme.apply)(Scheme.unapply)
   )
 
-  def schemes = Action { implicit request => //isAuthenticated { username => implicit request =>
-    //isAnalyst(/*username*/"richard", Ok(views.html.scheme_list(Scheme.all)))
+  def schemes = isAnalyst { identity => implicit request =>
     Ok(views.html.scheme.index(Scheme.all))
   }
 
-  def scheme(id: Int) = Action { implicit request =>
+  def scheme(id: Int) = isAnalyst { identity => implicit request =>
     Scheme.findById(id).map( scheme =>
       Ok(views.html.scheme.show(scheme))
     ).getOrElse(NotFound(views.html.static.trouble("No such scheme: " + id)))
   }
 
-  def newScheme = Action { implicit request => // isAuthenticated { username => implicit request =>
-     //isAnalyst(username, Ok(views.html.new_scheme(schemeForm)))
-     Ok(views.html.scheme.create(schemeForm))
+  def newScheme = isAnalyst { identity => implicit request =>
+    Ok(views.html.scheme.create(schemeForm))
   }
 
-  def editScheme(id: Int) = Action { implicit request => //isAuthenticated { username => implicit request =>
+  def editScheme(id: Int) = isAnalyst { identity => implicit request =>
     Scheme.findById(id).map( scheme =>
-      //isAnalyst(username, Ok(views.html.scheme_edit(scheme)))
       Ok(views.html.scheme.edit(scheme))
     ).getOrElse(NotFound(views.html.static.trouble("No such scheme: " + id)))
   }
 
-  def createScheme = Action { implicit request => //isAuthenticated { username => implicit request =>
-    //isAnalyst(username,
-      schemeForm.bindFromRequest.fold(
-        errors => BadRequest(views.html.scheme.create(errors)),
-        value => {
-          Scheme.create(value.tag, value.gentype, value.category, value.description, value.link, value.logo)
-          Redirect(routes.Application.schemes)
-        }
-      )
-    //)
+  def createScheme = isAnalyst { identity => implicit request =>
+    schemeForm.bindFromRequest.fold(
+      errors => BadRequest(views.html.scheme.create(errors)),
+      value => {
+        Scheme.create(value.tag, value.gentype, value.category, value.description, value.link, value.logo)
+        Redirect(routes.Application.schemes)
+      }
+    )
   }
 
   // content types

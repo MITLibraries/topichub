@@ -41,8 +41,8 @@ class AuthenticationPageSpec extends Specification with Mockito {
       "deny access when signed in without analyst role" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val user = create_user("schmuck")
         browser.goTo("http://localhost:" + port + "/workbench")
-        browser.pageSource must contain("Log in with your MIT ID")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Error - TopicHub")
+        browser.pageSource must contain("You are not authorized")
       }
 
       "allow access when signed in with analyst role" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
