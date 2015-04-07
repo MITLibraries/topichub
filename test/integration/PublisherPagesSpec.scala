@@ -14,7 +14,7 @@ import models.{ Publisher, User, Subscriber }
  */
 class PublisherPagesSpec extends Specification {
 
-  def create_user(role: String) = User.make("bob", "bob@example.com", role, "identity")
+  def create_user(role: String) = User.make("bob", "bob@example.com", role, "current_user")
   def make_subscriber(userid: Int) = Subscriber.make(userid, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
 
   "Publisher pages" should {
@@ -77,11 +77,17 @@ class PublisherPagesSpec extends Specification {
           val sub = make_subscriber(user.id)
           val pub = Publisher.make(user.id, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some("http://www.example.com"), Some(""))
           browser.goTo("http://localhost:" + port + "/publisher/" + pub.id)
+          assertThat(browser.title()).isEqualTo("Publisher - TopicHub")
           browser.pageSource must contain("/publisher/1/edit")
         }
 
         "not display to non logged in user" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-          skipped(": need to be able to create a publisher without signing in user during test")
+          val pub_user = User.make("pub", "pub@example.com", "some roles", "another_identity")
+          val pub = Publisher.make(pub_user.id, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some("http://www.example.com"), Some(""))
+          browser.goTo("http://localhost:" + port + "/publisher/" + pub.id)
+          assertThat(browser.title()).isEqualTo("Publisher - TopicHub")
+          browser.pageSource must not contain("Log in with your MIT ID")
+          browser.pageSource must not contain("/publisher/1/edit")
         }
 
         "not display to logged in user not associated with publisher" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
@@ -89,6 +95,7 @@ class PublisherPagesSpec extends Specification {
           val pub_user = User.make("pub", "pub@example.com", "some roles", "another_identity")
           val pub = Publisher.make(pub_user.id, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some("http://www.example.com"), Some(""))
           browser.goTo("http://localhost:" + port + "/publisher/" + pub.id)
+          assertThat(browser.title()).isEqualTo("Publisher - TopicHub")
           browser.pageSource must not contain("/publisher/1/edit")
         }
       }
@@ -122,7 +129,11 @@ class PublisherPagesSpec extends Specification {
 
     "edit publisher" should {
       "redirects to login if not signed in" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        skipped(": need to be able to create a publisher without signing in user during test")
+        val pub_user = User.make("pub", "pub@example.com", "some roles", "another_identity")
+        val pub = Publisher.make(pub_user.id, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some("http://www.example.com"), Some(""))
+        browser.goTo("http://localhost:" + port + "/publisher/1/edit")
+        browser.pageSource must contain("Log in with your MIT ID")
+        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
       }
 
       "redirects to trouble if user does not own publisher" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {

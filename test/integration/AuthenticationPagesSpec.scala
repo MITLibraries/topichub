@@ -15,7 +15,7 @@ import models.{ Harvest, Publisher, Subscriber, User }
  */
 class AuthenticationPageSpec extends Specification with Mockito {
 
-  def create_user(role: String) = User.make("bob", "bob@example.com", role, "identity")
+  def create_user(role: String) = User.make("bob", "bob@example.com", role, "current_user")
   def make_subscriber(userid: Int) = Subscriber.make(userid, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
 
   "Application" should {

@@ -17,7 +17,7 @@ import play.api.Play.current
 @RunWith(classOf[JUnitRunner])
 class IntegrationSpec extends Specification {
 
-  def create_user(role: String) = User.make("bob", "bob@example.com", role, "identity")
+  def create_user(role: String) = User.make("bob", "bob@example.com", role, "current_user")
 
   "Application" should {
     "work from within a browser" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {

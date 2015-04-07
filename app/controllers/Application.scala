@@ -155,7 +155,11 @@ object Application extends Controller with Security {
 
   def publisher(id: Int) = Action { implicit request => {
     val user = if ( play.api.Play.isTest(play.api.Play.current) ) {
-        User.findById(1).get.identity
+        if (User.isValidIdentity("current_user")) {
+          User.findByIdentity("current_user").get.identity
+        } else {
+          ""
+        }
       } else {
         request.session.get("connected").getOrElse("")
       }
