@@ -4,6 +4,8 @@ import org.junit.runner._
 
 import play.api.test._
 import play.api.test.Helpers._
+import play.api.libs.json._
+import models.User
 
 /**
  * Add your spec here.
@@ -13,18 +15,46 @@ import play.api.test.Helpers._
 @RunWith(classOf[JUnitRunner])
 class ApplicationSpec extends Specification {
 
+  def create_user(role: String) = User.make("bob", "bob@example.com", role, "identity")
+
   "Application" should {
 
-    "send 404 on a bad request" in new WithApplication{
+    "send 404 on a bad request" in new WithApplication(FakeApplication(additionalConfiguration = inMemoryDatabase())){
       route(FakeRequest(GET, "/boum")) must beNone
     }
 
-    "render the index page" in new WithApplication{
+    "render the index page" in new WithApplication(FakeApplication(additionalConfiguration = inMemoryDatabase())){
       val home = route(FakeRequest(GET, "/")).get
 
       status(home) must equalTo(OK)
       contentType(home) must beSome.which(_ == "text/html")
       contentAsString(home) must contain ("Welcome to SCOAP")
+    }
+
+    "display a login screen" in new WithApplication(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+      val action = route(FakeRequest(GET, "/login")).get
+      status(action) must equalTo(OK)
+      contentType(action) must beSome.which(_ == "text/html")
+      contentAsString(action) must contain ("Log in with your MIT ID")
+    }
+
+    "display login screen when a non-logged in user asks for an analyst page" in new WithApplication(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+      val action = route(FakeRequest(GET, "/workbench")).get
+      redirectLocation(action) must beSome.which(_ == "/login")
+    }
+
+    "display login screen when non analyst tries to access analyst protected page" in new WithApplication(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+      val user = create_user("schmuck")
+      val action = route(FakeRequest(GET, "/workbench").withSession(("connected", user.identity))).get
+      redirectLocation(action) must beSome.which(_ == "/login")
+    }
+
+    "display protected analyst page when analyst requests" in new WithApplication(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+      val user = create_user("analyst")
+      println("user created ---" + user + "------")
+      val action = route(FakeRequest(GET, "/workbench").withSession(("connected", user.identity))).get
+      redirectLocation(action) must beNone
+      contentAsString(action) must not contain ("Log in with your MIT ID")
     }
   }
 }

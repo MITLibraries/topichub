@@ -1,0 +1,7 @@
+@(message: String, externalAuthUrl: String)
+
+@layout.main("Login to SCOAP3 - TopicHub") {
+  <h2>Not Yet Authenticated</h2>
+  <h3>@message</h3>
+  <a id="openid" href="@externalAuthUrl"><em><b>Log in with your MIT ID!</b></em></a>
+}
