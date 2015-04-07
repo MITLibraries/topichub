@@ -317,27 +317,19 @@ object Application extends Controller with Security {
     )(Collection.apply)(Collection.unapply)
   )
 
-  def newCollection(id: Int) = Action { implicit request => //isAuthenticated { username => implicit request =>
+  def newCollection(id: Int) = isAuthenticated { identity => implicit request =>
     Publisher.findById(id).map( pub =>
-      ownsPublisher(User.findById(1).get, pub, Ok(views.html.collection.create(pub, collForm)))
+      ownsPublisher(identity, pub, Ok(views.html.collection.create(pub, collForm)))
     ).getOrElse(NotFound(views.html.static.trouble("No such publisher: " + id)))
   }
 
-  def createCollection(id: Int) = Action { implicit request => //isAuthenticated { username => implicit request =>
+  def createCollection(id: Int) = isAuthenticated { identity => implicit request =>
     val pub = Publisher.findById(id).get
-    ownsPublisher(User.findById(1).get, pub,
+    ownsPublisher(identity, pub,
       collForm.bindFromRequest.fold(
         errors => BadRequest(views.html.collection.create(pub, errors)),
         value => {
           val coll = Collection.make(id, value.ctypeId, value.resmapId, value.tag, value.description, value.policy)
-          // also create an inbound channel for this collection - currently limited to SWORD
-          // RLR TODO - not clear we need to make a channel if content is only harvested
-          /*
-          val chan = Channel.make("sword", "package", "inbound", pub.pubId + ":" + coll.description + " deposits", "user", "password", "/sword/collection/" + coll.id)
-          // make collection the channel owner
-          chan.setOwner("coll", coll.id)
-          conveyor ! coll
-          */
           Redirect(routes.Application.publisher(id))
         }
       )
