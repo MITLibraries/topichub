@@ -690,14 +690,13 @@ object Application extends Controller with Security {
     )(Validator.apply)(Validator.unapply)
   )
 
-  def newValidator(tag: String) = Action { implicit request => //isAuthenticated { username => implicit request =>
+  def newValidator(tag: String) = isAnalyst { identity => implicit request =>
     Scheme.findByTag(tag).map( scheme =>
-      //isAnalyst(username, Ok(views.html.new_validator(schemeId, validatorForm)))
       Ok(views.html.validator.create(tag, validatorForm))
     ).getOrElse(NotFound(views.html.static.trouble("Unknown scheme: " + tag)))
   }
 
-  def createValidator(tag: String) = Action { implicit request => //isAuthenticated { username => implicit request =>
+  def createValidator(tag: String) = isAnalyst { identity => implicit request =>
     Scheme.findByTag(tag).map( scheme =>
       validatorForm.bindFromRequest.fold(
         errors => BadRequest(views.html.validator.create(tag, errors)),
@@ -709,7 +708,7 @@ object Application extends Controller with Security {
     ).getOrElse(NotFound(views.html.static.trouble("Unknown scheme: " + tag)))
   }
 
-  def deleteValidator(tag: String, id: Int) = Action { implicit request => //isAuthenticated { username => implicit request =>
+  def deleteValidator(tag: String, id: Int) = isAnalyst { identity => implicit request =>
     Scheme.findByTag(tag).map( scheme => {
       Validator.delete(id)
       Ok(views.html.finder.index(Finder.findByScheme(scheme.id)))
