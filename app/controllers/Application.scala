@@ -643,20 +643,19 @@ object Application extends Controller with Security {
     )(Finder.apply)(Finder.unapply)
   )
 
-  def finders(tag: String) = Action { implicit request =>
+  def finders(tag: String) = isAnalyst { identity => implicit request =>
     Scheme.findByTag(tag).map( scheme =>
       Ok(views.html.finder.index(Finder.findByScheme(scheme.id)))
     ).getOrElse(NotFound(views.html.static.trouble("Unknown scheme: " + tag)))
   }
 
-  def newFinder(tag: String) = Action { implicit request => //isAuthenticated { username => implicit request =>
+  def newFinder(tag: String) = isAnalyst { identity => implicit request =>
     Scheme.findByTag(tag).map( scheme =>
-      //isAnalyst(username, Ok(views.html.new_finder(tag, finderForm)))
       Ok(views.html.finder.create(tag, finderForm))
     ).getOrElse(NotFound(views.html.static.trouble("Unknown scheme: " + tag)))
   }
 
-  def createFinder(tag: String) = Action { implicit request =>
+  def createFinder(tag: String) = isAnalyst { identity => implicit request =>
     Scheme.findByTag(tag).map( scheme =>
       finderForm.bindFromRequest.fold(
         errors => BadRequest(views.html.finder.create(tag, errors)),
@@ -669,7 +668,7 @@ object Application extends Controller with Security {
     ).getOrElse(NotFound(views.html.static.trouble("Unknown scheme: " + tag)))
   }
 
-  def deleteFinder(tag: String, id: Int) = Action { implicit request =>
+  def deleteFinder(tag: String, id: Int) = isAnalyst { identity => implicit request =>
     Scheme.findByTag(tag).map( scheme => {
       Finder.delete(id)
       Ok(views.html.finder.index(Finder.findByScheme(scheme.id)))
