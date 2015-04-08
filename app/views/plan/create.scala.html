@@ -1,0 +1,34 @@
+@*****************************************************************************
+ * Page with form to create new Channel                                      *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+ @(subscriber_id: Int, planForm: Form[Plan])@*(implicit hubContext: HubContext)*@
+ @import helper._
+ @layout.main("New Action Plan - TopicHub") {
+   <div class="container-fluid">
+     <div class="row">
+       <div class="col-md-4">
+       @form(routes.Application.createPlan(subscriber_id)) {
+         @select(planForm("channelId"), options(Subscriber.findById(subscriber_id).get.channelMapView))
+         @inputText(planForm("name"))
+         @inputText(planForm("description"))
+         @select(planForm("icon"), options(Map("thumbs-up" -> "thumbs-up", "inbox" -> "inbox", "envelope" -> "envelope")))
+         @select(planForm("fulfill"), options(Map("deliver" -> "deliver", "review" -> "review", "notify" -> "notify")))
+         @select(planForm("pick"), options(Map("subscribe" -> "subscribe", "review" -> "review", "notify" -> "notify")))
+         @select(planForm("interest"), options(Map("subscribe" -> "subscribe", "review" -> "review", "notify" -> "notify")))
+         @select(planForm("template"), options(Map("subscribe" -> "subscribe", "review" -> "review", "notify" -> "notify")))
+         <input type="submit" value="Create">
+       }
+       </div>
+       <div class="col-md-8">
+         <div class="jumbotron">
+           <h2>Define an action plan</h2>
+           <p>Each plan consists of a set of rules or instructions for changes in hub content.</p>
+           <p>Beyond a name and description, the 'fulfill' rule governs how items that you are currently subscribed to
+              ought to be handled: 'deliver' means transfer the packaged content using the destination supplied (usually SWORD deposit), 'review' means placing
+              the item on the hold list for your review, and 'notify' would cause an message to be sent.</p>
+         </div>
+       </div>
+     </div>
+   </div>
+ }

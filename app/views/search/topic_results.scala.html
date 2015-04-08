@@ -7,7 +7,7 @@
 @start = @{(page * perpage + 1)}
 
 @subscribed(t: Topic, sub: Subscriber) = @{
-  if(sub.hasInterest(t.scheme_id) && sub.subscribesTo(t.id) ) {
+  if(sub.plannedFor(t.scheme_id) && sub.subscribesTo(t.id) ) {
     "subscribed"
   } else {
     "not_subscribed"
@@ -15,7 +15,7 @@
 }
 
 @star(t: Topic, sub: Subscriber) = @{
-  if(sub.hasInterest(t.scheme_id) && sub.subscribesTo(t.id) ) {
+  if(sub.plannedFor(t.scheme_id) && sub.subscribesTo(t.id) ) {
     <span class="badge alert-success" data-toggle="tooltip" title="You are subscribed to this Topic">
       <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
     </span>

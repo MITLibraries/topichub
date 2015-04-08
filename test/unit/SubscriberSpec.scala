@@ -3,10 +3,7 @@ import play.api.test._
 import play.api.test.Helpers._
 
 import models.{Agent, Channel, Collection, ContentType}
-import models.Hold
-import models.Interest
-import models.Item
-import models.Publisher
+import models.{Hold, Interest, Item, Plan, Publisher}
 import models.ResourceMap
 import models.Scheme
 import models.Subscriber
@@ -189,6 +186,63 @@ class SubscriberSpec extends Specification {
       }
     }
 
+    "#plans" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        Subscriber.all must haveSize(0)
+        User.create("bob", "bob@example.com", "pwd", "role1")
+        val sub = Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        sub.plans must haveSize(0)
+        val chan = Channel.make(Subscriber.findById(1).get.id, "protocol", "mode", "description", "userid", "password", "http://example.com")
+        val plan = Plan.make(sub.id, chan.id, "name", "description", "thumbs-up", "deliver", "review", "subscribe", "review")
+        val plan2 = Plan.make(sub.id, chan.id, "name2", "description", "thumbs-up", "review", "review", "subscribe", "review")
+        sub.plans must haveSize(2)
+      }
+    }
+
+    "#planFor" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        Subscriber.all must haveSize(0)
+        User.create("bob", "bob@example.com", "pwd", "role1")
+        val sub = Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        sub.plans must haveSize(0)
+        val chan = Channel.make(Subscriber.findById(1).get.id, "protocol", "mode", "description", "userid", "password", "http://example.com")
+        val plan = Plan.make(sub.id, chan.id, "name", "description", "thumbs-up", "deliver", "review", "subscribe", "review")
+        val scheme = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        plan.addScheme(scheme)
+        sub.planFor(scheme.id).get must equalTo(plan)
+      }
+    }
+
+    "#plannedSchemes" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        Subscriber.all must haveSize(0)
+        User.create("bob", "bob@example.com", "pwd", "role1")
+        val sub = Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        sub.plans must haveSize(0)
+        val chan = Channel.make(Subscriber.findById(1).get.id, "protocol", "mode", "description", "userid", "password", "http://example.com")
+        val plan = Plan.make(sub.id, chan.id, "name", "description", "thumbs-up", "deliver", "review", "subscribe", "review")
+        val scheme1 = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        plan.addScheme(scheme1)
+        val scheme2 = Scheme.make("tag2", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        plan.addScheme(scheme2)
+        sub.plannedSchemes.size must equalTo(2)
+      }
+    }
+
+    "#plannedFor" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        Subscriber.all must haveSize(0)
+        User.create("bob", "bob@example.com", "pwd", "role1")
+        val sub = Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        sub.plans must haveSize(0)
+        val chan = Channel.make(Subscriber.findById(1).get.id, "protocol", "mode", "description", "userid", "password", "http://example.com")
+        val plan = Plan.make(sub.id, chan.id, "name", "description", "thumbs-up", "deliver", "review", "subscribe", "review")
+        val scheme = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        plan.addScheme(scheme)
+        sub.plannedFor(Scheme.findById(1).get.id) must equalTo(true)
+      }
+    }
+
     "#subscriptionFor" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         Subscriber.all must haveSize(0)
@@ -221,6 +275,9 @@ class SubscriberSpec extends Specification {
         User.create("bob1", "bob@example.com", "pwd", "role1")
         val s = Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
         Scheme.create("tag1", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        val chan = Channel.make(Subscriber.findById(1).get.id, "protocol", "mode", "description", "userid", "password", "http://example.com")
+        val plan = Plan.make(s.id, chan.id, "name", "description", "thumbs-up", "deliver", "review", "subscribe", "review")
+        plan.addScheme(Scheme.findById(1).get)
         Topic.create(1, "tag", "name")
         s.addInterest(Scheme.findById(1).get, "review")
         s.subscribesTo(Topic.findById(1).get.id) must equalTo(false)

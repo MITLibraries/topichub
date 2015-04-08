@@ -22,6 +22,18 @@ class ChannelSpec extends Specification {
       }
     }
 
+    "#findByUrl" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        Subscriber.all must haveSize(0)
+        User.create("bob", "bob@example.com", "pwd", "role1")
+        Subscriber.create(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+
+        Channel.findByUrl("http://example.com") must equalTo(None)
+        Channel.create(Subscriber.findById(1).get.id, "protocol", "mode", "description", "userid", "password", "http://example.com")
+        Channel.findByUrl("http://example.com").get.protocol must equalTo("protocol")
+      }
+    }
+
     "#create" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         Subscriber.all must haveSize(0)

@@ -1,0 +1,24 @@
+@*****************************************************************************
+ * Display information on a subscriber action plan                           *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(plan: Plan)@*(implicit hubContext: HubContext)*@
+@layout.main("Subscriber Plan - TopicHub") {
+  <div class="jumbotron">
+    <h3>~ Action Plan ~</h3>
+    <h2>@plan.description</h2>
+     <p>Created: @HubUtils.fmtDate(plan.created)</p>
+  </div>
+     @*<h3>Subscriptions</h3>
+     <ul>
+     @channel.subscriptions.map { sub =>
+       @defining(Topic.findById(sub.topic_id).get) { topic =>
+         <li>
+         <a rel="tooltip" title="cancel this subscription" href="@routes.Application.cancelSubscription(sub.id)" class="btn btn-primary btn-mini">Cancel &raquo;</a>
+       <a href="@routes.Application.topic(topic.id)">@topic.name</a> (@topic.topicId) Created: @HubUtils.fmtDate(sub.created) @HubUtils.pluralize(sub.transfers, "transfer")
+      </li>
+     }
+     }
+     </ul>
+     *@
+}
