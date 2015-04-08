@@ -368,9 +368,26 @@ object subscriberModelJson {
           "contact" -> toJson(s.contact),
           "link" -> toJson(s.link),
           "logo" -> toJson(s.logo),
-          "interests" -> jsonInterests(s.id),
           "channels" -> jsonChannels(s),
+          "plans" -> jsonPlans(s.id),
+          "interests" -> jsonInterests(s.id),
           "subscriptions" -> jsonSubscriptions(s.id)
+      )
+    )
+    toJson(msg)
+  }
+
+  def jsonPlans(sid: Int) = {
+    val msg = Plan.findBySubscriber(sid).map ( p =>
+      Map("channelUrl" -> toJson(Channel.findById(p.channelId).get.channelUrl),
+          "name" -> toJson(p.name),
+          "description" -> toJson(p.description),
+          "icon" -> toJson(p.icon),
+          "fulfill" -> toJson(p.fulfill),
+          "pick" -> toJson(p.pick),
+          "interest" -> toJson(p.interest),
+          "template" -> toJson(p.template),
+          "schemes" -> jsonPlanSchemes(p)
       )
     )
     toJson(msg)
@@ -381,6 +398,13 @@ object subscriberModelJson {
       Map("scheme" -> toJson(Scheme.findById(i.schemeId).get.tag),
           "action" -> toJson(i.action)
       )
+    )
+    toJson(msg)
+  }
+
+  def jsonPlanSchemes(plan: Plan) = {
+    val msg = plan.schemes.map( s =>
+      Map("tag" -> toJson(s.tag))
     )
     toJson(msg)
   }
@@ -422,10 +446,12 @@ object subscriberModelJson {
     val sub = Subscriber.make(1, forName(jss, "name"), forName(jss, "category"),
                               forName(jss, "contact"), forNameOption(jss, "link"),
                               forNameOption(jss, "logo"))
-    val interests = (jss \ "interests")
-    procJsArray(interests, 0, intFromSubscriberModel(sub.id))
     val channels = (jss \ "channels")
     procJsArray(channels, 0, chanFromSubscriberModel(sub.id))
+    val plans = (jss \ "plans")
+    procJsArray(channels, 0, planFromSubscriberModel(sub.id))
+    val interests = (jss \ "interests")
+    procJsArray(interests, 0, intFromSubscriberModel(sub.id))
     val subscriptions = (jss \ "subscriptions")
     procJsArray(subscriptions, 0, subscripFromSubscriberModel(sub.id))
   }
@@ -442,6 +468,15 @@ object subscriberModelJson {
                    forName(jss, "userId"), forName(jss, "password"), forName(jss, "channelUrl"))
   }
 
+  def planFromSubscriberModel(sid: Int)(jss: JsValue) {
+    val chan = Channel.findByUrl(forName(jss, "channelUrl")).get
+    val plan = Plan.make(sid, chan.id, forName(jss, "name"), forName(jss, "description"), forName(jss, "icon"),
+                        forName(jss, "fulfill"), forName(jss, "pick"), forName(jss, "interest"),
+                        forName(jss, "template"))
+    val schemes = (jss \ "schemes")
+    procJsArray(schemes, 0, addSchemeFromSubscriberModel(plan))
+  }
+
   def subscripFromSubscriberModel(sid: Int)(jss: JsValue) {
     // only create if dependencies found
     Scheme.findByTag(forName(jss, "scheme")).map { sc =>
@@ -449,6 +484,10 @@ object subscriberModelJson {
         Subscription.create(sid, topic.id, forName(jss, "action"), new Date, new Date)
       }
     }
+  }
+
+  def addSchemeFromSubscriberModel(plan: Plan)(jss: JsValue) {
+    Scheme.findByTag(forName(jss, "tag")).foreach(plan.addScheme(_))
   }
 }
 

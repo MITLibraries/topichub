@@ -4,48 +4,43 @@
  *****************************************************************************@
 @(sub: Subscriber, intForm: Form[Int])@*(implicit hubContext: HubContext)*@
 @import helper._
-@editInterest(action: String) = {
+@editPlan(plan: Plan) = {
   <ul>
-    @sub.interestsWithAction(action).map { interest =>
-      <li><a href="@routes.Application.scheme(interest.scheme.get.id)">@interest.scheme.get.tag</a>: @interest.scheme.get.description
-      <a href="@routes.Application.removeSubscriberInterest(interest.subscriberId, interest.schemeId)">remove</a>
-      <a href="@routes.Application.subscriptionBrowse("scheme",interest.scheme.get.id)">Browse subscriptions</a>
+    @plan.schemes.map { scheme =>
+      <li>
+        <a href="@routes.Application.scheme(scheme.id)">@scheme.tag</a>: @scheme.description
+        <a href="@routes.Application.removePlanScheme(plan.id, scheme.id)">remove</a>
+        <a href="@routes.Application.subscriptionBrowse("scheme", scheme.id)">Browse subscriptions</a>
       </li>
     }
   </ul>
-  <h4>Add a new @action interest</h4>
-  @form(routes.Application.addSubscriberInterest(sub.id, action)) {
-    @select(intForm("scheme_id"), options(sub.newInterestMapView))
+  <h4>Add a scheme to @plan.name</h4>
+  @form(routes.Application.addPlanScheme(plan.id)) {
+    @select(intForm("scheme_id"), options(sub.newPlanMapView))
     <input type="submit" value="Create">
   }
 }
 @layout.main("Edit Subscriber - TopicHub") {
   <div class="jumbotron">
-     <h3>~ Subscriber ~</h3>
-     <h2>@sub.name</h2>
-     @if(!sub.link.isEmpty) {
-        <p><a href="@sub.link">subscriber site</a></p>
-     }
-     <p>Registered @HubUtils.fmtDate(sub.created)</P>
-     @*<p>@HubUtils.pluralize(pub.itemCount, "article") deposited</p>
-     <p><a class="btn btn-primary btn-large pull-right" href="@routes.Application.newHarvest(pub.id)">Establish Harvest</a></p>
-     *@
+    <h3>~ Subscriber ~</h3>
+    <h2>@sub.name</h2>
+    @if(!sub.link.isEmpty) {
+      <p><a href="@sub.link">subscriber site</a></p>
+    }
+    <p>Registered @HubUtils.fmtDate(sub.created)</P>
+    @*<p>@HubUtils.pluralize(pub.itemCount, "article") deposited</p>
+    <p><a class="btn btn-primary btn-large pull-right" href="@routes.Application.newHarvest(pub.id)">Establish Harvest</a></p>
+    *@
   </div>
-  <h3>Interests</h3>
+  <h3>Plans</h3>
   <div class="container">
     <div class="row">
-      <div class="col-md-4">
-        <h4>Deliver</h4>
-        @editInterest("deliver")
-      </div>
-      <div class="col-md-4">
-        <h4>Notify</h4>
-        @editInterest("notify")
-      </div>
-      <div class="col-md-4">
-        <h4>Review</h4>
-        @editInterest("review")
-      </div>
+      @sub.plans.map { plan =>
+        <div class="col-md-4">
+          <h4>@plan.name <span class="glyphicon glyphicon-@plan.icon" aria-hidden="true"></span></h4>
+          @editPlan(plan)
+        </div>
+      }
     </div>
   </div>
   <h3>Destinations</h3>

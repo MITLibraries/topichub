@@ -51,12 +51,12 @@
           </li>
         </ul>
 
-      <h4>Subscriptions by Interest</h4>
+      <h4>Subscriptions by Scheme</h4>
       <h6>Note: deliveries and rejections can be seen as you click through the links below.</h6>
       <ul class="list-group">
-      @for(s <- sub.interests) {
+      @for(s <- sub.plannedSchemes) {
         <li class="list-group-item">
-          <a href=@routes.Application.subscriptionBrowse("scheme", s.scheme.get.id)>@s.scheme.get.description <span class="badge">@Subscription.schemeCount(sub.id, s.scheme.get.id)</span></a>
+          <a href=@routes.Application.subscriptionBrowse("scheme", s.id)>@s.description <span class="badge">@Subscription.schemeCount(sub.id, s.id)</span></a>
         </li>
       }
       </ul>

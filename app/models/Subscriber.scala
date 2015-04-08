@@ -49,6 +49,33 @@ case class Subscriber(id: Int,  // DB key
 
   def hasInterest(schemeId: Int) = interestIn(schemeId).isDefined
 
+  def plannedFor(schemeId: Int): Boolean = {
+    DB.withConnection { implicit c =>
+      SQL("select plan_scheme.scheme_id from plan, plan_scheme where plan_scheme.scheme_id = {scheme_id} and plan_scheme.plan_id = plan.id and plan.subscriber_id = {sub_id}")
+      .on('scheme_id -> schemeId, 'sub_id -> id).as(scalar[Int].singleOpt).isDefined
+    }
+  }
+
+  def planFor(schemeId: Int) = {
+    DB.withConnection { implicit c =>
+      SQL("select plan.* from plan, plan_scheme where plan_scheme.scheme_id = {scheme_id} and plan_scheme.plan_id = plan.id and plan.subscriber_id = {sub_id}")
+      .on('scheme_id -> schemeId, 'sub_id -> id).as(Plan.plan.singleOpt)
+    }
+  }
+
+  def plans: List[Plan] = {
+    DB.withConnection { implicit c =>
+      SQL("select * from plan where subscriber_id = {id}").on('id -> id).as(Plan.plan *)
+    }
+  }
+
+  def plannedSchemes: List[Scheme] = {
+    DB.withConnection { implicit c =>
+      SQL("select scheme.* from scheme, plan, plan_scheme where plan_scheme.plan_id = plan.id and plan_scheme.scheme_id = scheme.id and plan.subscriber_id = {sub_id}")
+      .on('sub_id -> id).as(Scheme.scheme *)
+    }
+  }
+
   def subscriptionFor(topicId: Int): Option[Subscription] = {
     DB.withConnection { implicit c =>
       SQL("select * from subscription where subscriber_id = {sub_id} and topic_id = {topic_id} and active = true")
@@ -59,7 +86,7 @@ case class Subscriber(id: Int,  // DB key
   def subscribesTo(topicId: Int) = subscriptionFor(topicId).isDefined
 
   def subscribeTo(topic: Topic): Subscription = {
-    Subscription.make(id, topic.id, interestIn(topic.scheme_id).get.action, created, new Date)
+    Subscription.make(id, topic.id, planFor(topic.scheme_id).get.fulfill, created, new Date)
   }
 
   def newItemCountFor(topicId: Int) = {
@@ -90,6 +117,11 @@ case class Subscriber(id: Int,  // DB key
   // map of interests that could be added (not current interests)
   def newInterestMapView: Map[String, String] = {
     Scheme.all filter(_.gentype.equals("topic")) filter (sc => ! hasInterest(sc.id)) map (sc => sc.id.toString -> sc.tag) toMap
+  }
+
+  // map of schemes that do not belong to any action plans
+  def newPlanMapView: Map[String, String] = {
+    Scheme.all.filter(_.gentype.equals("topic")).filter(sc => ! plannedFor(sc.id)).map(sc => sc.id.toString -> sc.tag) toMap
   }
 
   def addInterest(scheme: Scheme, action: String) = {
@@ -161,6 +193,10 @@ case class Subscriber(id: Int,  // DB key
     DB.withConnection { implicit c =>
       SQL("select * from channel where subscriber_id = {id}").on('id -> id).as(Channel.channel *)
     }
+  }
+
+  def channelMapView: Map[String, String] = {
+      channels map (ch => ch.id.toString -> ch.description) toMap
   }
 
   def monthlyTransferSummary(start: LocalDateTime, end: LocalDateTime) = {

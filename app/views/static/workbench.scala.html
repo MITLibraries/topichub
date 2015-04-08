@@ -21,6 +21,8 @@
           <a id="sidenav_publishers" href="@routes.Application.publishers" class="list-group-item">Publishers</a>
           @* likewise, next choice would top-level if open to all subscribers *@
           <a id="sidenav_subscribers" href="@routes.Application.subscribers" class="list-group-item">Subscribers</a>
+          @* this will be moved to subscriber-based links when multiple subscribers allowed *@
+          <a id="sidenav_plans" href="@routes.Application.newPlan(1)" class="list-group-item">Plans</a>
           @*<a href="@routes.Application.pkgmaps" class="list-group-item">Packages</a>*@
           <a id="sidenav_sandbox" href="@routes.Application.sandbox" class="list-group-item">Sandbox</a>
         </div>

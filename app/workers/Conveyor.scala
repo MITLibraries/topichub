@@ -14,7 +14,7 @@ import play.api.libs.ws._
 import play.api.mvc._
 import play.api.http.HeaderNames._
 
-import models.{Channel, Hold, Item, Scheme, Subscriber, Subscription, Topic, TopicPick, Transfer}
+import models.{Channel, Hold, Item, Plan, Scheme, Subscriber, Subscription, Topic, TopicPick, Transfer}
 import services.Emailer
 
 /** Conveyor is the worker responsible for transmitting notifications
@@ -79,9 +79,8 @@ object Conveyor {
     // keep a record as a cancelled subscription? TODO
     if (accept) {
       val sub = Subscriber.findById(pick.subscriberId).get
-      val topic = Topic.findById(pick.topicId).get
-      // TODO derive action from topic's scheme plan
-      fulfill(Subscription.make(pick.subscriberId, pick.topicId, "review", sub.created, new Date))
+      val plan = sub.planFor(pick.topic.scheme_id)
+      fulfill(Subscription.make(sub.id, pick.topicId, plan.get.pick, sub.created, new Date))
     }
     // clean up pick in any case
     pick.resolve(accept)

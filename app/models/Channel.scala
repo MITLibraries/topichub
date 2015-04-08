@@ -58,6 +58,12 @@ object Channel {
     }
   }
 
+  def findByUrl(url: String): Option[Channel] = {
+    DB.withConnection { implicit c =>
+      SQL("select * from channel where channel_url = {url}").on('url -> url).as(channel.singleOpt)
+    }
+  }
+
   def create(subscriberId: Int, protocol: String, mode: String, description: String, userId: String, password: String, channelUrl: String) = {
     DB.withConnection { implicit c =>
       SQL("insert into channel (subscriber_id, protocol, mode, description, user_id, password, channel_url, created, updated, transfers) values ({subscriberId}, {protocol}, {mode}, {description}, {userId}, {password}, {channelUrl}, {created}, {updated}, {transfers})")
