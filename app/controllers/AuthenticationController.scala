@@ -38,7 +38,7 @@ trait Security {
         None
       }
     } else if ( play.api.Play.isTest(play.api.Play.current) ) {
-      User.findById(1)
+      User.findByIdentity("current_user")
     } else {
       None
     }
@@ -57,8 +57,8 @@ trait Security {
       if (hasRole(user, "analyst")) {
         Action(request => f(user)(request))
       } else {
-        // todo: redirect to not authorzied page, not login page as that won't help
-        Action(request => Results.Redirect(routes.AuthenticationController.login))
+        Action(request =>
+          Results.Unauthorized(views.html.static.trouble("You are not authorized")))
       }
     }
   }

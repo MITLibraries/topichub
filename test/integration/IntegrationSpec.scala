@@ -17,7 +17,7 @@ import play.api.Play.current
 @RunWith(classOf[JUnitRunner])
 class IntegrationSpec extends Specification {
 
-  def create_user(role: String) = User.make("bob", "bob@example.com", role, "identity")
+  def create_user(role: String) = User.make("bob", "bob@example.com", role, "current_user")
 
   "Application" should {
     "work from within a browser" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
@@ -40,7 +40,8 @@ class IntegrationSpec extends Specification {
       browser.goTo("http://localhost:" + port)
       browser.$("body > nav > div > div.navbar-header > button").click();
       browser.$("a[href*='workbench']").click();
-      assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+      assertThat(browser.title()).isEqualTo("Error - TopicHub")
+      browser.pageSource must contain("You are not authorized")
     }
 
     "top navigation should deny Workbench access to not logged in user" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
