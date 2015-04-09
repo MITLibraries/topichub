@@ -55,7 +55,7 @@ object ItemController extends Controller with Security {
     ).getOrElse(NotFound(views.html.static.trouble("No such item: " + id)))
   }
 
-  def itemDeposit(id: Int) = Action { implicit request =>
+  def itemDeposit(id: Int) = isAuthenticated { identity => implicit request =>
     val channel = Subscriber.findByUserId(1).get.channels.headOption.getOrElse {
       //todo handle this more elegantly!
       throw new RuntimeException("You must define a Channel")
