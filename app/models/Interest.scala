@@ -13,15 +13,15 @@ import anorm.SqlParser._
 import anorm.~
 import anorm.SQL
 
-/** Interest represents a subscriber intent toward values (topics) in a namespace (scheme).
-  * The intent specifies a type of action to be taken when items for the topics appear:
-  * 'notify' (email), 'review' (add to a pick list), or 'deliver' (SWORD deposit)
+/** Interest represents a subscriber intent toward a value in a namespace (scheme).
+  * The value may be exact, or represent a 'template' or pattern that
+  * describes a value space.
   *
   * @author richardrodgers
   */
 
-case class Interest(id: Int, subscriberId: Int, schemeId: Int, action: String,
-                    created: Date) {
+case class Interest(id: Int, subscriberId: Int, schemeTag: String, intValue: String,
+                    template: Boolean, matched: Int, created: Date) {
 
   def subscriber = {
     DB.withConnection { implicit c =>
@@ -32,8 +32,8 @@ case class Interest(id: Int, subscriberId: Int, schemeId: Int, action: String,
 
   def scheme = {
     DB.withConnection { implicit c =>
-      SQL("select * from scheme where id = {scheme_id}")
-      .on('scheme_id -> schemeId).as(Scheme.scheme.singleOpt)
+      SQL("select * from scheme where tag = {scheme_tag}")
+      .on('scheme_tag -> schemeTag).as(Scheme.scheme.singleOpt)
     }
   }
 }
@@ -41,10 +41,10 @@ case class Interest(id: Int, subscriberId: Int, schemeId: Int, action: String,
 object Interest {
 
   val interest = {
-    get[Int]("id") ~ get[Int]("subscriber_id") ~ get[Int]("scheme_id") ~
-    get[String]("action") ~ get[Date]("created") map {
-      case id ~ subscriberId ~ schemeId ~ action ~ created =>
-        Interest(id, subscriberId, schemeId, action, created)
+    get[Int]("id") ~ get[Int]("subscriber_id") ~ get[String]("scheme_tag") ~ get[String]("int_value") ~
+    get[Boolean]("template") ~ get[Int]("matched") ~ get[Date]("created") map {
+      case id ~ subscriberId ~ schemeTag ~ intValue ~ template ~ matched ~ created =>
+        Interest(id, subscriberId, schemeTag, intValue, template, matched, created)
     }
   }
 
