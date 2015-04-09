@@ -398,36 +398,31 @@ object Application extends Controller with Security {
     )
   )
 
-  def contentTypes = Action { implicit request => //isAuthenticated { username => implicit request =>
-    //isAnalyst(username, Ok(views.html.ctype_list(ContentType.all)))
+  def contentTypes = isAnalyst { identity => implicit request =>
     Ok(views.html.content_type.index(ContentType.all))
   }
 
-  def contentType(id: Int) = Action { implicit request => // isAuthenticated { username => implicit request =>
+  def contentType(id: Int) = isAnalyst { identity => implicit request =>
     ContentType.findById(id).map( ctype =>
-      //isAnalyst(username, Ok(views.html.ctype(ctype, ctSchemeForm)))
       Ok(views.html.content_type.show(ctype, ctSchemeForm))
     ).getOrElse(NotFound(views.html.static.trouble("No such content type")))
   }
 
-  def newContentType = Action { implicit request => //isAuthenticated { username => implicit request =>
-     //isAnalyst(username, Ok(views.html.new_ctype(ctypeForm)))
-     Ok(views.html.content_type.create(ctypeForm))
+  def newContentType = isAnalyst { identity => implicit request =>
+    Ok(views.html.content_type.create(ctypeForm))
   }
 
-  def createContentType = Action { implicit request => //isAuthenticated { username => implicit request =>
-    //isAnalyst(username,
-      ctypeForm.bindFromRequest.fold(
-        errors => BadRequest(views.html.content_type.create(errors)),
-        value => {
-          ContentType.create(value.tag, value.label, value.description, value.logo)
-          Redirect(routes.Application.contentTypes)
-        }
-      )
-    //)
+  def createContentType = isAnalyst { identity => implicit request =>
+    ctypeForm.bindFromRequest.fold(
+      errors => BadRequest(views.html.content_type.create(errors)),
+      value => {
+        ContentType.create(value.tag, value.label, value.description, value.logo)
+        Redirect(routes.Application.contentTypes)
+      }
+    )
   }
 
-  def addContentTypeScheme(id: Int, relation: String) = Action { implicit request =>
+  def addContentTypeScheme(id: Int, relation: String) = isAnalyst { identity => implicit request =>
     ctSchemeForm.bindFromRequest.fold(
       errors => {
         val ct = ContentType.findById(id).get
@@ -443,7 +438,8 @@ object Application extends Controller with Security {
     )
   }
 
-  def removeContentTypeScheme(cid: Int, sid: Int, relation: String) = Action { implicit request =>
+  def removeContentTypeScheme(cid: Int, sid: Int, relation: String) = isAnalyst {
+    identity => implicit request =>
     ContentType.findById(cid).map( ctype =>
       Scheme.findById(sid).map( scheme => {
         ctype.removeScheme(scheme, relation)
