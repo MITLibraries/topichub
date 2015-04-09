@@ -4,13 +4,13 @@
  ************************************************************************@
 @(ctypeForm: Form[ContentType])@*(implicit hubContext: HubContext)*@
 @import helper._
-@layout.main("Content Types - TopicHub") {
-     <h2>Add a new content type</h2>
+@layout.main("New Content Type - TopicHub") {
+    <h2>Add a new content type</h2>
     @form(routes.Application.createContentType) {
         @inputText(ctypeForm("tag"))
         @inputText(ctypeForm("label"))
         @inputText(ctypeForm("description"))
         @inputText(ctypeForm("logo"))
-        <input type="submit" value="Create">
+        <input id="submit" type="submit" value="Create">
     }
 }
