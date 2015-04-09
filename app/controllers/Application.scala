@@ -461,33 +461,28 @@ object Application extends Controller with Security {
     )(ContentFormat.apply)(ContentFormat.unapply)
   )
 
-  def contentFormats = Action { implicit request => //isAuthenticated { username => implicit request =>
-    //isAnalyst(username, Ok(views.html.ctype_list(ContentType.all)))
+  def contentFormats = isAnalyst { identity => implicit request =>
     Ok(views.html.content_format.index(ContentFormat.all))
   }
 
-  def contentFormat(id: Int) = Action { implicit request => // isAuthenticated { username => implicit request =>
+  def contentFormat(id: Int) = isAnalyst { identity => implicit request =>
     ContentFormat.findById(id).map( cfmt =>
-      //isAnalyst(username, Ok(views.html.ctype(ctype, ctSchemeForm)))
       Ok(views.html.content_format.show(cfmt, ctSchemeForm))
     ).getOrElse(NotFound(views.html.static.trouble("No such content format: " + id)))
   }
 
-  def newContentFormat = Action { implicit request => //isAuthenticated { username => implicit request =>
-     //isAnalyst(username, Ok(views.html.new_ctype(ctypeForm)))
-     Ok(views.html.content_format.create(cfmtForm))
+  def newContentFormat = isAnalyst { identity => implicit request =>
+    Ok(views.html.content_format.create(cfmtForm))
   }
 
-  def createContentFormat = Action { implicit request => //isAuthenticated { username => implicit request =>
-    //isAnalyst(username,
-      cfmtForm.bindFromRequest.fold(
-        errors => BadRequest(views.html.content_format.create(errors)),
-        value => {
-          ContentFormat.create(value.tag, value.label, value.description, value.url, value.mimetype, value.logo)
-          Redirect(routes.Application.contentFormats)
-        }
-      )
-    //)
+  def createContentFormat = isAnalyst { identity => implicit request =>
+    cfmtForm.bindFromRequest.fold(
+      errors => BadRequest(views.html.content_format.create(errors)),
+      value => {
+        ContentFormat.create(value.tag, value.label, value.description, value.url, value.mimetype, value.logo)
+        Redirect(routes.Application.contentFormats)
+      }
+    )
   }
 
   // content profiles

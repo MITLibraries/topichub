@@ -4,7 +4,7 @@
  ************************************************************************@
 @(cfmtForm: Form[ContentFormat])@*(implicit hubContext: HubContext)*@
 @import helper._
-@layout.main("Content Formats - TopicHub") {
+@layout.main("New Content Format - TopicHub") {
      <h2>Add a new content format</h2>
     @form(routes.Application.createContentFormat) {
         @inputText(cfmtForm("tag"))
@@ -13,6 +13,6 @@
         @inputText(cfmtForm("url"))
         @inputText(cfmtForm("mimetype"))
         @inputText(cfmtForm("logo"))
-        <input type="submit" value="Create">
+        <input id="submit" type="submit" value="Create">
     }
 }
