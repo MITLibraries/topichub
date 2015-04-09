@@ -54,7 +54,7 @@ class ContentFormatPagesSpec extends Specification {
     "as a User lacking the Analyst role" should {
 
       // GET /cformats
-      "accessing index redirects to login" in new WithBrowser(
+      "accessing index redirects to error" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("somerole")
         browser.goTo("http://localhost:" + port + "/cformats")
@@ -63,7 +63,7 @@ class ContentFormatPagesSpec extends Specification {
       }
 
       // GET /cformat/:id
-      "accessing content format show redirects to login" in new WithBrowser(
+      "accessing content format show redirects to error" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("somerole")
         val cf = ContentFormat.make("cf_tag", "cf_label", "cf_desc", "http://www.example.com",
@@ -74,7 +74,7 @@ class ContentFormatPagesSpec extends Specification {
       }
 
       // GET /cformats/create
-      "accessing content format create form redirects to login" in new WithBrowser(
+      "accessing content format create form redirects to error" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("somerole")
         browser.goTo("http://localhost:" + port + "/cformats/create")
@@ -83,7 +83,7 @@ class ContentFormatPagesSpec extends Specification {
       }
 
       // POST /cformats
-      "posting to content format create redirects to login" in new WithBrowser(
+      "posting to content format create redirects to error" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("somerole")
         val action = route(FakeRequest(POST, "/cformats")).get
@@ -96,7 +96,7 @@ class ContentFormatPagesSpec extends Specification {
     "as a User with the Analyst role" should {
 
       // GET /cformats
-      "accessing index redirects to login" in new WithBrowser(
+      "accessing index is allowed" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
         browser.goTo("http://localhost:" + port + "/cformats")
@@ -104,7 +104,7 @@ class ContentFormatPagesSpec extends Specification {
       }
 
       // GET /cformat/:id
-      "accessing content format show redirects to login" in new WithBrowser(
+      "accessing content format show is allowed" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
         val cf = ContentFormat.make("cf_tag", "cf_label", "cf_desc", "http://www.example.com",
@@ -115,7 +115,7 @@ class ContentFormatPagesSpec extends Specification {
       }
 
       // GET /cformats/create
-      "accessing content format create form redirects to login" in new WithBrowser(
+      "accessing content format create form is allowed" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
         browser.goTo("http://localhost:" + port + "/cformats/create")
@@ -124,7 +124,7 @@ class ContentFormatPagesSpec extends Specification {
       }
 
       // POST /cformats
-      "posting to content format create redirects to login" in new WithBrowser(
+      "posting to content format create is allowed" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
         browser.goTo("http://localhost:" + port + "/cformats/create")

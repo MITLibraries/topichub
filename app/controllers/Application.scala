@@ -568,35 +568,31 @@ object Application extends Controller with Security {
     )
   )
 
-  def resourceMaps = Action { implicit request => //isAuthenticated { username => implicit request =>
-    //isAnalyst(username, Ok(views.html.pkgmap_list(PackageMap.all)))
+  def resourceMaps = isAnalyst { identity => implicit request =>
     Ok(views.html.resource_map.index(ResourceMap.all))
   }
 
-  def resourceMap(id: Int) = Action { implicit request => // isAuthenticated { username => implicit request =>
+  def resourceMap(id: Int) = isAnalyst { identity => implicit request =>
     ResourceMap.findById(id).map( resmap =>
-      //isAnalyst(username, Ok(views.html.pkgmap(pmap, pmSchemeForm)))
       Ok(views.html.resource_map.show(resmap, rmSchemeForm))
     ).getOrElse(NotFound(views.html.static.trouble("No such resource map: " + id)))
   }
 
-  def newResourceMap = Action { implicit request => //isAuthenticated { username => implicit request =>
-     //isAnalyst(username, Ok(views.html.new_pkgmap(pkgmapForm)))
-     Ok(views.html.resource_map.create(resmapForm))
+  def newResourceMap = isAnalyst { identity => implicit request =>
+    Ok(views.html.resource_map.create(resmapForm))
   }
 
-  def createResourceMap = Action { implicit request => //isAuthenticated { username => implicit request =>
-    //isAnalyst(username,
-      resmapForm.bindFromRequest.fold(
+  def createResourceMap = isAnalyst { identity => implicit request =>
+    resmapForm.bindFromRequest.fold(
       errors => BadRequest(views.html.resource_map.create(errors)),
       value => {
         ResourceMap.create(value.tag, value.description, value.swordUrl)
         Redirect(routes.Application.resourceMaps)
       }
-    )//)
+    )
   }
 
-  def newResourceMapping(id: Int) = Action { implicit request =>
+  def newResourceMapping(id: Int) = isAnalyst { identity => implicit request =>
     rmSchemeForm.bindFromRequest.fold(
       errors => {
         val rm = ResourceMap.findById(id).get
@@ -611,7 +607,8 @@ object Application extends Controller with Security {
     )
   }
 
-  def removeResourceMapping(rid: Int, sid: Int, source: String) = Action { implicit request =>
+  def removeResourceMapping(rid: Int, sid: Int, source: String) = isAnalyst {
+    identity => implicit request =>
     ResourceMap.findById(rid).map( resmap =>
       Scheme.findById(sid).map( scheme => {
         resmap.removeMapping(scheme, source)
