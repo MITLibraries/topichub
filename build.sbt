@@ -20,3 +20,6 @@ libraryDependencies ++= Seq(
   "org.postgresql" % "postgresql" % "9.4-1201-jdbc41",
   "org.mockito" % "mockito-core" % "1.10.19" % "test"
 )
+
+parallelExecution in Test := false
+fork in Test := false
