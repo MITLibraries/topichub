@@ -90,9 +90,9 @@ object Application extends Controller with Security {
     ).getOrElse(NotFound(views.html.static.trouble("No such scheme: " + scheme_id)))
   }
 
-  def topicSubscribe(id: Int, cancel: Boolean) = Action { implicit request => //= mustAuthenticate { username => implicit request =>
+  def topicSubscribe(id: Int, cancel: Boolean) = isAuthenticated { identity => implicit request =>
     Topic.findById(id).map( topic =>
-      topicSubIfSubscriber(User.findByName("richard").get, topic, cancel)
+      topicSubIfSubscriber(identity, topic, cancel)
     ).getOrElse(NotFound(views.html.static.trouble("No such topic: " + id)))
   }
 
@@ -108,6 +108,7 @@ object Application extends Controller with Security {
     ).getOrElse(Redirect(routes.Application.subscribers))
   }
 
+  // todo: determine appropriate role (analyst?)
   def topicValidate(scheme_id: Int) = /*isAuthenticated { username => */  Action { implicit request =>
     Scheme.findById(scheme_id).map( scheme => {
        val topic_id = request.body.asFormUrlEncoded.get.get("topic").get.head
