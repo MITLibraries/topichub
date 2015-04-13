@@ -40,6 +40,13 @@ case class Channel(id: Int, // DB key
       .on('transfers -> newTrans, 'updated -> new Date, 'id -> id).executeUpdate()
     }
   }
+
+  def subscriber: Subscriber = {
+    DB.withConnection { implicit c =>
+      SQL("SELECT * FROM subscriber WHERE id = {subscriber_id}")
+      .on('subscriber_id -> subscriberId).as(Subscriber.sub.single)
+    }
+  }
 }
 
 object Channel {

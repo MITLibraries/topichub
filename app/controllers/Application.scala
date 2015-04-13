@@ -765,7 +765,6 @@ object Application extends Controller with Security {
   }
 
   def editSubscriber(id: Int) = isAuthenticated { identity => implicit request =>
-    println(identity)
     Subscriber.findById(id).map( sub =>
       ownsSubscriber(identity, sub, Ok(views.html.subscriber.edit(sub, planAddForm)))
     ).getOrElse(NotFound(views.html.static.trouble("No such subscriber: " + id)))
@@ -794,32 +793,30 @@ object Application extends Controller with Security {
     )(Channel.apply)(Channel.unapply)
   )
 
-  def channel(id: Int) = Action { implicit request => // isAuthenticated { username => implicit request =>
+  def channel(id: Int) = isAuthenticated { identity => implicit request =>
     Channel.findById(id).map( chan =>
-      Ok(views.html.channel.show(chan))
-    ).getOrElse(NotFound(views.html.static.trouble("No such subscriber destination: " + id)))
+      ownsSubscriber(identity, chan.subscriber, Ok(views.html.channel.show(chan)))
+      ).getOrElse(NotFound(views.html.static.trouble("No such subscriber destination: " + id)))
   }
 
-  def newChannel(sid: Int) = Action { implicit request => // isAuthenticated { username => implicit request =>
-    //ownsSubscriber(username, sid, Ok(views.html.new_channel(sid, channelForm)))
-    Ok(views.html.channel.create(sid, channelForm))
+  def newChannel(sid: Int) = isAuthenticated { identity => implicit request =>
+    ownsSubscriber(identity, Subscriber.findById(sid).get, Ok(views.html.channel.create(sid, channelForm)))
   }
 
-  def createChannel(sid: Int) = Action { implicit request => //isAuthenticated { username => implicit request =>
-    //ownsSubscriber(username, sid, channelForm.bindFromRequest.fold (
-    channelForm.bindFromRequest.fold (
-      errors => BadRequest(views.html.channel.create(sid, errors)),
-      value => {
-        val chan = Channel.make(sid, value.protocol, value.mode, value.description, value.userId, value.password, value.channelUrl)
-        Redirect(routes.Application.subscriber(sid))
-      }
+  def createChannel(sid: Int) = isAuthenticated { identity => implicit request =>
+    ownsSubscriber(identity, Subscriber.findById(sid).get,
+      channelForm.bindFromRequest.fold (
+        errors => BadRequest(views.html.channel.create(sid, errors)),
+        value => {
+          val chan = Channel.make(sid, value.protocol, value.mode, value.description, value.userId, value.password, value.channelUrl)
+          Redirect(routes.Application.subscriber(sid))
+        }
+      )
     )
-    //)
   }
 
   def subscriberDashboard = isAuthenticated { identity =>
     implicit request =>
-    println(identity)
     val sub = Subscriber.findByUserId(identity.id)
     if (sub == None) {
       NotFound(views.html.static.trouble("No Subscriber found for your User Account"))
