@@ -155,19 +155,26 @@ object Application extends Controller with Security {
   }
 
   def publisher(id: Int) = Action { implicit request => {
-    val user = if ( play.api.Play.isTest(play.api.Play.current) ) {
-        if (User.isValidIdentity("current_user")) {
-          User.findByIdentity("current_user").get.identity
-        } else {
-          ""
-        }
-      } else {
-        request.session.get("connected").getOrElse("")
-      }
-
     Publisher.findById(id).map( pub =>
-      Ok(views.html.publisher.show(pub, User.findByIdentity(user)))
+      Ok(views.html.publisher.show(pub, User.findByIdentity(getCurrentIdentity(request))))
     ).getOrElse(NotFound(views.html.static.trouble("No such publisher: " + id)))
+    }
+  }
+
+  private def getCurrentIdentity(request: play.api.mvc.Request[play.api.mvc.AnyContent]) = {
+    // This method is useful to get the identity of the current request user for methods
+    // that don't explicitly need a signed in user (i.e. it's okay to be anonymoys, but
+    // if the user is signed in we want to know who they are for some reason).
+    // The test env condition is used to allow for testing without having to actually have
+    // a full oauth2 server available for testing.
+    if ( play.api.Play.isTest(play.api.Play.current) ) {
+      if (User.isValidIdentity("current_user")) {
+        User.findByIdentity("current_user").get.identity
+      } else {
+        ""
+      }
+    } else {
+      request.session.get("connected").getOrElse("")
     }
   }
 
@@ -723,40 +730,44 @@ object Application extends Controller with Security {
   }
 
   def subscriber(id: Int) = Action { implicit request => {
-    val userName = "richard"//session.get("username").getOrElse("")
+    val user = if (getCurrentIdentity(request) == "") {
+                  None
+                } else {
+                  User.findByIdentity(getCurrentIdentity(request))
+                }
     Subscriber.findById(id).map( sub =>
-      Ok(views.html.subscriber.show(sub, User.findByName(userName)))
+      Ok(views.html.subscriber.show(sub, user))
     ).getOrElse(NotFound(views.html.static.trouble("No such subscriber: " + id)))
     }
   }
 
-  def newSubscriber = Action { implicit request =>//mustAuthenticate { username => implicit request =>
+  def newSubscriber = isAuthenticated { identity => implicit request =>
     Ok(views.html.subscriber.create(subscriberForm))
   }
 
-  def createSubscriber = Action { implicit request => //isAuthenticated { username => implicit request =>
+  def createSubscriber = isAuthenticated { identity => implicit request =>
     subscriberForm.bindFromRequest.fold(
       errors => BadRequest(views.html.subscriber.create(errors)),
       value => {
-        val user = User.findById(1).get
-        val sub = Subscriber.make(user.id, value.name, value.category, value.contact, value.link, value.logo)
+        val sub = Subscriber.make(identity.id, value.name, value.category,
+                                  value.contact, value.link, value.logo)
         Redirect(routes.Application.editSubscriber(sub.id))
       }
     )
   }
 
-  private def ownsSubscriber(username: String, sub: Subscriber, result: Result)(implicit request: Request[AnyContent]): Result = {
-    val user = User.findByName(username).get
-    //if (user.hasPublisher(pub.id)) {
+  private def ownsSubscriber(user: User, sub: Subscriber, result: Result)(implicit request: Request[AnyContent]): Result = {
+    if (sub.userId == user.id) {
       result
-    //} else {
-    //  Unauthorized(views.html.static.trouble("You are not authorized"))
-    //}
+    } else {
+      Unauthorized(views.html.static.trouble("You are not authorized"))
+    }
   }
 
-  def editSubscriber(id: Int) = Action { implicit request => //isAuthenticated { username => implicit request =>
+  def editSubscriber(id: Int) = isAuthenticated { identity => implicit request =>
+    println(identity)
     Subscriber.findById(id).map( sub =>
-      ownsSubscriber("richard", sub, Ok(views.html.subscriber.edit(sub, planAddForm)))
+      ownsSubscriber(identity, sub, Ok(views.html.subscriber.edit(sub, planAddForm)))
     ).getOrElse(NotFound(views.html.static.trouble("No such subscriber: " + id)))
   }
 
