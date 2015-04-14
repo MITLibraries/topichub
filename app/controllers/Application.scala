@@ -960,30 +960,42 @@ object Application extends Controller with Security {
     }
   }
 
-  def holdBrowse(id: Int, page: Int) = Action { implicit request =>
+  def holdBrowse(id: Int, page: Int) = isAuthenticated { identity => implicit request =>
     Subscriber.findById(id).map( sub =>
-      Ok(views.html.hold.browse(sub.id, sub.holds(page), page, sub.holdCount))
+      ownsSubscriber(identity, sub,
+                    Ok(views.html.hold.browse(sub.id, sub.holds(page), page, sub.holdCount)))
     ).getOrElse(NotFound(views.html.static.trouble("No such subscriber: " + id)))
   }
 
-  def resolveHold(id: Int, accept: Boolean) = Action { implicit request =>
+  def resolveHold(id: Int, accept: Boolean) = isAuthenticated { identity => implicit request =>
     Hold.findById(id).map( hold => {
-      conveyor ! (hold, accept)
-      Redirect(routes.Application.holdBrowse(1, 0))
+      val sub = Subscriber.findById(hold.subscriberId).get
+      if (sub.userId == identity.id) {
+        conveyor ! (hold, accept)
+        Redirect(routes.Application.holdBrowse(sub.id, 0))
+      } else {
+        Unauthorized(views.html.static.trouble("You are not authorized"))
+      }
     }
     ).getOrElse(NotFound(views.html.static.trouble("No such hold: " + id)))
   }
 
-  def pickBrowse(id: Int, page: Int) = Action { implicit request =>
+  def pickBrowse(id: Int, page: Int) = isAuthenticated { identity => implicit request =>
     Subscriber.findById(id).map( sub =>
-      Ok(views.html.topic_pick.browse(sub.id, sub.picks(page), page, sub.pickCount))
+      ownsSubscriber(identity, sub,
+        Ok(views.html.topic_pick.browse(sub.id, sub.picks(page), page, sub.pickCount)))
     ).getOrElse(NotFound(views.html.static.trouble("No such subscriber: " + id)))
   }
 
-  def resolvePick(id: Int, accept: Boolean) = Action { implicit request =>
+  def resolvePick(id: Int, accept: Boolean) = isAuthenticated { identity => implicit request =>
     TopicPick.findById(id).map( pick => {
-      conveyor ! (pick, accept)
-      Redirect(routes.Application.pickBrowse(1, 0))
+      val sub = Subscriber.findById(pick.subscriberId).get
+      if (sub.userId == identity.id) {
+        conveyor ! (pick, accept)
+        Redirect(routes.Application.pickBrowse(sub.id, 0))
+      } else {
+        Unauthorized(views.html.static.trouble("You are not authorized"))
+      }
     }
     ).getOrElse(NotFound(views.html.static.trouble("No such topic pick: " + id)))
   }
