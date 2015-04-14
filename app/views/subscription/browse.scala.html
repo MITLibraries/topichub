@@ -3,7 +3,7 @@
  * topic's scheme or other filter                                            *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(id: Int, subs: List[Subscription], filter: String, value: Int, page: Int, total: Long)@*(implicit hubContext: HubContext)*@
+@(subs: List[Subscription], filter: String, value: Int, page: Int, total: Long)@*(implicit hubContext: HubContext)*@
 @layout.main("Subscription Browse - TopicHub") {
   <div class="page-header">
     <h2>Browse Subscriptions by @filter</h2>

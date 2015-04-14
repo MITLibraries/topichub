@@ -943,10 +943,20 @@ object Application extends Controller with Security {
     ).getOrElse(NotFound(views.html.static.trouble("No such subscriber: " + id)))
   }
 
-  def subscriptionBrowse(filter: String, value: Int, page: Int) = Action { implicit request =>
-    filter match {
-      case "scheme" => Ok(views.html.subscription.browse(1, Subscription.inScheme(1, value, page), filter, value, page, Subscription.schemeCount(1, value)))
-      case _ => NotFound(views.html.static.trouble("No such filter: " + filter))
+  def subscriptionBrowse(filter: String, value: Int, page: Int) = isAuthenticated {
+      identity => implicit request =>
+
+    val sub = Subscriber.findByUserId(identity.id)
+    if (sub == None) {
+      Unauthorized(views.html.static.trouble("You are not authorized"))
+    } else {
+      filter match {
+        case "scheme" => Ok(views.html.subscription.browse(
+                            Subscription.inScheme(sub.get.id, value, page),
+                            filter, value, page,
+                            Subscription.schemeCount(sub.get.id, value)))
+        case _ => NotFound(views.html.static.trouble("No such filter: " + filter))
+      }
     }
   }
 
