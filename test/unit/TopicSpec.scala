@@ -120,6 +120,7 @@ class TopicSpec extends Specification {
         val t2 = Topic.make(s.id, "topictag2", "name")
         Topic.all must haveSize(2)
 
+        Thread.sleep(500)
         Topic.deleteUnlinkedBefore(new Date)
         Topic.all must haveSize(0)
       }
@@ -144,6 +145,7 @@ class TopicSpec extends Specification {
         val item3 = Item.make(col.id, ct.id, "location", "scoap:abc:789")
         item.addTopic(t1)
 
+        Thread.sleep(500)
         Topic.deleteUnlinkedBefore(new Date)
         Topic.all must haveSize(1)
       }

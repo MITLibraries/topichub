@@ -108,15 +108,21 @@ POST    /topic/:sid/validate         controllers.Application.topicValidate(sid: 
 GET     /subscribers                controllers.Application.subscribers
 GET     /subscribers/browse         controllers.Application.subscriberBrowse(filter: String, value: String, page: Int ?= 0)
 GET     /subscribers/create         controllers.Application.newSubscriber
+POST    /subscribers                controllers.Application.createSubscriber
 GET     /subscriber/:id/edit        controllers.Application.editSubscriber(id: Int)
 GET     /subscriber/:id             controllers.Application.subscriber(id: Int)
+
+# Dashboards
+GET     /dashboard                  controllers.Application.subscriberDashboard
+
+# Subscriber Interest pages
 POST    /subscriber/:id/addInterest controllers.Application.addSubscriberInterest(id: Int, action: String)
 GET     /subscriber/:id/removeInt/:sid  controllers.Application.removeSubscriberInterest(id: Int, sid: Int)
+
+# Channel Pages
 GET     /channel/:id                controllers.Application.channel(id: Int)
 GET     /channels/:sid/create       controllers.Application.newChannel(sid: Int)
-POST    /subscribers                controllers.Application.createSubscriber
 POST    /subscriber/:sid/channels   controllers.Application.createChannel(sid: Int)
-GET     /dashboard                  controllers.Application.subscriberDashboard
 
 # Subscriber Plan pages
 GET     /plan/:id                   controllers.Application.plan(id: Int)
@@ -125,7 +131,6 @@ POST    /plans/:sid                 controllers.Application.createPlan(sid: Int)
 DELETE  /plan/:id                   controllers.Application.deletePlan(id: Int)
 POST    /plan/:id                   controllers.Application.addPlanScheme(id: Int)
 GET     /plan/:id/remove/:sid       controllers.Application.removePlanScheme(id: Int, sid: Int)
-
 
 # Subscription pages
 GET      /subscriptions/browse      controllers.Application.subscriptionBrowse(filter: String, value: Int, page: Int ?= 0)

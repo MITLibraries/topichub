@@ -88,5 +88,15 @@ class ChannelSpec extends Specification {
         c.transfers must equalTo(1)
       }
     }
+
+    "#subscriber" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        Subscriber.all must haveSize(0)
+        val user = User.make("bob", "bob@example.com", "pwd", "role1")
+        val sub = Subscriber.make(user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        var c = Channel.make(sub.id, "protocol", "mode", "description", "userid", "password", "http://example.com")
+        c.subscriber must equalTo(sub)
+      }
+    }
   }
 }
