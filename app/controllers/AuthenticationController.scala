@@ -63,6 +63,17 @@ trait Security {
     }
   }
 
+  def isAdmin(f: => User => Request[AnyContent] => Result) = {
+    Authenticated(identity, onUnauthorized) { user =>
+      if (hasRole(user, "sysadmin")) {
+        Action(request => f(user)(request))
+      } else {
+        Action(request =>
+          Results.Unauthorized(views.html.static.trouble("You are not authorized")))
+      }
+    }
+  }
+
   def hasRole(user: User, role: String) = {
     if (user.hasRole(role)) {
       true
