@@ -847,56 +847,67 @@ object Application extends Controller with Security {
     )
   )
 
-  def plan(id: Int) = Action { implicit request => // isAuthenticated { username => implicit request =>
+  def plan(id: Int) = isAuthenticated { identity => implicit request =>
     Plan.findById(id).map( plan =>
-      Ok(views.html.plan.show(plan))
+      ownsSubscriber(identity, plan.subscriber.get, Ok(views.html.plan.show(plan)))
     ).getOrElse(NotFound(views.html.static.trouble("No such subscriber plan: " + id)))
   }
 
-  def newPlan(sid: Int) = Action { implicit request => // isAuthenticated { username => implicit request =>
-    //ownsSubscriber(username, sid, Ok(views.html.new_channel(sid, channelForm)))
-    Ok(views.html.plan.create(sid, planForm))
+  def newPlan(sid: Int) = isAuthenticated { identity => implicit request =>
+    ownsSubscriber(identity, Subscriber.findById(sid).get,
+                   Ok(views.html.plan.create(sid, planForm)))
   }
 
-  def createPlan(sid: Int) = Action { implicit request => //isAuthenticated { username => implicit request =>
-    //ownsSubscriber(username, sid, channelForm.bindFromRequest.fold (
-    planForm.bindFromRequest.fold (
-      errors => BadRequest(views.html.plan.create(sid, errors)),
-      value => {
-        Plan.make(sid, value.channelId, value.name, value.description, value.icon, value.fulfill, value.pick, value.interest, value.template)
-        Redirect(routes.Application.subscriber(sid))
-      }
-    )
-    //)
-  }
-
-  def addPlanScheme(id: Int) = Action { implicit request =>
-    Plan.findById(id).map( plan => {
-      planAddForm.bindFromRequest.fold (
-        errors => BadRequest(views.html.subscriber.edit(plan.subscriber.get, errors)),
+  def createPlan(sid: Int) = isAuthenticated { identity => implicit request =>
+    ownsSubscriber(identity, Subscriber.findById(sid).get, planForm.bindFromRequest.fold (
+        errors => BadRequest(views.html.plan.create(sid, errors)),
         value => {
-          Scheme.findById(value).map( scheme => {
-            plan.addScheme(scheme)
-            Redirect(routes.Application.editSubscriber(plan.subscriber.get.id))
-          }).getOrElse(NotFound(views.html.static.trouble("No such scheme: " + value)))
+          Plan.make(sid, value.channelId, value.name, value.description, value.icon, value.fulfill, value.pick, value.interest, value.template)
+          Redirect(routes.Application.subscriber(sid))
         }
       )
+    )
+  }
+
+  def addPlanScheme(id: Int) = isAuthenticated { identity => implicit request =>
+    Plan.findById(id).map( plan => {
+      if (plan.subscriber.get.userId == identity.id) {
+        planAddForm.bindFromRequest.fold (
+          errors => BadRequest(views.html.subscriber.edit(plan.subscriber.get, errors)),
+          value => {
+            Scheme.findById(value).map( scheme => {
+              plan.addScheme(scheme)
+              Redirect(routes.Application.editSubscriber(plan.subscriber.get.id))
+            }).getOrElse(NotFound(views.html.static.trouble("No such scheme: " + value)))
+          }
+        )
+      } else {
+        Unauthorized(views.html.static.trouble("You are not authorized"))
+      }
     }).getOrElse(NotFound(views.html.static.trouble("No such subscriber plan: " + id)))
   }
 
-  def removePlanScheme(id: Int, schemeId: Int) = Action { implicit request =>
+  def removePlanScheme(id: Int, schemeId: Int) = isAuthenticated { identity => implicit request =>
     Plan.findById(id).map( plan => {
-      Scheme.findById(schemeId).map( scheme => {
-        plan.removeScheme(scheme)
-        Redirect(routes.Application.editSubscriber(plan.subscriber.get.id))
-      }).getOrElse(NotFound(views.html.static.trouble("No such scheme: " + schemeId)))
+      if (plan.subscriber.get.userId == identity.id) {
+        Scheme.findById(schemeId).map( scheme => {
+          plan.removeScheme(scheme)
+          Redirect(routes.Application.editSubscriber(plan.subscriber.get.id))
+        }).getOrElse(NotFound(views.html.static.trouble("No such scheme: " + schemeId)))
+      } else {
+        Unauthorized(views.html.static.trouble("You are not authorized"))
+      }
     }).getOrElse(NotFound(views.html.static.trouble("No such subscriber plan: " + id)))
   }
 
-  def deletePlan(id: Int) = Action { implicit request =>
+  def deletePlan(id: Int) = isAuthenticated { identity => implicit request =>
     Plan.findById(id).map( plan => {
-      Plan.delete(id)
-      Redirect(routes.Application.subscriber(plan.subscriberId))
+      if (plan.subscriber.get.userId == identity.id) {
+        Plan.delete(id)
+        Redirect(routes.Application.subscriber(plan.subscriberId))
+      } else {
+        Unauthorized(views.html.static.trouble("You are not authorized"))
+      }
     }
     ).getOrElse(NotFound(views.html.static.trouble("No such subscriber plan: " + id)))
   }
