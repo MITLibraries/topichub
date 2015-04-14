@@ -65,7 +65,8 @@ class IntegrationSpec extends Specification {
       browser.goTo("http://localhost:" + port + "/workbench")
       assertThat(browser.$("#sidenav_models").getTexts.get(0)).isEqualTo("Models")
       browser.$("#sidenav_models").click();
-      assertThat(browser.title()).isEqualTo("Create Model - TopicHub")
+      assertThat(browser.title()).isEqualTo("Error - TopicHub")
+      browser.pageSource must contain("You are not authorized")
     }
 
     "provides link to Schemes" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {

@@ -1006,7 +1006,7 @@ object Application extends Controller with Security {
     )
   )
 
-  def newHubModel = Action { implicit request =>
+  def newHubModel = isAdmin { identity => implicit request =>
     Ok(views.html.utils.cmodel_create(modelForm))
   }
 
@@ -1022,7 +1022,7 @@ object Application extends Controller with Security {
     Ok(jsonSubscriberModel)
   }
 
-  def addContentModel = Action { implicit request =>
+  def addContentModel = isAdmin { identity => implicit request =>
     // read a content model from posted data and update system in cases where
     // model components are not already installed. Note that
     // this relies on the uniqueness of scheme, etc tags across hubs
@@ -1036,7 +1036,7 @@ object Application extends Controller with Security {
     )
   }
 
-  def addPublisherModel = Action { implicit request =>
+  def addPublisherModel = isAdmin { identity => implicit request =>
     // read a publisher model from posted data and update system in cases where
     // model components are not already installed. Note that
     // this relies on the uniqueness of scheme, etc tags across hubs
@@ -1050,7 +1050,7 @@ object Application extends Controller with Security {
     )
   }
 
-  def addSubscriberModel = Action { implicit request =>
+  def addSubscriberModel = isAdmin { identity => implicit request =>
     // read a subscriber model from posted data and update system in cases where
     // model components are not already installed. Note that
     // this relies on the uniqueness of scheme, etc tags across hubs
@@ -1064,7 +1064,7 @@ object Application extends Controller with Security {
     )
   }
 
-  def reindex(dtype: String) = Action { implicit request =>
+  def reindex(dtype: String) = isAdmin { identity => implicit request =>
     indexer ! dtype
     Ok("Reindexing " + dtype + "s")
   }
@@ -1077,11 +1077,11 @@ object Application extends Controller with Security {
   )
 
   // sandbox for testing finder logic
-  def sandbox = Action { implicit request =>
+  def sandbox = isAnalyst { identity => implicit request =>
     Ok(views.html.static.sandbox(sandboxForm, List("<empty>")))
   }
 
-  def testExpression = Action { implicit request =>
+  def testExpression = isAnalyst { identity => implicit request =>
     sandboxForm.bindFromRequest.fold(
       errors => BadRequest(views.html.static.sandbox(errors, List("<error>"))),
       value => {
@@ -1093,7 +1093,7 @@ object Application extends Controller with Security {
   }
 
   // convenience method for now - refine for real use later
-  def purge = Action { implicit request =>
+  def purge = isAdmin { identity => implicit request =>
     val now = new Date
     Item.deleteBefore(now)
     Topic.deleteUnlinkedBefore(now)
