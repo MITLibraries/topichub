@@ -101,6 +101,7 @@ object OAuth2 extends Controller {
       check_user.get
     }
     // todo: redirect back to the requested URL, not always home
+    // https://github.com/MITLibraries/scoap3hub/issues/181
     Redirect("/").withSession("connected" -> user.identity,
                               "subscriber" -> currentSubscriber(user))
   }

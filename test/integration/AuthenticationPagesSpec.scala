@@ -68,6 +68,15 @@ class AuthenticationPageSpec extends Specification with Mockito {
         assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
       }
 
+      "create user if authentication passes and no local user exists" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        browser.goTo("http://localhost:" + port + "/dashboard")
+        User.findByIdentity("https://oidc.mit.edu/current_user") must equalTo(None)
+        browser.$("#openid").click
+        assertThat(browser.title()).isEqualTo("SCOAP3 - TopicHub")
+        User.findByIdentity("https://oidc.mit.edu/current_user") must not equalTo(None)
+      }
+
       "allow access when signed in" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val user = create_user("schmuck")
         val sub = make_subscriber(user.id)
