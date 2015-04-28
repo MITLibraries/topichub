@@ -370,8 +370,7 @@ object subscriberModelJson {
           "logo" -> toJson(s.logo),
           "channels" -> jsonChannels(s),
           "plans" -> jsonPlans(s.id),
-          "interests" -> jsonInterests(s.id),
-          "subscriptions" -> jsonSubscriptions(s.id)
+          "interests" -> jsonInterests(s.id)
       )
     )
     toJson(msg)
@@ -395,8 +394,9 @@ object subscriberModelJson {
 
   def jsonInterests(sid: Int) = {
     val msg = Interest.findBySubscriber(sid).map ( i =>
-      Map("scheme" -> toJson(Scheme.findById(i.schemeId).get.tag),
-          "action" -> toJson(i.action)
+      Map("scheme" -> toJson(i.schemeTag),
+          "value" -> toJson(i.intValue),
+          "template" -> toJson(i.template)
       )
     )
     toJson(msg)
@@ -422,18 +422,6 @@ object subscriberModelJson {
     toJson(msg)
   }
 
-  def jsonSubscriptions(sid: Int) = {
-    val msg = Subscription.withSubscriber(sid).map ( s => {
-      val topic = Topic.findById(s.topicId).get
-      Map("scheme" -> toJson(Scheme.findById(topic.scheme_id).get.tag),
-          "tag" -> toJson(topic.tag),
-          "action" -> toJson(s.action)
-      )
-    } )
-    toJson(msg)
-  }
-
-
   // deserialization methods
   def buildSubscriberModel(model: JsValue) = {
     val subs = (model \ "subscribers")
@@ -452,18 +440,13 @@ object subscriberModelJson {
     procJsArray(channels, 0, planFromSubscriberModel(sub.id))
     val interests = (jss \ "interests")
     procJsArray(interests, 0, intFromSubscriberModel(sub.id))
-    val subscriptions = (jss \ "subscriptions")
-    procJsArray(subscriptions, 0, subscripFromSubscriberModel(sub.id))
   }
 
-  def intFromSubscriberModel(sid: Int)(jss: JsValue) {
-    // only create if dependencies found
-    Scheme.findByTag(forName(jss, "scheme")).map { sc =>
-      Interest.create(sid, sc.id, forName(jss, "action"))
-    }
+  def intFromSubscriberModel(sid: Int)(jss: JsValue) = {
+    Interest.create(sid, forName(jss, "scheme"), forName(jss, "value"), forName(jss, "template").equals("true"))
   }
 
-  def chanFromSubscriberModel(sid: Int)(jss: JsValue) {
+  def chanFromSubscriberModel(sid: Int)(jss: JsValue) = {
     Channel.create(sid, forName(jss, "protocol"), forName(jss, "mode"), forName(jss, "description"),
                    forName(jss, "userId"), forName(jss, "password"), forName(jss, "channelUrl"))
   }
@@ -475,15 +458,6 @@ object subscriberModelJson {
                         forName(jss, "template"))
     val schemes = (jss \ "schemes")
     procJsArray(schemes, 0, addSchemeFromSubscriberModel(plan))
-  }
-
-  def subscripFromSubscriberModel(sid: Int)(jss: JsValue) {
-    // only create if dependencies found
-    Scheme.findByTag(forName(jss, "scheme")).map { sc =>
-      Topic.forSchemeAndTag(sc.tag, forName(jss, "tag")).map { topic =>
-        Subscription.create(sid, topic.id, forName(jss, "action"), new Date, new Date)
-      }
-    }
   }
 
   def addSchemeFromSubscriberModel(plan: Plan)(jss: JsValue) {

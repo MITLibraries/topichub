@@ -255,5 +255,36 @@ class SubscriptionSpec extends Specification {
         Subscription.findById(s.id).get.transferCount mustEqual(3)
       }
     }
+
+    "#linkInterest" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val u = User.make("bob", "bob@example.com", "pwd", "role1")
+        val sub = Subscriber.make(u.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        val scheme = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        val i = Interest.make(sub.id, scheme.tag, "MIT", false)
+        val t = Topic.make(scheme.id, "tag", "name")
+        Subscription.schemeCount(sub.id, scheme.id) must equalTo(0)
+        val s = Subscription.make(sub.id, t.id, "deliver", sub.created, sub.created)
+        Interest.matchCount(sub.id, "sub") must equalTo(0)
+        s.linkInterest(i)
+        Interest.matchCount(sub.id, "sub") must equalTo(1)
+      }
+    }
+
+    "#unlinkInterest" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val u = User.make("bob", "bob@example.com", "pwd", "role1")
+        val sub = Subscriber.make(u.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        val scheme = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        val i = Interest.make(sub.id, scheme.tag, "MIT", false)
+        val t = Topic.make(scheme.id, "tag", "name")
+        Subscription.schemeCount(sub.id, scheme.id) must equalTo(0)
+        val s = Subscription.make(sub.id, t.id, "deliver", sub.created, sub.created)
+        s.linkInterest(i)
+        Interest.matchCount(sub.id, "sub") must equalTo(1)
+        s.unlinkInterest
+        Interest.matchCount(sub.id, "sub") must equalTo(0)
+      }
+    }
   }
 }

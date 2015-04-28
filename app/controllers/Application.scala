@@ -99,7 +99,9 @@ object Application extends Controller with Security {
   private def topicSubIfSubscriber(user: User, topic: Topic, cancel: Boolean)(implicit request: Request[AnyContent]): Result = {
     Subscriber.findByUserId(user.id).map( sub => {
         if (cancel) {
-          sub.subscriptionFor(topic.id).map (sc => sc.cancel)
+          sub.subscriptionFor(topic.id).map(sc => { sc.cancel; sc.unlinkInterest } )
+          // remove backing interest if non-template
+          sub.interestWithValue(topic.scheme.get.tag, topic.tag).map(i => Interest.delete(i.id))
         } else {
           conveyor ! sub.subscribeTo(topic)
         }
@@ -364,7 +366,7 @@ object Application extends Controller with Security {
 
   def scheme(id: Int) = isAnalyst { identity => implicit request =>
     Scheme.findById(id).map( scheme =>
-      Ok(views.html.scheme.show(scheme))
+      Ok(views.html.scheme.show(scheme, Subscriber.findById(1)))
     ).getOrElse(NotFound(views.html.static.trouble("No such scheme: " + id)))
   }
 
@@ -912,35 +914,34 @@ object Application extends Controller with Security {
     ).getOrElse(NotFound(views.html.static.trouble("No such subscriber plan: " + id)))
   }
 
-  val interestForm = Form(
-    single(
-      "scheme_id" -> number
-    )
-  )
-
-  def addSubscriberInterest(id: Int, action: String) = Action { implicit request =>
-    interestForm.bindFromRequest.fold(
-      errors => {
-        val sub = Subscriber.findById(id).get
-        BadRequest(views.html.subscriber.edit(sub, errors))
-      },
-      value => {
-        val sub2 = Subscriber.findById(id).get
-        val schemeId = interestForm.bindFromRequest.get
-        val scheme = Scheme.findById(schemeId).get
-        sub2.addInterest(scheme, action)
-        Redirect(routes.Application.editSubscriber(id))
-      }
-    )
+  def addSubscriberInterest(id: Int, schemeTag: String) = Action { implicit request =>
+    Subscriber.findById(id).map( sub =>
+      Scheme.findByTag(schemeTag).map( scheme => {
+        val intValue = request.body.asFormUrlEncoded.get.get("interest").get.head
+        val template = request.body.asFormUrlEncoded.get.get("template").get.head
+        conveyor ! sub.addInterest(scheme, intValue, template.equals("true"))
+        Redirect(routes.Application.interestBrowse("scheme", scheme.tag))
+      }).getOrElse(NotFound(views.html.static.trouble("No such scheme tag: " + schemeTag)))
+      ).getOrElse(NotFound(views.html.static.trouble("No such subscriber: " + id)))
   }
 
-  def removeSubscriberInterest(id: Int, sid: Int) = Action { implicit request =>
-    Subscriber.findById(id).map( sub =>
-      Scheme.findById(sid).map( scheme => {
-        sub.removeInterest(scheme)
-        Redirect(routes.Application.editSubscriber(sub.id))
-      }).getOrElse(NotFound(views.html.static.trouble("No such scheme: " + sid)))
-    ).getOrElse(NotFound(views.html.static.trouble("No such subscriber: " + id)))
+  def removeSubscriberInterest(sid: Int, iid: Int) = Action { implicit request =>
+    Subscriber.findById(sid).map( sub =>
+      Interest.findById(iid).map( interest => {
+        sub.removeInterest(interest.scheme.get, interest.intValue)
+        Redirect(routes.Application.interestBrowse("scheme", interest.schemeTag))
+      }).getOrElse(NotFound(views.html.static.trouble("No such interest: " + iid)))
+    ).getOrElse(NotFound(views.html.static.trouble("No such subscriber: " + sid)))
+  }
+
+  def interestBrowse(filter: String, value: String, page: Int) = Action { implicit request =>
+    val subId = 1 // should be derived Subscriber Id TODO
+    filter match {
+      case "scheme" => Ok(views.html.interest.browse(subId, Interest.inScheme(subId, value, page), filter, value, page, Interest.schemeCount(subId, value)))
+      case "plan" => Ok(views.html.interest.browse(subId, Interest.inPlan(subId, value.toInt, page), filter, value, page, Interest.planCount(subId, value.toInt)))
+      case "match" => Ok(views.html.interest.browse(subId, Interest.inMatch(subId, value, page), filter, value, page, Interest.matchCount(subId, value)))
+      case _ => NotFound(views.html.static.trouble("No such filter: " + filter))
+    }
   }
 
   def subscriptionBrowse(filter: String, value: Int, page: Int) = isAuthenticated {

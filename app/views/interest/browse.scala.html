@@ -1,0 +1,30 @@
+@*****************************************************************************
+ * Page for browsing a subscriber's interests filtered by interest's scheme, *
+ * scheme's plan or other filter.                                            *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(id: Int, interests: List[Interest], filter: String, value: String, page: Int, total: Long)@*(implicit hubContext: HubContext)*@
+@layout.main("Interest Browse - TopicHub") {
+  <div class="page-header">
+    <h2>Browse Interests by @filter</h2>
+    @if("scheme" == filter && Subscriber.findById(id).get.plannedFor(Scheme.findByTag(value).get.id)) {
+      <h3>@value</h3>
+      <h3>Plan: @Subscriber.findById(id).get.planFor(Scheme.findByTag(value).get.id).get.name</h3>
+    }
+    @if("plan" == filter) {
+      <h3>@Plan.findById(value.toInt).get.name <span class="glyphicon glyphicon-@Plan.findById(value.toInt).get.icon" aria-hidden="true"></span></h3>
+    }
+    @if("match" == filter) {
+      @if("sub" == value) {
+        <h3>Subscription-backed</h3>
+      }
+    }
+    @tags.summary(page, 10, total, interests.length)
+  </div>
+  <ul>
+    @interests.map { inter =>
+      <li>@inter.intValue <a rel="tooltip" class="btn btn-primary btn-xs" title="remove this interest" href="@routes.Application.removeSubscriberInterest(id, inter.id)">Remove &raquo;</a></li>
+    }
+  </ul>
+  @tags.pagination(page, 10, total, routes.Application.interestBrowse(filter, value).toString, interests.length)
+}
