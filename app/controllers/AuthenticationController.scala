@@ -37,8 +37,6 @@ trait Security {
       } else {
         None
       }
-    } else if ( play.api.Play.isTest(play.api.Play.current) ) {
-      User.findByIdentity("current_user")
     } else {
       None
     }

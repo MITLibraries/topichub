@@ -43,6 +43,19 @@ class OAuth2(application: Application) {
 object OAuth2 extends Controller {
   lazy val oauth2 = new OAuth2(Play.current)
 
+  def redirectToExternalAuthServer(requestUri: String) = Action { implicit request =>
+    if ( play.api.Play.isTest(play.api.Play.current) ) {
+      val response = Json.parse("""
+          { "sub":"current_user", "name":"Firstname M Lastname", "preferred_username":"flastname",
+           "given_name":"Firstname", "family_name":"Lastname", "middle_name":"M",
+           "email":"flastname@example.com", "email_verified":true }
+         """)
+      lookupUser(response)
+    } else {
+      Redirect(requestUri)
+    }
+  }
+
   def callback(codeOpt: Option[String] = None, stateOpt: Option[String] = None) = Action.async { implicit request =>
     (for {
       code <- codeOpt
@@ -88,6 +101,16 @@ object OAuth2 extends Controller {
       check_user.get
     }
     // todo: redirect back to the requested URL, not always home
-    Redirect("/").withSession("connected" -> user.identity)
+    Redirect("/").withSession("connected" -> user.identity,
+                              "subscriber" -> currentSubscriber(user))
+  }
+
+  def currentSubscriber(user: User) = {
+    val s = Subscriber.findByUserId(user.id)
+    if (s == None) {
+      "0"
+    } else {
+      s.get.id.toString
+    }
   }
 }

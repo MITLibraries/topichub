@@ -14,7 +14,8 @@ import models.{ Harvest, Publisher, Subscriber, User }
  */
 class DashboardPagesSpec extends Specification with Mockito {
 
-  def create_user(role: String) = User.make("bob", "bob@example.com", role, "current_user")
+  def create_user(role: String) = User.make("bob", "bob@example.com", role,
+                                            "https://oidc.mit.edu/current_user")
   def make_subscriber(userid: Int) = Subscriber.make(userid, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
 
   "The Dashboard" should {
@@ -30,6 +31,8 @@ class DashboardPagesSpec extends Specification with Mockito {
       val pub = Publisher.make(user.id, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
       val h1 = Harvest.make(pub.id, "name", "protocol", "http://www.example.com", "http://example.org", 1, new Date)
 
+      browser.goTo("http://localhost:" + port + "/login")
+      browser.$("#openid").click
       browser.goTo("http://localhost:" + port + "/dashboard")
       browser.pageSource must contain("Suggested Subscriptions")
       assertThat(browser.title()).isEqualTo("Subscriber Dashboard - TopicHub")
@@ -38,6 +41,8 @@ class DashboardPagesSpec extends Specification with Mockito {
     "denies access if no Subscriber is associated with the User" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
       val user = create_user("schmuck")
 
+      browser.goTo("http://localhost:" + port + "/login")
+      browser.$("#openid").click
       browser.goTo("http://localhost:" + port + "/dashboard")
       browser.pageSource must contain("No Subscriber found for your User Account")
     }

@@ -15,7 +15,8 @@ import models.{ Harvest, Publisher, Subscriber, User }
  */
 class AuthenticationPageSpec extends Specification with Mockito {
 
-  def create_user(role: String) = User.make("bob", "bob@example.com", role, "current_user")
+  def create_user(role: String) = User.make("bob", "bob@example.com", role,
+                                            "https://oidc.mit.edu/current_user")
   def make_subscriber(userid: Int) = Subscriber.make(userid, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
 
   "Application" should {
@@ -23,12 +24,6 @@ class AuthenticationPageSpec extends Specification with Mockito {
       browser.goTo("http://localhost:" + port + "/login")
       browser.pageSource must contain("Log in with your MIT ID")
       assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
-    }
-
-    "redirect when login is clicked" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-      browser.goTo("http://localhost:" + port + "/login")
-      browser.$("#openid").click();
-      assertThat(browser.title()).isEqualTo("MIT OpenID Connect Pilot - Log In")
     }
 
     "Analyst protected pages" should {
@@ -40,6 +35,8 @@ class AuthenticationPageSpec extends Specification with Mockito {
 
       "deny access when signed in without analyst role" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val user = create_user("schmuck")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/workbench")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -47,6 +44,8 @@ class AuthenticationPageSpec extends Specification with Mockito {
 
       "allow access when signed in with analyst role" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val user = create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/workbench")
         browser.pageSource must contain("Analytics Workbench")
         assertThat(browser.title()).isEqualTo("Workbench - TopicHub")
@@ -54,6 +53,8 @@ class AuthenticationPageSpec extends Specification with Mockito {
 
       "allow access when signed in with analyst role and additional roles" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val user = create_user("analyst, schmuck")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/workbench")
         browser.pageSource must contain("Analytics Workbench")
         assertThat(browser.title()).isEqualTo("Workbench - TopicHub")
@@ -73,6 +74,8 @@ class AuthenticationPageSpec extends Specification with Mockito {
         val pub = Publisher.make(user.id, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
         val h1 = Harvest.make(pub.id, "name", "protocol", "http://www.example.com", "http://example.org", 1, new Date)
 
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/dashboard")
         browser.pageSource must contain("Suggested Subscriptions")
         assertThat(browser.title()).isEqualTo("Subscriber Dashboard - TopicHub")

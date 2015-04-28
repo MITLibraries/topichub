@@ -61,6 +61,8 @@ class ChannelPagesSpec extends Specification {
                                   Some("link"), Some("logo"))
         val ch = Channel.make(sub.id, "protocol", "mode", "description", "userid",
                               "password", "http://example.com")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/channel/" + ch.id)
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -69,10 +71,12 @@ class ChannelPagesSpec extends Specification {
       // GET /channels/:sid/create
       "new channel form redirects to trouble" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        User.make("bob", "bob@example.com", "", "current_user")
+        User.make("bob", "bob@example.com", "", "https://oidc.mit.edu/current_user")
         val sub_user = User.make("subuser", "sub@example.com", "", "not_current_user")
         val sub = Subscriber.make(sub_user.id, "Sub Name", "cat", "contact",
                                   Some("link"), Some("logo"))
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/channels/" + sub.id + "/create")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -81,11 +85,12 @@ class ChannelPagesSpec extends Specification {
       // POST /subscriber/:sid/channels
       "channel create redirects to trouble" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        User.make("bob", "bob@example.com", "", "current_user")
+        User.make("bob", "bob@example.com", "", "https://oidc.mit.edu/current_user")
         val sub_user = User.make("subuser", "sub@example.com", "", "not_current_user")
         val sub = Subscriber.make(sub_user.id, "Sub Name", "cat", "contact",
                                   Some("link"), Some("logo"))
-        val action = route(FakeRequest(POST, "/subscriber/" + sub.id + "/channels" )).get
+        val action = route(FakeRequest(POST, "/subscriber/" + sub.id + "/channels" ).
+                      withSession(("connected", "https://oidc.mit.edu/current_user"))).get
         redirectLocation(action) must beNone
         contentAsString(action) must contain ("Reason: You are not authorized")
       }
@@ -96,11 +101,13 @@ class ChannelPagesSpec extends Specification {
       // GET /channel/:id
       "channel show is allowed for owned channel" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        val user = User.make("bob", "bob@example.com", "", "current_user")
+        val user = User.make("bob", "bob@example.com", "", "https://oidc.mit.edu/current_user")
         val sub = Subscriber.make(user.id, "Sub Name", "cat", "contact",
                                   Some("link"), Some("logo"))
         val ch = Channel.make(sub.id, "protocol", "mode", "description", "userid",
                               "password", "http://example.com")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/channel/" + ch.id)
         assertThat(browser.title()).isEqualTo("Destination - TopicHub")
         browser.pageSource must contain(s"URL: ${ch.channelUrl}")
@@ -109,7 +116,7 @@ class ChannelPagesSpec extends Specification {
       // GET /channel/:id
       "channel show redirects to trouble for non owned channel" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        val user = User.make("bob", "bob@example.com", "", "current_user")
+        val user = User.make("bob", "bob@example.com", "", "https://oidc.mit.edu/current_user")
         val user_sub = Subscriber.make(user.id, "Sub Name", "cat", "contact",
                                   Some("link"), Some("logo"))
         val user_ch = Channel.make(user_sub.id, "protocol", "mode", "description", "userid",
@@ -121,6 +128,8 @@ class ChannelPagesSpec extends Specification {
                               "password", "http://example.com")
 
         // can view own channel
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/channel/" + user_ch.id)
         assertThat(browser.title()).isEqualTo("Destination - TopicHub")
 
@@ -133,9 +142,11 @@ class ChannelPagesSpec extends Specification {
       // GET /channels/:sid/create
       "new channel form is allowed" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        val user = User.make("user", "user@example.com", "", "current_user")
+        val user = User.make("user", "user@example.com", "", "https://oidc.mit.edu/current_user")
         val sub = Subscriber.make(user.id, "Sub Name", "cat", "contact",
                                   Some("link"), Some("logo"))
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/channels/" + sub.id + "/create")
         assertThat(browser.title()).isEqualTo("New Destination - TopicHub")
         browser.pageSource must contain(s"""<form action="/subscriber/${sub.id}/channels" method="POST">""")
@@ -144,9 +155,11 @@ class ChannelPagesSpec extends Specification {
       // POST /subscriber/:sid/channels
       "channel create is allowed" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        val user = User.make("user", "user@example.com", "", "current_user")
+        val user = User.make("user", "user@example.com", "", "https://oidc.mit.edu/current_user")
         val sub = Subscriber.make(user.id, "Sub Name", "cat", "contact",
                                   Some("link"), Some("logo"))
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/channels/" + sub.id + "/create")
 
         Channel.findByUrl("http://example.com") must equalTo(None)

@@ -14,7 +14,8 @@ import models.{ ContentFormat, User }
  */
 class ContentFormatPagesSpec extends Specification {
 
-  def create_user(role: String) = User.make("bob", "bob@example.com", role, "current_user")
+  def create_user(role: String) = User.make("bob", "bob@example.com", role,
+                                            "https://oidc.mit.edu/current_user")
 
   "Content Format pages" should {
     "as an unauthenticated User" should {
@@ -57,6 +58,8 @@ class ContentFormatPagesSpec extends Specification {
       "accessing index redirects to error" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("somerole")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/cformats")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -68,6 +71,8 @@ class ContentFormatPagesSpec extends Specification {
         create_user("somerole")
         val cf = ContentFormat.make("cf_tag", "cf_label", "cf_desc", "http://www.example.com",
                                     "mimetype", Some("logo"))
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/cformat/" + cf.id)
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -77,6 +82,8 @@ class ContentFormatPagesSpec extends Specification {
       "accessing content format create form redirects to error" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("somerole")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/cformats/create")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -86,7 +93,8 @@ class ContentFormatPagesSpec extends Specification {
       "posting to content format create redirects to error" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("somerole")
-        val action = route(FakeRequest(POST, "/cformats")).get
+        val action = route(FakeRequest(POST, "/cformats").
+                           withSession(("connected", "https://oidc.mit.edu/current_user"))).get
         redirectLocation(action) must beNone
         contentAsString(action) must contain ("Reason: You are not authorized")
         ContentFormat.all.size must equalTo(0)
@@ -99,6 +107,8 @@ class ContentFormatPagesSpec extends Specification {
       "accessing index is allowed" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/cformats")
         assertThat(browser.title()).isEqualTo("Content Formats - TopicHub")
       }
@@ -107,6 +117,8 @@ class ContentFormatPagesSpec extends Specification {
       "accessing content format show is allowed" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         val cf = ContentFormat.make("cf_tag", "cf_label", "cf_desc", "http://www.example.com",
                                     "mimetype", Some("logo"))
         browser.goTo("http://localhost:" + port + "/cformat/" + cf.id)
@@ -118,6 +130,8 @@ class ContentFormatPagesSpec extends Specification {
       "accessing content format create form is allowed" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/cformats/create")
         assertThat(browser.title()).isEqualTo("New Content Format - TopicHub")
         browser.pageSource must contain("""<form action="/cformats" method="POST">""")
@@ -127,6 +141,8 @@ class ContentFormatPagesSpec extends Specification {
       "posting to content format create is allowed" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/cformats/create")
         ContentFormat.all.size must equalTo(0)
         // without required fields

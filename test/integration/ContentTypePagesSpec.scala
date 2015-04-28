@@ -14,7 +14,8 @@ import models.{ ContentType, Scheme, User }
  */
 class ContentTypePagesSpec extends Specification {
 
-  def create_user(role: String) = User.make("bob", "bob@example.com", role, "current_user")
+  def create_user(role: String) = User.make("bob", "bob@example.com", role,
+                                            "https://oidc.mit.edu/current_user")
 
   "Content Type pages" should {
     "as an unauthenticated User" should {
@@ -78,6 +79,8 @@ class ContentTypePagesSpec extends Specification {
       "accessing index redirects to trouble" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("somerole")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/ctypes")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -87,6 +90,8 @@ class ContentTypePagesSpec extends Specification {
       "accessing content type show redirects to trouble" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("somerole")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         val ct = ContentType.make("tag", "label", "desc", Some("logo"))
         browser.goTo("http://localhost:" + port + "/ctype/" + ct.id)
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
@@ -97,6 +102,8 @@ class ContentTypePagesSpec extends Specification {
       "accessing content type create form redirects to trouble" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("somerole")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/ctypes/create")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -105,8 +112,9 @@ class ContentTypePagesSpec extends Specification {
       // POST /ctypes
       "posting to content type create redirects to trouble" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        create_user("somerole")
-        val action = route(FakeRequest(POST, "/ctypes")).get
+        val user = create_user("somerole")
+        val action = route(FakeRequest(POST, "/ctypes").
+                           withSession(("connected", user.identity))).get
         redirectLocation(action) must beNone
         contentAsString(action) must contain ("Reason: You are not authorized")
         ContentType.all.size must equalTo(0)
@@ -115,10 +123,11 @@ class ContentTypePagesSpec extends Specification {
       // POST /ctype/:id/scheme
       "posting to add content type scheme redirects to trouble" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        create_user("somerole")
+        val user = create_user("somerole")
         val ct = ContentType.make("tag", "label", "desc", Some("logo"))
         val s = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
-        val action = route(FakeRequest(POST, "/ctype/" + ct.id + "/scheme?relation=relation")).get
+        val action = route(FakeRequest(POST, "/ctype/" + ct.id + "/scheme?relation=relation").
+                           withSession(("connected", user.identity))).get
         redirectLocation(action) must beNone
         contentAsString(action) must contain ("Reason: You are not authorized")
       }
@@ -131,6 +140,8 @@ class ContentTypePagesSpec extends Specification {
         val s = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         ct.addScheme(s, "relation")
         ct.schemes("relation") must haveSize(1)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/ctype/" + ct.id +
                      "/scheme?relation=relation&sid=" + s.id)
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
@@ -145,6 +156,8 @@ class ContentTypePagesSpec extends Specification {
       "accessing index displays index" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/ctypes")
         assertThat(browser.title()).isEqualTo("Content Types - TopicHub")
       }
@@ -153,6 +166,8 @@ class ContentTypePagesSpec extends Specification {
       "accessing content type show displays content type page" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         val ct = ContentType.make("tag", "label", "desc", Some("logo"))
         browser.goTo("http://localhost:" + port + "/ctype/" + ct.id)
         assertThat(browser.title()).isEqualTo("Content Type - TopicHub")
@@ -163,6 +178,8 @@ class ContentTypePagesSpec extends Specification {
       "accessing content type create form displays form" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/ctypes/create")
         assertThat(browser.title()).isEqualTo("New Content Type - TopicHub")
         browser.pageSource must contain("""<form action="/ctypes" method="POST">""")
@@ -172,6 +189,8 @@ class ContentTypePagesSpec extends Specification {
       "posting to content type create creates a content type" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/ctypes/create")
 
         // submit without filling out required elements
@@ -194,6 +213,8 @@ class ContentTypePagesSpec extends Specification {
       "posting to add content type scheme creates link" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         val ct = ContentType.make("c_tag", "label", "desc", Some("logo"))
         val s = Scheme.make("abstract_tag", "gentype", "cat", "s_desc", Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/ctype/" + ct.id)
@@ -221,6 +242,8 @@ class ContentTypePagesSpec extends Specification {
       "accessing remove Content Type Scheme removes link" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         val ct = ContentType.make("tag", "label", "desc", Some("logo"))
         val s = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         ct.addScheme(s, "relation")

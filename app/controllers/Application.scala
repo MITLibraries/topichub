@@ -165,19 +165,9 @@ object Application extends Controller with Security {
 
   private def getCurrentIdentity(request: play.api.mvc.Request[play.api.mvc.AnyContent]) = {
     // This method is useful to get the identity of the current request user for methods
-    // that don't explicitly need a signed in user (i.e. it's okay to be anonymoys, but
+    // that don't explicitly need a signed in user (i.e. it's okay to be anonymous, but
     // if the user is signed in we want to know who they are for some reason).
-    // The test env condition is used to allow for testing without having to actually have
-    // a full oauth2 server available for testing.
-    if ( play.api.Play.isTest(play.api.Play.current) ) {
-      if (User.isValidIdentity("current_user")) {
-        User.findByIdentity("current_user").get.identity
-      } else {
-        ""
-      }
-    } else {
-      request.session.get("connected").getOrElse("")
-    }
+    request.session.get("connected").getOrElse("")
   }
 
   def createPublisher = isAuthenticated { identity =>

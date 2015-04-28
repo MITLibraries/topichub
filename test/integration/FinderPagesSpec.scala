@@ -14,7 +14,8 @@ import models.{ ContentFormat, Finder, User, Scheme }
  */
 class FinderPagesSpec extends Specification {
 
-  def create_user(role: String) = User.make("bob", "bob@example.com", role, "current_user")
+  def create_user(role: String) = User.make("bob", "bob@example.com", role,
+                                            "https://oidc.mit.edu/current_user")
 
   "Finder pages" should {
     "as an unauthenticated User" should {
@@ -63,6 +64,8 @@ class FinderPagesSpec extends Specification {
       "accessing index redirects to trouble" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("somerole")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         val s = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/scheme/" + s.tag + "/finders")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
@@ -73,6 +76,8 @@ class FinderPagesSpec extends Specification {
       "accessing new finder create form redirects to trouble" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("somerole")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         val s = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/scheme/" + s.tag + "/create")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
@@ -82,9 +87,10 @@ class FinderPagesSpec extends Specification {
       // POST /scheme/:tag
       "posting to finder create redirects to trouble" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        create_user("somerole")
+        val user = create_user("somerole")
         val s = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
-        val action = route(FakeRequest(POST, "/scheme/" + s.tag)).get
+        val action = route(FakeRequest(POST, "/scheme/" + s.tag).
+                           withSession(("connected", user.identity))).get
         redirectLocation(action) must beNone
         contentAsString(action) must contain ("Reason: You are not authorized")
         Finder.findByScheme(s.id).size must equalTo(0)
@@ -94,6 +100,8 @@ class FinderPagesSpec extends Specification {
       "deleting finder redirects to trouble" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("somerole")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         val s = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         val cf = ContentFormat.make("tag", "label", "desc", "http://www.example.com", "mimetype", Some("logo"))
         val f = Finder.make(s.id, cf.id, "description", "card", "idkey", "idlabel", "author")
@@ -111,6 +119,8 @@ class FinderPagesSpec extends Specification {
       "accessing index displays finders" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         val s = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/scheme/" + s.tag + "/finders")
         assertThat(browser.title()).isEqualTo("Finders - TopicHub")
@@ -121,6 +131,8 @@ class FinderPagesSpec extends Specification {
       "accessing new finder create form displays form" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         val s = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/scheme/" + s.tag + "/create")
         assertThat(browser.title()).isEqualTo("Create Finder - TopicHub")
@@ -131,6 +143,8 @@ class FinderPagesSpec extends Specification {
       "posting to finder create creates finder" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         val s = Scheme.make("s_tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         val cf1 = ContentFormat.make("cf_tag", "label", "desc", "http://www.example.com",
                                      "mimetype", Some("logo"))
@@ -156,6 +170,8 @@ class FinderPagesSpec extends Specification {
       "deleting finder deletes finder" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         val s = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         val cf = ContentFormat.make("tag", "label", "desc", "http://www.example.com", "mimetype", Some("logo"))
         val f = Finder.make(s.id, cf.id, "description", "card", "idkey", "idlabel", "author")

@@ -14,7 +14,8 @@ import models.{ Collection, ContentType, Harvest, Publisher, ResourceMap, User, 
  */
 class CollectionPagesSpec extends Specification {
 
-  def create_user(role: String) = User.make("bob", "bob@example.com", role, "current_user")
+  def create_user(role: String) = User.make("bob", "bob@example.com", role,
+                                            "https://oidc.mit.edu/current_user")
 
   "Collection pages" should {
     "as an unauthenticated User" should {
@@ -70,6 +71,8 @@ class CollectionPagesSpec extends Specification {
         val rm = ResourceMap.make("tag", "desc", Some("swordurl"))
         var collection1 = Collection.make(pub.id, ct.id, rm.id, "coll1_tag", "coll1 desc", "open")
         var collection2 = Collection.make(pub.id, ct.id, rm.id, "coll2_tag", "coll2 desc", "open")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/collections")
         assertThat(browser.title()).isEqualTo("Collections - TopicHub")
         browser.pageSource must contain(collection1.description)
@@ -83,7 +86,8 @@ class CollectionPagesSpec extends Specification {
         val pub_user = User.make("pub", "pub@example.com", "some roles", "another_identity")
         val pub = Publisher.make(pub_user.id, "pubtag", "pubname", "pubdesc", "pubcat",
                                  "pubstatus", Some("http://www.example.com"), Some(""))
-        val action = route(FakeRequest(POST, "/publisher/" + pub.id)).get
+        val action = route(FakeRequest(POST, "/publisher/" + pub.id).
+                           withSession(("connected", user.identity))).get
         redirectLocation(action) must beNone
         contentAsString(action) must contain ("Reason: You are not authorized")
         pub.collectionCount must equalTo(0)
@@ -96,6 +100,8 @@ class CollectionPagesSpec extends Specification {
         val pub_user = User.make("pub", "pub@example.com", "some roles", "another_identity")
         val pub = Publisher.make(pub_user.id, "pubtag", "pubname", "pubdesc", "pubcat",
                                  "pubstatus", Some("http://www.example.com"), Some(""))
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/publisher/" + pub.id + "/create")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("Reason: You are not authorized")
@@ -114,6 +120,8 @@ class CollectionPagesSpec extends Specification {
         val rm = ResourceMap.make("tag", "desc", Some("swordurl"))
         var collection1 = Collection.make(pub.id, ct.id, rm.id, "coll1_tag", "coll1 desc", "open")
         var collection2 = Collection.make(pub.id, ct.id, rm.id, "coll2_tag", "coll2 desc", "open")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/collections")
         assertThat(browser.title()).isEqualTo("Collections - TopicHub")
         browser.pageSource must contain(collection1.description)
@@ -128,6 +136,8 @@ class CollectionPagesSpec extends Specification {
                                  "pubstatus", Some("http://www.example.com"), Some(""))
         val ct = ContentType.make("ct_tag_1", "ct_label_1", "desc", Some("logo"))
         val rm = ResourceMap.make("rm_tag_1", "rm desc", Some("swordurl"))
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/publisher/" + pub.id + "/create")
         browser.$("#tag").text("collection_one_tag")
         browser.$("#description").text("I'm a totally good description for a collection.")
@@ -144,6 +154,8 @@ class CollectionPagesSpec extends Specification {
         val user = create_user("somerole")
         val pub = Publisher.make(user.id, "pubtag", "pubname", "pubdesc", "pubcat",
                                  "pubstatus", Some("http://www.example.com"), Some(""))
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/publisher/" + pub.id + "/create")
         assertThat(browser.title()).isEqualTo("New Collection - TopicHub")
         browser.pageSource must contain("Define a content collection")

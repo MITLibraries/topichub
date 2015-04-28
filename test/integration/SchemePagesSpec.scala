@@ -14,7 +14,8 @@ import models.{ User, Scheme }
  */
 class SchemePagesSpec extends Specification {
 
-  def create_user(role: String) = User.make("bob", "bob@example.com", role, "current_user")
+  def create_user(role: String) = User.make("bob", "bob@example.com", role,
+                                            "https://oidc.mit.edu/current_user")
 
   "Scheme pages" should {
     "as an unauthenticated User" should {
@@ -64,6 +65,8 @@ class SchemePagesSpec extends Specification {
       "accessing index redirects to trouble" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("somerole")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/schemes")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -74,6 +77,8 @@ class SchemePagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("somerole")
         val s1 = Scheme.make("s1_tag", "gentype", "cat", "s1_desc", Some("link"), Some("logo"))
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/scheme/" + s1.id)
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -84,6 +89,8 @@ class SchemePagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("somerole")
         val s1 = Scheme.make("s1_tag", "gentype", "cat", "s1_desc", Some("link"), Some("logo"))
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/scheme/" + s1.id + "/edit")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -93,6 +100,8 @@ class SchemePagesSpec extends Specification {
       "accessing new scheme create form redirects to trouble" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("somerole")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/schemes/create")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -101,8 +110,9 @@ class SchemePagesSpec extends Specification {
       // POST /schemes
       "posting to scheme create redirects to trouble" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        create_user("somerole")
-        val action = route(FakeRequest(POST, "/schemes")).get
+        val user = create_user("somerole")
+        val action = route(FakeRequest(POST, "/schemes").
+                           withSession(("connected", user.identity))).get
         redirectLocation(action) must beNone
         contentAsString(action) must contain ("Reason: You are not authorized")
         Scheme.all.size must equalTo(0)
@@ -119,7 +129,8 @@ class SchemePagesSpec extends Specification {
                              Some("link"), Some("logo"))
         val s2 = Scheme.make("scheme_2_tag", "gentype", "cat", "scheme_2 description",
                              Some("link"), Some("logo"))
-
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/schemes")
         assertThat(browser.title()).isEqualTo("Schemes - TopicHub")
         browser.pageSource must contain(s1.description)
@@ -131,6 +142,8 @@ class SchemePagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val user = create_user("analyst")
         val s1 = Scheme.make("s1_tag", "gentype", "cat", "s1_desc", Some("link"), Some("logo"))
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/scheme/" + s1.id)
         assertThat(browser.title()).isEqualTo("Scheme - TopicHub")
         browser.pageSource must contain(s1.description)
@@ -143,6 +156,8 @@ class SchemePagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
         val s1 = Scheme.make("s1_tag", "gentype", "cat", "s1_desc", Some("link"), Some("logo"))
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/scheme/" + s1.id + "/edit")
         assertThat(browser.title()).isEqualTo("Scheme - TopicHub")
         browser.pageSource must contain("New Validator")
@@ -153,6 +168,8 @@ class SchemePagesSpec extends Specification {
       "accessing new scheme create form displays form" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/schemes/create")
         assertThat(browser.title()).isEqualTo("Create Scheme - TopicHub")
         browser.pageSource must contain("""<form action="/schemes" method="POST">""")
@@ -162,6 +179,8 @@ class SchemePagesSpec extends Specification {
       "posting to scheme create creates scheme" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/schemes/create")
         browser.$("#tag").text("scheme_one_tag")
         browser.$("#description").text("I'm a totally good description for a scheme.")
