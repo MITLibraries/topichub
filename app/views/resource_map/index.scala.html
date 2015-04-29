@@ -2,7 +2,7 @@
  * Page to display list of defined package maps                              *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(resmaps: List[ResourceMap])@*(implicit hubContext: HubContext)*@
+@(resmaps: List[ResourceMap])(implicit request: play.api.mvc.RequestHeader)
 @layout.main("Resource Maps - TopicHub") {
 <div class="container-fluid">
   <div class="row">

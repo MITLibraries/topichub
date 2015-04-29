@@ -3,7 +3,7 @@
  * for new subscriber account creation                                       *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@()@**(implicit hubContext: HubContext)**@
+@()(implicit request: play.api.mvc.RequestHeader)
 @layout.main("Subscribers -  TopicHub") {
   <div class="container-fluid">
   	<div class="row">

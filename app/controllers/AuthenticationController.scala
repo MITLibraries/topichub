@@ -56,7 +56,8 @@ trait Security {
         Action(request => f(user)(request))
       } else {
         Action(request =>
-          Results.Unauthorized(views.html.static.trouble("You are not authorized")))
+          Results.Unauthorized(
+            views.html.static.trouble("You are not authorized")(request)))
       }
     }
   }
@@ -67,7 +68,8 @@ trait Security {
         Action(request => f(user)(request))
       } else {
         Action(request =>
-          Results.Unauthorized(views.html.static.trouble("You are not authorized")))
+          Results.Unauthorized(
+            views.html.static.trouble("You are not authorized")(request)))
       }
     }
   }

@@ -3,7 +3,7 @@
  * which are emailed to the site administrator                               *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
- @(fbform: Form[(String,Boolean,String)])@*(implicit hubContext: HubContext, flash: Flash)*@
+ @(fbform: Form[(String,Boolean,String)])(implicit request: play.api.mvc.RequestHeader)
  @import helper._
  @layout.main("Feedback - TopicHub") {
    <h2>Feedback</h2>

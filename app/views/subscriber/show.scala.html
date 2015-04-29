@@ -2,7 +2,7 @@
  * Page for displaying subscriber information including collections          *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(sub: Subscriber, user: Option[User])@*(implicit hubContext: HubContext)*@
+@(sub: Subscriber, user: Option[User])(implicit request: play.api.mvc.RequestHeader)
 @layout.main("Subscriber - TopicHub") {
   <div itemscope itemtype="http://schema.org/Organization" class="jumbotron">
     <h3>~ Subscriber ~</h3>

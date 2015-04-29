@@ -37,7 +37,7 @@ object Application extends Controller with Security {
   val indexer = Akka.system.actorOf(Props[workers.IndexWorker], name="indexer")
   val conveyor = Akka.system.actorOf(Props[workers.ConveyorWorker], name="conveyor")
 
-  def index = Action {
+  def index = Action { implicit request =>
     Ok(views.html.static.home(Scheme.withGentype("topic").filter(!_.tag.equals("meta"))))
   }
 

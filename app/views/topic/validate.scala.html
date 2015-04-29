@@ -3,7 +3,7 @@
  * option if user is a subscriber and topic is valid.                        *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(scheme: Scheme, topicId: String, res: Either[String, String])@*(implicit hubContext: HubContext)*@
+@(scheme: Scheme, topicId: String, res: Either[String, String])(implicit request: play.api.mvc.RequestHeader)
 @import helper._
 
 @layout.main("Topic Validation - TopicHub") {

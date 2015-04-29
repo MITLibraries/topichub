@@ -2,7 +2,7 @@
  * Page with form to create a new Content Format                        *
  * Copyright (c) 2015 MIT Libraries                                     *
  ************************************************************************@
-@(cfmtForm: Form[ContentFormat])@*(implicit hubContext: HubContext)*@
+@(cfmtForm: Form[ContentFormat])(implicit request: play.api.mvc.RequestHeader)
 @import helper._
 @layout.main("New Content Format - TopicHub") {
      <h2>Add a new content format</h2>

@@ -3,7 +3,7 @@
  * for new publisher account creation                                        *
  * Copyright 2015 MIT Libraries                                              *
  *****************************************************************************@
- @(value: String, subs: List[Subscriber], description: String, page: Int, total: Long)@*(implicit hubContext: HubContext)*@
+ @(value: String, subs: List[Subscriber], description: String, page: Int, total: Long)(implicit request: play.api.mvc.RequestHeader)
 @pagination = {
    <span>
      @if(page > 0) {

@@ -2,7 +2,7 @@
  * Subcriber Dashboard                                                       *
  * Copyright 2015 MIT Libraries                                              *
  *****************************************************************************@
-@(sub: Subscriber)
+@(sub: Subscriber)(implicit request: play.api.mvc.RequestHeader)
 @import java.time.YearMonth
 @import java.time.LocalDateTime
 @layout.main("Subscriber Dashboard -  TopicHub") {

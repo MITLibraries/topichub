@@ -11,11 +11,12 @@ import models._
 
 object Search extends Controller {
 
-  def index = Action {
+  def index = Action { implicit request =>
     Ok(views.html.search.index())
   }
 
   def results(q: String, target: String, page: Int, perpage: Int) = Action.async {
+    implicit request =>
     val indexSvc = Play.configuration.getString("hub.index.url").get
     val encQuery = UriEncoding.encodePathSegment(q, "UTF-8")
     val offset = (page) * perpage

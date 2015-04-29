@@ -2,7 +2,7 @@
  * Page with form to create new Resource Map                                 *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(resmapForm: Form[ResourceMap])@*(implicit hubContext: HubContext)*@
+@(resmapForm: Form[ResourceMap])(implicit request: play.api.mvc.RequestHeader)
 @import helper._
 @layout.main("New Resource Map - TopicHub") {
   <h2>Add a new resource map</h2>

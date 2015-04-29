@@ -1,4 +1,4 @@
-@(id: Int, topics: List[Topic], description: String, page: Int, total: Long)@*(implicit hubContext: HubContext)*@
+@(id: Int, topics: List[Topic], description: String, page: Int, total: Long)(implicit request: play.api.mvc.RequestHeader)
 
 @layout.main("Topic Browse -  TopicHub") {
   <div class="page-header">

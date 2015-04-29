@@ -2,8 +2,8 @@
  * Main HTML template for SCOAP3 TopicHub pages. Included by all pages       *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(title: String)(content: Html)
-
+@(title: String)(content: Html)(implicit request: play.api.mvc.RequestHeader)
+@currentSubId = @{Application.currentSubscriberId(request)}
 <!DOCTYPE html>
 
 <html>

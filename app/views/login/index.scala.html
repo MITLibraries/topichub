@@ -1,4 +1,4 @@
-@(message: String, externalAuthUrl: String)
+@(message: String, externalAuthUrl: String)(implicit request: play.api.mvc.RequestHeader)
 
 @layout.main("Login to SCOAP3 - TopicHub") {
   <h2>Not Yet Authenticated</h2>

@@ -4,7 +4,7 @@
  * Copyright 2015 MIT Libraries                                              *
  * @author richardrodgers                                                    *
  *****************************************************************************@
- @(value: String, pubs: List[Publisher], description: String, page: Int, total: Long)@*(implicit hubContext: HubContext)*@
+ @(value: String, pubs: List[Publisher], description: String, page: Int, total: Long)(implicit request: play.api.mvc.RequestHeader)
 
 @layout.main("Publisher Browse -  TopicHub") {
   <div class="page-header">

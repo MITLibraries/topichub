@@ -2,7 +2,7 @@
  * Page with form to create new Finder                                       *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(tag: String, finderForm: Form[Finder])@*(implicit hubContext: HubContext)*@
+@(tag: String, finderForm: Form[Finder])(implicit request: play.api.mvc.RequestHeader)
 @import helper._
 @layout.main("Create Finder - TopicHub") {
   <h2>Add a new finder</h2>

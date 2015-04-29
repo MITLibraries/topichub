@@ -2,7 +2,7 @@
  * Page for editing publisher information including collections              *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(pub: Publisher)@*(implicit hubContext: HubContext)*@
+@(pub: Publisher)(implicit request: play.api.mvc.RequestHeader)
 @layout.main("Edit Publisher - TopicHub") {
   <div class="jumbotron">
      <h3>~ Publisher ~</h3>

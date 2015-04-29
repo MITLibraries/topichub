@@ -2,7 +2,7 @@
  * Display information on a subscriber action plan                           *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(plan: Plan)@*(implicit hubContext: HubContext)*@
+@(plan: Plan)(implicit request: play.api.mvc.RequestHeader)
 @layout.main("Subscriber Plan - TopicHub") {
   <div class="jumbotron">
     <h3>~ Action Plan ~</h3>

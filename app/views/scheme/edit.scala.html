@@ -3,7 +3,7 @@
  * edit or delete finders, validators, relators, etc                         *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(scheme: Scheme)@*(implicit hubContext: HubContext)*@
+@(scheme: Scheme)(implicit request: play.api.mvc.RequestHeader)
 @layout.main("Scheme - TopicHub") {
   <div class="jumbotron">
     <h3>~ Scheme ~</h3>

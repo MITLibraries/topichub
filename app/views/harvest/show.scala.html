@@ -3,7 +3,7 @@
  * harvest with override parameters                                     *
  * Copyright (c) 2015 MIT Libraries                                     *
  ************************************************************************@
-@(harvest: Harvest, startForm: Form[Int])@*(implicit hubContext: HubContext)*@
+@(harvest: Harvest, startForm: Form[Int])(implicit request: play.api.mvc.RequestHeader)
 @import helper._
 @layout.main("Harvest - TopicHub") {
   <h2>Hidden</h2>

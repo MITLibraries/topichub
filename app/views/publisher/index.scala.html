@@ -3,7 +3,7 @@
  * for new publisher account creation                                        *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@()@**(implicit hubContext: HubContext)**@
+@()(implicit request: play.api.mvc.RequestHeader)
 
 @layout.main("Publishers -  TopicHub") {
   <div class="container-fluid">
@@ -15,7 +15,7 @@
           @for(cat <- Publisher.categories) {
             <a href="@routes.Application.publisherBrowse("category", cat)" class="list-group-item">@cat</a>
           }
-          
+
         </div>
       </div>
       <div class="col-md-8">

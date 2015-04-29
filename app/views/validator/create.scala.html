@@ -2,7 +2,7 @@
  * Display form to create or edit a validator for passed scheme              *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(tag: String, valForm: Form[Validator])@*(implicit hubContext: HubContext)*@
+@(tag: String, valForm: Form[Validator])(implicit request: play.api.mvc.RequestHeader)
 @import helper._
 @layout.main("Create Validator - TopicHub") {
   <h2>Add a validator</h2>

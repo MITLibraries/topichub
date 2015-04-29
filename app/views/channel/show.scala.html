@@ -2,7 +2,7 @@
  * Display information on a subscriber channel ('destination')               *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(channel: Channel)@*(implicit hubContext: HubContext)*@
+@(channel: Channel)(implicit request: play.api.mvc.RequestHeader)
 @layout.main("Destination - TopicHub") {
   <div class="jumbotron">
     <h3>~ Destination ~</h3>

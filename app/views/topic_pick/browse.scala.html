@@ -2,7 +2,7 @@
 * Entry page for topic pick browsing (Review)                                *
 * Copyright (c) 2015 MIT Libraries                                           *
 *****************************************************************************@
-@(id: Int, picks: List[TopicPick], page: Int, total: Long)@*(implicit hubContext: HubContext)*@
+@(id: Int, picks: List[TopicPick], page: Int, total: Long)(implicit request: play.api.mvc.RequestHeader)
 @layout.main("Topic Picks Browse - TopicHub") {
   <div class="page-header">
     <h2>Review Topic Picks</h2>
