@@ -40,14 +40,14 @@ case class Subscriber(id: Int,  // DB key
     }
   }
 
-  def interestIn(schemeId: Int) = {
+  def interestIn(schemeTag: String) = {
     DB.withConnection { implicit c =>
-      SQL("select * from interest where subscriber_id = {sub_id} and scheme_id = {scheme_id}")
-      .on('sub_id -> id, 'scheme_id -> schemeId).as(Interest.interest.singleOpt)
+      SQL("select * from interest where subscriber_id = {sub_id} and scheme_tag = {stag}")
+      .on('sub_id -> id, 'stag -> schemeTag).as(Interest.interest.singleOpt)
     }
   }
 
-  def hasInterest(schemeId: Int) = interestIn(schemeId).isDefined
+  def hasInterest(schemeTag: String) = interestIn(schemeTag).isDefined
 
   def plannedFor(schemeId: Int): Boolean = {
     DB.withConnection { implicit c =>
@@ -107,16 +107,23 @@ case class Subscriber(id: Int,  // DB key
     }
   }
 
-  def interestsWithAction(action: String): List[Interest] = {
+  def templatesInScheme(schemeTag: String): List[Interest] = {
     DB.withConnection { implicit c =>
-      SQL("select * from interest where action = {action} and subscriber_id = {id}")
-      .on('action -> action, 'id -> id).as(Interest.interest *)
+      SQL("select * from interest where subscriber_id = {id} and scheme_tag = {stag} and template = 'true'")
+      .on('id -> id, 'stag -> schemeTag).as(Interest.interest *)
+    }
+  }
+
+  def interestWithValue(schemeTag: String, intVal: String) = {
+    DB.withConnection { implicit c =>
+      SQL("select * from interest where subscriber_id = {id} and scheme_tag = {stag} and int_value = {intval} and template = 'false'")
+      .on('id -> id, 'stag -> schemeTag, 'intval -> intVal).as(Interest.interest.singleOpt)
     }
   }
 
   // map of interests that could be added (not current interests)
   def newInterestMapView: Map[String, String] = {
-    Scheme.all filter(_.gentype.equals("topic")) filter (sc => ! hasInterest(sc.id)) map (sc => sc.id.toString -> sc.tag) toMap
+    Scheme.all filter(_.gentype.equals("topic")) filter (sc => ! hasInterest(sc.tag)) map (sc => sc.id.toString -> sc.tag) toMap
   }
 
   // map of schemes that do not belong to any action plans
@@ -124,14 +131,14 @@ case class Subscriber(id: Int,  // DB key
     Scheme.all.filter(_.gentype.equals("topic")).filter(sc => ! plannedFor(sc.id)).map(sc => sc.id.toString -> sc.tag) toMap
   }
 
-  def addInterest(scheme: Scheme, action: String) = {
-    Interest.create(id, scheme.id, action)
+  def addInterest(scheme: Scheme, intValue: String, template: Boolean = false) = {
+    Interest.make(id, scheme.tag, intValue, template)
   }
 
-  def removeInterest(scheme: Scheme) = {
+  def removeInterest(scheme: Scheme, intValue: String) = {
     DB.withConnection { implicit c =>
-      SQL("delete from interest where subscriber_id = {subscriber_id} and scheme_id = {scheme_id}")
-      .on('subscriber_id -> id, 'scheme_id -> scheme.id).executeUpdate()
+      SQL("delete from interest where subscriber_id = {subscriber_id} and scheme_tag = {scheme_tag} and int_value = {int_value}")
+      .on('subscriber_id -> id, 'scheme_tag -> scheme.tag, 'int_value -> intValue).executeUpdate()
     }
   }
 

@@ -34,7 +34,7 @@ case class Subscription(id: Int,  // DB key
                         active: Boolean) {    // is subscription currently active
   def cancel = {
     DB.withConnection { implicit c =>
-      SQL("update subscription set active = false, cancelled = {cancelled} where id = {id}")
+      SQL("update subscription set active = 'false', cancelled = {cancelled} where id = {id}")
       .on('cancelled -> new Date, 'id -> id).executeUpdate()
     }
   }
@@ -55,6 +55,19 @@ case class Subscription(id: Int,  // DB key
     DB.withConnection { implicit c =>
       val count = SQL("select count(*) as c from transfer where subscription_id = {id}").on('id -> id).apply.head
       count[Long]("c")
+    }
+  }
+
+  def linkInterest(interest: Interest) = {
+    DB.withConnection { implicit c =>
+      SQL("insert into interest_subscription (interest_id, subscription_id) values ({interest_id}, {id})")
+      .on('interest_id -> interest.id, 'id -> id).executeInsert()
+    }
+  }
+
+  def unlinkInterest = {
+    DB.withConnection { implicit c =>
+      SQL("delete from interest_subscription where subscription_id = {id}").on('id -> id).executeUpdate()
     }
   }
 }

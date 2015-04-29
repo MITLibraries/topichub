@@ -116,8 +116,9 @@ GET     /subscriber/:id             controllers.Application.subscriber(id: Int)
 GET     /dashboard                  controllers.Application.subscriberDashboard
 
 # Subscriber Interest pages
-POST    /subscriber/:id/addInterest controllers.Application.addSubscriberInterest(id: Int, action: String)
-GET     /subscriber/:id/removeInt/:sid  controllers.Application.removeSubscriberInterest(id: Int, sid: Int)
+GET     /interests/browse           controllers.Application.interestBrowse(filter: String, value: String, page: Int ?= 0)
+POST    /interests/:sid             controllers.Application.addSubscriberInterest(sid: Int, scheme: String)
+GET     /interests/:sid/remove/:iid  controllers.Application.removeSubscriberInterest(sid: Int, iid: Int)
 
 # Channel Pages
 GET     /channel/:id                controllers.Application.channel(id: Int)
@@ -133,7 +134,7 @@ POST    /plan/:id                   controllers.Application.addPlanScheme(id: In
 GET     /plan/:id/remove/:sid       controllers.Application.removePlanScheme(id: Int, sid: Int)
 
 # Subscription pages
-GET      /subscriptions/browse      controllers.Application.subscriptionBrowse(filter: String, value: Int, page: Int ?= 0)
+GET     /subscriptions/browse       controllers.Application.subscriptionBrowse(filter: String, value: Int, page: Int ?= 0)
 
 # Review (holds) pages
 GET     /holds/browse               controllers.Application.holdBrowse(id: Int, page: Int ?= 0)

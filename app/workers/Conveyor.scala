@@ -14,7 +14,8 @@ import play.api.libs.ws._
 import play.api.mvc._
 import play.api.http.HeaderNames._
 
-import models.{Channel, Hold, Item, Plan, Scheme, Subscriber, Subscription, Topic, TopicPick, Transfer}
+import models.{Agent, Channel, Hold, Interest, Item, Plan, Scheme, Subscriber,
+               Subscription, Topic, TopicPick, Transfer}
 import services.Emailer
 
 /** Conveyor is the worker responsible for transmitting notifications
@@ -26,7 +27,9 @@ import services.Emailer
 class ConveyorWorker extends Actor {
   def receive = {
     case item: Item => Conveyor.newItem(item)
-    case sub: Subscription => Conveyor.fulfill(sub)
+    case topic: Topic => Conveyor.newTopic(topic)
+    case interest: Interest => Conveyor.newInterest(interest)
+    case sub: Subscription => Conveyor.newSubscription(sub)
     case (item: Item, subscr: Subscriber) => Conveyor.transferItem(item, subscr)
     case (hold: Hold, accept: Boolean) => Conveyor.resolveHold(hold, accept)
     case (pick: TopicPick, accept: Boolean) => Conveyor.resolvePick(pick, accept)
@@ -36,7 +39,7 @@ class ConveyorWorker extends Actor {
 
 object Conveyor {
 
-  def newItem(item: Item) {
+  def newItem(item: Item) = {
     // check all item's topics for subscriptions
     // if present, fuilfill them for this item
     var allSubs: List[Subscription] = List()
@@ -47,9 +50,106 @@ object Conveyor {
     actMap.map { case (subId, subMap) => processSubs(item, subMap) }
   }
 
-  def fulfill(sub: Subscription) = {
+  def newTopic(topic: Topic) = {
+    // check for unmatched interests in this topic, grouped by Subscriber for efficiency
+    val interests = Interest.unmatched(topic.scheme.get.tag).groupBy(_.subscriberId)
+    interests.map { case (subId, ints) => processInterests(subId, topic, ints) }
+    // the same for interest templates
+    val templates = Interest.templates(topic.scheme.get.tag).groupBy(_.subscriberId)
+    templates.map { case (subId, tints) => processTemplates(subId, topic, tints) }
+  }
+
+  private def processInterests(subscriberId: Int, topic: Topic, ints: List[Interest]) = {
+    val sub = Subscriber.findById(subscriberId).get
+    val mints = ints.filter(_.intValue == topic.tag)
+    sub.planFor(topic.scheme.get.id).map { plan =>
+      plan.interest match {
+        case "subscribe" => subscribe(plan.fulfill)
+        case "review" => review()
+        case _ => println("Don't go there")
+      }
+    }
+
+    def subscribe(action: String) = mints.foreach( i =>
+      Subscription.create(i.subscriberId, topic.id, action, sub.created, new Date))
+
+    def review() = mints.foreach( i =>
+      TopicPick.create(i.subscriberId, topic.id, conveyorAgent.id))
+  }
+
+  private def processTemplates(subscriberId: Int, topic: Topic, tints: List[Interest]) = {
+    val sub = Subscriber.findById(subscriberId).get
+    val mints = tints.filter(tmp => topic.tag.contains(tmp.intValue))
+    sub.planFor(topic.scheme.get.id).map { plan =>
+      plan.template match {
+        case "subscribe" => subscribe(plan.fulfill)
+        case "review" => review()
+        case _ => println("Don't go there")
+      }
+    }
+
+    def subscribe(action: String) = mints.foreach( i =>
+      Subscription.create(i.subscriberId, topic.id, action, sub.created, new Date))
+
+    def review() = {
+      mints.foreach( t =>
+        TopicPick.create(t.subscriberId, topic.id, conveyorAgent.id))
+    }
+  }
+
+  def newSubscription(sub: Subscription) = {
+    // create and/or link backing interest
+    val subscr = sub.subscriber.get
+    val topic = sub.topic.get
+    val scheme = topic.scheme.get
+    val interest = subscr.interestWithValue(scheme.tag, topic.tag).
+                   getOrElse(subscr.templatesInScheme(scheme.tag).find(t => topic.tag.contains(t.intValue)).
+                   getOrElse(subscr.addInterest(scheme, topic.tag, false)))
+    sub.linkInterest(interest)
     // transfer all eligible items ('latest' checking NYI)
-    sub.topic.get.itemsSince(sub.earliest).foreach(convey(_, sub))
+    topic.itemsSince(sub.earliest).foreach(convey(_, sub))
+  }
+
+  def newInterest(interest: Interest) = {
+    // find the plan governing this interest (ignore if not in a plan)
+    val sub = interest.subscriber.get
+    val scheme = interest.scheme.get
+    val plan = sub.planFor(scheme.id)
+    if (plan.isDefined) {
+      plan.get.interest match {
+        case "review" => reviewInterest(interest, plan.get)
+        case _ => println("Don't go there")
+      }
+    }
+  }
+
+  private def reviewInterest(interest: Interest, plan: Plan) = {
+    if (interest.template) {
+      // look through all topics attempting a match
+      val scheme = interest.scheme.get
+      var idx = 0
+      var mPage = Topic.withScheme(scheme.id, idx)
+      while (! mPage.isEmpty) {
+        mPage.filter(_.tag.contains(interest.intValue)).foreach { topic =>
+          TopicPick.create(interest.subscriberId, topic.id, conveyorAgent.id)
+        }
+        idx += 1
+        mPage = Topic.withScheme(scheme.id, idx)
+      }
+    } else {
+      // try to find this value as an exact match
+      val topic = Topic.forSchemeAndTag(interest.schemeTag, interest.intValue)
+      if (topic.isDefined) {
+        // add to topic picks for review
+        TopicPick.create(interest.subscriberId, topic.get.id, conveyorAgent.id)
+      }
+    }
+  }
+
+  private def conveyorAgent = {
+    Agent.findByTag("conveyor").getOrElse(
+      Agent.make("conveyor", "Conveyor Agent", "Internal", "", "", None)
+    )
   }
 
   def transferItem(item: Item, subscr: Subscriber) = {
@@ -80,7 +180,7 @@ object Conveyor {
     if (accept) {
       val sub = Subscriber.findById(pick.subscriberId).get
       val plan = sub.planFor(pick.topic.scheme_id)
-      fulfill(Subscription.make(sub.id, pick.topicId, plan.get.pick, sub.created, new Date))
+      newSubscription(Subscription.make(sub.id, pick.topicId, plan.get.pick, sub.created, new Date))
     }
     // clean up pick in any case
     pick.resolve(accept)

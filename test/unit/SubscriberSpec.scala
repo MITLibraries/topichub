@@ -150,7 +150,7 @@ class SubscriberSpec extends Specification {
         s.interests must haveSize(0)
         Scheme.create("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         s.addInterest(Scheme.findById(1).get, "review")
-        s.interestIn(Scheme.findById(1).get.id) must equalTo(Interest.findById(1))
+        s.interestIn(Scheme.findById(1).get.tag) must equalTo(Interest.findById(1))
       }
     }
 
@@ -167,10 +167,10 @@ class SubscriberSpec extends Specification {
 
         //sub2 has an interest in a topic
         s2.addInterest(Scheme.findById(1).get, "review")
-        s2.interestIn(Scheme.findById(1).get.id) must equalTo(Interest.findById(1))
+        s2.interestIn(Scheme.findById(1).get.tag) must equalTo(Interest.findById(1))
 
         //sub1 does not
-        s.interestIn(Scheme.findById(1).get.id) must equalTo(None)
+        s.interestIn(Scheme.findById(1).get.tag) must equalTo(None)
       }
     }
 
@@ -182,7 +182,7 @@ class SubscriberSpec extends Specification {
         s.interests must haveSize(0)
         Scheme.create("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         s.addInterest(Scheme.findById(1).get, "review")
-        s.hasInterest(Scheme.findById(1).get.id) must equalTo(true)
+        s.hasInterest(Scheme.findById(1).get.tag) must equalTo(true)
       }
     }
 
@@ -286,7 +286,7 @@ class SubscriberSpec extends Specification {
       }
     }
 
-    "#interestsWithAction" in {
+    "#templatesInScheme" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         Subscriber.all must haveSize(0)
         User.create("bob", "bob@example.com", "pwd", "role1")
@@ -294,12 +294,25 @@ class SubscriberSpec extends Specification {
         s.interests must haveSize(0)
         Scheme.create("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         Scheme.create("tag1", "gentype", "cat", "desc", Some("link"), Some("logo"))
-        Scheme.create("tag3", "gentype", "cat", "desc", Some("link"), Some("logo"))
-        s.addInterest(Scheme.findById(1).get, "review")
-        s.addInterest(Scheme.findById(2).get, "deliver")
-        s.addInterest(Scheme.findById(3).get, "review")
-        s.interestsWithAction("review").size must equalTo(2)
-        s.interestsWithAction("deliver").size must equalTo(1)
+        s.addInterest(Scheme.findById(1).get, "MIT", true)
+        s.addInterest(Scheme.findById(2).get, "Stanford")
+        s.templatesInScheme("tag").size must equalTo(1)
+        s.templatesInScheme("tag1").size must equalTo(0)
+      }
+    }
+
+    "#interestWithValue" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        Subscriber.all must haveSize(0)
+        User.create("bob", "bob@example.com", "pwd", "role1")
+        val s = Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        s.interests must haveSize(0)
+        Scheme.create("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        Scheme.create("tag1", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        s.addInterest(Scheme.findById(1).get, "MIT")
+        s.addInterest(Scheme.findById(2).get, "Stanford", true)
+        s.interestWithValue("tag", "MIT").size must equalTo(1)
+        s.interestWithValue("tag1", "Stanford").size must equalTo(0)
       }
     }
 
@@ -335,13 +348,13 @@ class SubscriberSpec extends Specification {
 
         s.addInterest(Scheme.findById(1).get, "review")
         s.interests must haveSize(1)
-        s.hasInterest(Scheme.findById(1).get.id) must equalTo(true)
-        s.hasInterest(Scheme.findById(2).get.id) must equalTo(false)
+        s.hasInterest(Scheme.findById(1).get.tag) must equalTo(true)
+        s.hasInterest(Scheme.findById(2).get.tag) must equalTo(false)
 
         s.addInterest(Scheme.findById(2).get, "review")
         s.interests must haveSize(2)
-        s.hasInterest(Scheme.findById(1).get.id) must equalTo(true)
-        s.hasInterest(Scheme.findById(2).get.id) must equalTo(true)
+        s.hasInterest(Scheme.findById(1).get.tag) must equalTo(true)
+        s.hasInterest(Scheme.findById(2).get.tag) must equalTo(true)
       }
     }
 
@@ -357,18 +370,18 @@ class SubscriberSpec extends Specification {
 
         s.addInterest(Scheme.findById(1).get, "review")
         s.interests must haveSize(1)
-        s.hasInterest(Scheme.findById(1).get.id) must equalTo(true)
-        s.hasInterest(Scheme.findById(2).get.id) must equalTo(false)
+        s.hasInterest(Scheme.findById(1).get.tag) must equalTo(true)
+        s.hasInterest(Scheme.findById(2).get.tag) must equalTo(false)
 
         s.addInterest(Scheme.findById(2).get, "review")
         s.interests must haveSize(2)
-        s.hasInterest(Scheme.findById(1).get.id) must equalTo(true)
-        s.hasInterest(Scheme.findById(2).get.id) must equalTo(true)
+        s.hasInterest(Scheme.findById(1).get.tag) must equalTo(true)
+        s.hasInterest(Scheme.findById(2).get.tag) must equalTo(true)
 
-        s.removeInterest(Scheme.findById(2).get)
+        s.removeInterest(Scheme.findById(2).get, "review")
         s.interests must haveSize(1)
-        s.hasInterest(Scheme.findById(1).get.id) must equalTo(true)
-        s.hasInterest(Scheme.findById(2).get.id) must equalTo(false)
+        s.hasInterest(Scheme.findById(1).get.tag) must equalTo(true)
+        s.hasInterest(Scheme.findById(2).get.tag) must equalTo(false)
       }
     }
 

@@ -1,9 +1,10 @@
 @*****************************************************************************
  * Display information on a scheme. If a scheme validator is defined,        *
- * expose a form to check user-supplied topics.                              *
+ * expose a form to check user-supplied topics. For subscribers, display     *
+ * a form to add an interest                                                 *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(scheme: Scheme)@*(implicit hubContext: HubContext)*@
+@(scheme: Scheme, sub: Option[Subscriber])@*(implicit hubContext: HubContext)*@
 @layout.main("Scheme - TopicHub") {
   <div class="jumbotron">
     <h3>~ Scheme ~</h3>
@@ -19,11 +20,22 @@
     } else {
       </p>
     }
-    @if(! scheme.validator.isEmpty) {
-       <p>Check Topic: <form action="@routes.Application.topicValidate(scheme.id)" method="POST">
-          <input type="text" name="topic">
-          <input type="submit" value="Check">
-       </p>
+    @if(scheme.validator.isDefined) {
+      <p>Check Topic: <form action="@routes.Application.topicValidate(scheme.id)" method="POST">
+        <input type="text" name="topic">
+        <input type="submit" value="Check">
+      </p>
+    }
+    @if(sub.isDefined) {
+      <p><a href="@routes.Application.interestBrowse("scheme", scheme.tag)">Browse current interests</a></p>
+      <p>New interest: <form action="@routes.Application.addSubscriberInterest(sub.get.id, scheme.tag)" method="POST">
+        <input type="text" name="interest">
+        <label for="exact">Exact</label>
+        <input type="radio" id="exact" name="template" value="false" checked="checked">
+        <label for="fuzzy">Fuzzy</label>
+        <input type="radio" id="fuzzy" name="template" value="true">
+        <input type="submit" value="Add">
+      </p>
     }
     @*
     @if(! hubContext.user.isEmpty) {
