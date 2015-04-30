@@ -5,6 +5,7 @@
 @(sub: Subscriber)(implicit request: play.api.mvc.RequestHeader)
 @import java.time.YearMonth
 @import java.time.LocalDateTime
+@currentSubId = @{ Application.currentSubscriberId }
 @layout.main("Subscriber Dashboard -  TopicHub") {
 <div class="container-fluid">
   <div class="row-fluid">
@@ -15,8 +16,8 @@
       <h4>Review your Stuff</h4>
       <ul class="list-group">
         <li class="list-group-item">
-          <a href="@routes.Application.holdBrowse(1)">Total to review:
-          <span class="badge">@Subscriber.findById(1).get.holdCount</span>
+          <a href="@routes.Application.holdBrowse(currentSubId)">Total to review:
+          <span class="badge">@Subscriber.findById(currentSubId).get.holdCount</span>
           </a>
         </li>
       </ul>
@@ -32,7 +33,7 @@
         <li class="list-group-item">
           <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
           @Harvest.findById(1).get.updated
-          </li>
+        </li>
       </ul>
 
       <h4>Saved Searches (coming soon)</h4>
@@ -64,8 +65,8 @@
       <h4>Suggested Subscriptions</h4>
       <ul class="list-group">
         <li class="list-group-item">
-          <a href="@routes.Application.pickBrowse(1)">Total to review:
-          <span class="badge">@Subscriber.findById(1).get.pickCount</span>
+          <a href="@routes.Application.pickBrowse(currentSubId)">Total to review:
+          <span class="badge">@Subscriber.findById(currentSubId).get.pickCount</span>
           </a>
         </li>
       </ul>

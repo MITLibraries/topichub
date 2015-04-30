@@ -15,8 +15,9 @@ import java.io.{ByteArrayOutputStream, File, FileInputStream, FileOutputStream, 
 object ItemController extends Controller with Security {
 
   def item(id: Int) = Action { implicit request =>
+    val sub = Subscriber.findById(Application.currentSubscriberId)
     Item.findById(id).map( item =>
-      Ok(views.html.item.show(item, Subscriber.findByUserId(1)))
+      Ok(views.html.item.show(item, sub))
     ).getOrElse(NotFound(views.html.static.trouble("No such item: " + id)))
   }
 
@@ -56,13 +57,14 @@ object ItemController extends Controller with Security {
   }
 
   def itemDeposit(id: Int) = isAuthenticated { identity => implicit request =>
-    val channel = Subscriber.findByUserId(1).get.channels.headOption.getOrElse {
+    val sub = Subscriber.findById(Application.currentSubscriberId)
+    val channel = sub.get.channels.headOption.getOrElse {
       //todo handle this more elegantly!
       throw new RuntimeException("You must define a Channel")
     }
 
     Item.findById(id).map( item => {
-      Application.conveyor ! (item, Subscriber.findById(1).get)
+      Application.conveyor ! (item, sub.get)
       Ok("That may have worked.")
     }
     ).getOrElse(NotFound(views.html.static.trouble("No such item: " + id)))
