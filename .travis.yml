@@ -3,7 +3,7 @@ scala:
  - "2.11.6"
 jdk:
  - oraclejdk8
-sudo: false
+sudo: required
 env:
   - MAILGUN_API_KEY=notarealkey DATABASE_URL=jdbc:postgresql://localhost/travis_ci_test
 addons:
