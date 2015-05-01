@@ -27,6 +27,12 @@ object AuthenticationController extends Controller {
     Ok(views.html.login.index("", redirectUrl)).
       withSession("oauth-state" -> state)
   }
+
+  def logout = Action { implicit request =>
+    Results.Redirect(routes.Application.index).withNewSession.flashing(
+      "success" -> "You are now signed out."
+    )
+  }
 }
 
 trait Security {

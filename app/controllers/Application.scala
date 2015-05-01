@@ -163,11 +163,22 @@ object Application extends Controller with Security {
     }
   }
 
-  private def getCurrentIdentity(request: play.api.mvc.Request[play.api.mvc.AnyContent]) = {
+  def getCurrentIdentity(implicit request: play.api.mvc.RequestHeader) = {
     // This method is useful to get the identity of the current request user for methods
     // that don't explicitly need a signed in user (i.e. it's okay to be anonymous, but
     // if the user is signed in we want to know who they are for some reason).
     request.session.get("connected").getOrElse("")
+  }
+
+  // Used in views to allow conditional display of content based on role
+  def currentUserHasRole(role: String)(implicit request: play.api.mvc.RequestHeader) = {
+    if (getCurrentIdentity != "") {
+      User.findByIdentity(getCurrentIdentity).map( u =>
+        u.hasRole(role)
+      ).getOrElse(false)
+    } else {
+      false
+    }
   }
 
   def createPublisher = isAuthenticated { identity =>

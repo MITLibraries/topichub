@@ -1,0 +1,25 @@
+@()(implicit request: play.api.mvc.RequestHeader)
+
+@if(request.flash.get("success").getOrElse("") != "") {
+  <div class="alert alert-success" role="alert">
+    @request.flash.get("success").getOrElse("")
+  </div>
+}
+
+@if(request.flash.get("info").getOrElse("") != "") {
+  <div class="alert alert-info" role="alert">
+    @request.flash.get("info").getOrElse("")
+  </div>
+}
+
+@if(request.flash.get("warning").getOrElse("") != "") {
+  <div class="alert alert-warning" role="alert">
+    @request.flash.get("warning").getOrElse("")
+  </div>
+}
+
+@if(request.flash.get("danger").getOrElse("") != "") {
+  <div class="alert alert-danger" role="alert">
+    @request.flash.get("danger").getOrElse("")
+  </div>
+}
