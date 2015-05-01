@@ -361,11 +361,16 @@ object Application extends Controller with Security {
     )(Scheme.apply)(Scheme.unapply)
   )
 
-  def schemes = isAnalyst { identity => implicit request =>
-    Ok(views.html.scheme.index(Scheme.all))
+  def schemes = Action { implicit request =>
+    val s = if(currentUserHasRole("analyst")) {
+      Scheme.all
+    } else {
+      Scheme.all.filter(!_.tag.equals("meta"))
+    }
+    Ok(views.html.scheme.index(s))
   }
 
-  def scheme(id: Int) = isAnalyst { identity => implicit request =>
+  def scheme(id: Int) = Action { implicit request =>
     Scheme.findById(id).map( scheme =>
       Ok(views.html.scheme.show(scheme, Subscriber.findById(currentSubscriberId)))
     ).getOrElse(NotFound(views.html.static.trouble("No such scheme: " + id)))

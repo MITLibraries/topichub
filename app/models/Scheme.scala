@@ -61,7 +61,7 @@ object Scheme {
 
   def all: List[Scheme] = {
     DB.withConnection { implicit c =>
-      SQL("select * from scheme").as(scheme *)
+      SQL("select * from scheme order by description").as(scheme *)
     }
   }
 
