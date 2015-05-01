@@ -10,17 +10,51 @@
 <div class="container-fluid">
   <div class="row-fluid">
     <div class="col-md-12">
-      <h2>Stuff you Care About&#8482;</h2>
+      <div class="page-header">
+        <h1>Subscriber Dashboard <small>@sub.name</small></h1>
+      </div>
     </div>
     <div class="col-md-3">
-      <h4>Review your Stuff</h4>
+      <h4>Review</h4>
       <ul class="list-group">
         <li class="list-group-item">
-          <a href="@routes.Application.holdBrowse(currentSubId)">Total to review:
           <span class="badge">@Subscriber.findById(currentSubId).get.holdCount</span>
-          </a>
+          <a href="@routes.Application.holdBrowse(currentSubId)">Items to review:</a>
+        </li>
+        <li class="list-group-item">
+          <span class="badge">@Subscriber.findById(currentSubId).get.pickCount</span>
+          <a href="@routes.Application.pickBrowse(currentSubId)">Topics to review:</a>
         </li>
       </ul>
+      <hr />
+
+      <h4>Subscriptions by Scheme</h4>
+      <ul class="list-group">
+      @for(s <- sub.plannedSchemes) {
+        <li class="list-group-item">
+          <span class="badge">@Subscription.schemeCount(sub.id, s.id)</span>
+          <a href=@routes.Application.subscriptionBrowse("scheme", s.id)>@s.description</a>
+        </li>
+      }
+      </ul>
+      <h6>Note: deliveries and rejections can be seen as you click through the links above.</h6>
+      <hr />
+
+      <h4>Destinations</h4>
+      <ul class="list-group">
+        @sub.channels.map { chan =>
+          <li class="list-group-item alert-info">
+            <span class="badge">@chan.transfers</span>
+            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+            <a href="@routes.Application.channel(chan.id)">@chan.description</a>
+          </li>
+        }
+        <li class="list-group-item alert-danger">
+          <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+          <a href="@routes.Application.newChannel(sub.id)">Add a new destination</a>
+        </li>
+      </ul>
+      <hr />
 
       <h4>Last Harvest</h4>
       <ul class="list-group">
@@ -36,55 +70,6 @@
         </li>
       </ul>
 
-      <h4>Saved Searches (coming soon)</h4>
-        <ul class="list-group">
-          <li class="list-group-item alert-success">
-            <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
-             <a href="">Run: Some name you made up</a>
-          </li>
-          <li class="list-group-item alert-success">
-            <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
-             <a href="">Run: Another Search</a>
-          </li>
-          <li class="list-group-item alert-danger">
-             <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
-             <a href="">Add a new Saved Search</a>
-          </li>
-        </ul>
-
-      <h4>Subscriptions by Scheme</h4>
-      <h6>Note: deliveries and rejections can be seen as you click through the links below.</h6>
-      <ul class="list-group">
-      @for(s <- sub.plannedSchemes) {
-        <li class="list-group-item">
-          <a href=@routes.Application.subscriptionBrowse("scheme", s.id)>@s.description <span class="badge">@Subscription.schemeCount(sub.id, s.id)</span></a>
-        </li>
-      }
-      </ul>
-
-      <h4>Suggested Subscriptions</h4>
-      <ul class="list-group">
-        <li class="list-group-item">
-          <a href="@routes.Application.pickBrowse(currentSubId)">Total to review:
-          <span class="badge">@Subscriber.findById(currentSubId).get.pickCount</span>
-          </a>
-        </li>
-      </ul>
-
-      <h4>Destinations</h4>
-      <ul class="list-group">
-        @sub.channels.map { chan =>
-          <li class="list-group-item alert-info">
-            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
-            <a href="@routes.Application.channel(chan.id)">@chan.description</a>
-            <span class="badge">@chan.transfers</span>
-          </li>
-        }
-        <li class="list-group-item alert-danger">
-          <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
-          <a href="@routes.Application.newChannel(sub.id)"> Add a new destination</a>
-        </li>
-      </ul>
     </div>
 
     <div class="col-md-9">

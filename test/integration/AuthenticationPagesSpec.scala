@@ -86,7 +86,6 @@ class AuthenticationPageSpec extends Specification with Mockito {
         browser.goTo("http://localhost:" + port + "/login")
         browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/dashboard")
-        browser.pageSource must contain("Suggested Subscriptions")
         assertThat(browser.title()).isEqualTo("Subscriber Dashboard - TopicHub")
       }
     }
