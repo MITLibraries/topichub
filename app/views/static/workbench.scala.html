@@ -10,7 +10,13 @@
       <div class="col-md-4">
         <div class="list-group">
           <h3>Tools</h3>
-          <a id="sidenav_models" href="@routes.Application.newHubModel" class="list-group-item">Models</a>
+
+          @if(Application.currentUserHasRole("sysadmin")) {
+            <a id="sidenav_models" href="@routes.Application.newHubModel" class="list-group-item">
+              Models
+            </a>
+          }
+
           <a id="sidenav_schemes" href="@routes.Application.schemes" class="list-group-item">Schemes</a>
           <a id="sidenav_ctypes" href="@routes.Application.contentTypes" class="list-group-item">Content Types</a>
           <a id="sidenav_cformats" href="@routes.Application.contentFormats" class="list-group-item">Content Formats</a>

@@ -15,7 +15,7 @@ import play.api.Play.current
  * An integration test will fire up a whole play application in a real (or headless) browser
  */
 @RunWith(classOf[JUnitRunner])
-class IntegrationSpec extends Specification {
+class WorkbenchPagesSpec extends Specification {
 
   def create_user(role: String) = User.make("bob", "bob@example.com", role,
                                             "https://oidc.mit.edu/current_user")
@@ -38,22 +38,30 @@ class IntegrationSpec extends Specification {
       assertThat(browser.title()).isEqualTo("Workbench - TopicHub")
     }
 
-    "top navigation should deny Workbench access to non analyst" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+    "deny Workbench access to non analyst" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
       val user = create_user("schmuck")
       browser.goTo("http://localhost:" + port + "/login")
       browser.$("#openid").click
-      browser.goTo("http://localhost:" + port)
-      browser.$("body > nav > div > div.navbar-header > button").click();
-      browser.$("a[href*='workbench']").click();
+      browser.goTo("http://localhost:" + port + "/workbench")
       assertThat(browser.title()).isEqualTo("Error - TopicHub")
       browser.pageSource must contain("You are not authorized")
     }
 
-    "top navigation should deny Workbench access to not logged in user" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-      browser.goTo("http://localhost:" + port)
-      browser.$("body > nav > div > div.navbar-header > button").click();
-      browser.$("a[href*='workbench']").click();
+    "deny Workbench access to not logged in user" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+      browser.goTo("http://localhost:" + port + "/workbench")
       assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+    }
+  }
+
+  "Workbench for SysAdmins" should {
+    "provide link to Model" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+      val user = create_user("sysadmin, analyst")
+      browser.goTo("http://localhost:" + port + "/login")
+      browser.$("#openid").click
+      browser.goTo("http://localhost:" + port + "/workbench")
+      browser.pageSource must contain("""<a id="sidenav_models" href="/model/create""")
+      browser.$("#sidenav_models").click
+      assertThat(browser.title()).isEqualTo("Create Model - TopicHub")
     }
   }
 
@@ -67,13 +75,13 @@ class IntegrationSpec extends Specification {
       assertThat(browser.pageSource).contains("To perform the essential work of assigning topics")
     }
 
-    "provides link to Model" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+    "does not provide link to Model" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
       val user = create_user("analyst")
       browser.goTo("http://localhost:" + port + "/login")
       browser.$("#openid").click
       browser.goTo("http://localhost:" + port + "/workbench")
-      assertThat(browser.$("#sidenav_models").getTexts.get(0)).isEqualTo("Models")
-      browser.$("#sidenav_models").click();
+      browser.pageSource must not contain("""<a id="sidenav_models" href="/model/create""")
+      browser.goTo("http://localhost:" + port + "/model/create")
       assertThat(browser.title()).isEqualTo("Error - TopicHub")
       browser.pageSource must contain("You are not authorized")
     }
