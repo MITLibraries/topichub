@@ -355,9 +355,8 @@ object Application extends Controller with Security {
   }
 
   def scheme(id: Int) = isAnalyst { identity => implicit request =>
-    // todo: update to currentSubscriberId
     Scheme.findById(id).map( scheme =>
-      Ok(views.html.scheme.show(scheme, Subscriber.findById(1)))
+      Ok(views.html.scheme.show(scheme, Subscriber.findById(currentSubscriberId)))
     ).getOrElse(NotFound(views.html.static.trouble("No such scheme: " + id)))
   }
 
