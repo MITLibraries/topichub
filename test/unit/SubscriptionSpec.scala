@@ -215,7 +215,7 @@ class SubscriptionSpec extends Specification {
         val t = Topic.make(scheme.id, "tag", "name")
         Subscription.schemeCount(sub.id, scheme.id) must equalTo(0)
         val s = Subscription.make(sub.id, t.id, "deliver", sub.created, sub.created)
-        s.topic mustEqual(Some(t))
+        s.topic mustEqual(t)
       }
     }
 
@@ -227,7 +227,7 @@ class SubscriptionSpec extends Specification {
         val t = Topic.make(scheme.id, "tag", "name")
         Subscription.schemeCount(sub.id, scheme.id) must equalTo(0)
         val s = Subscription.make(sub.id, t.id, "deliver", sub.created, sub.created)
-        s.subscriber mustEqual(Some(sub))
+        s.subscriber mustEqual(sub)
       }
     }
 

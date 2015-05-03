@@ -143,16 +143,16 @@ object contentModelJson {
 
   // deserialization methods
   def buildContentModel(model: JsValue) = {
-    val formats = (model \ "cformats")
+    val formats = (model \ "cformats").get
     procJsArray(formats, 0, cformatFromContentModel)
     println("finished formats")
-    val schemes = (model \ "schemes")
+    val schemes = (model \ "schemes").get
     procJsArray(schemes, 0, schemeFromContentModel)
     println("finished schemes")
-    val ctypes = (model \ "ctypes")
+    val ctypes = (model \ "ctypes").get
     procJsArray(ctypes, 0, ctypeFromContentModel)
     println("finished ctypes")
-    val resmaps = (model \ "resmaps")
+    val resmaps = (model \ "resmaps").get
     procJsArray(resmaps, 0, resmapFromContentModel)
     println("finished resmaps")
   }
@@ -176,9 +176,9 @@ object contentModelJson {
                     forName(jss, "description"), forNameOption(jss, "link"),
                     forNameOption(jss, "logo"))
       val scheme = Scheme.findByTag(tag).get
-      val finders = (jss \ "finders")
+      val finders = (jss \ "finders").get
       procJsArray(finders, 0, finderFromContentModel(scheme.id))
-      val validators = (jss \ "validators")
+      val validators = (jss \ "validators").get
       procJsArray(validators, 0, validatorFromContentModel(scheme.id))
     }
   }
@@ -206,9 +206,9 @@ object contentModelJson {
       ContentType.create(tag, forName(jsc, "label"), forName(jsc, "description"),
                          forNameOption(jsc, "logo"))
       val ctype = ContentType.findByTag(tag).get
-      procJsArray((jsc \ "meta"), 0, ctMapFromCmodel(ctype, "meta"))
-      procJsArray((jsc \ "index"), 0, ctMapFromCmodel(ctype, "index"))
-      procJsArray((jsc \ "topic"), 0, ctMapFromCmodel(ctype, "topic"))
+      procJsArray((jsc \ "meta").get, 0, ctMapFromCmodel(ctype, "meta"))
+      procJsArray((jsc \ "index").get, 0, ctMapFromCmodel(ctype, "index"))
+      procJsArray((jsc \ "topic").get, 0, ctMapFromCmodel(ctype, "topic"))
     }
   }
 
@@ -223,7 +223,7 @@ object contentModelJson {
     if (ResourceMap.findByTag(tag).isEmpty) {
       ResourceMap.create(tag, forName(jsp, "description"), forNameOption(jsp, "swordUrl"))
       val resmap = ResourceMap.findByTag(tag).get
-      val mappings = (jsp \ "mappings")
+      val mappings = (jsp \ "mappings").get
       procJsArray(mappings, 0, rmFromCmodel(resmap))
     }
   }
@@ -231,7 +231,7 @@ object contentModelJson {
   def rmFromCmodel(resmap: ResourceMap)(jsc: JsValue) {
     val tag = forName(jsc, "scheme")
     val scheme = Scheme.findByTag(tag).get
-    val maps = (jsc \ "maps")
+    val maps = (jsc \ "maps").get
     procJsArray(maps, 0, rmSubMapFromCmodel(resmap, scheme.id))
   }
 
@@ -300,7 +300,7 @@ object publisherModelJson {
 
   // deserialization methods
   def buildPublisherModel(model: JsValue) = {
-    val pubs = (model \ "publishers")
+    val pubs = (model \ "publishers").get
     procJsArray(pubs, 0, pubFromPublisherModel)
     println("finished publishers")
   }
@@ -314,9 +314,9 @@ object publisherModelJson {
                        forName(jss, "category"), forName(jss, "status"),
                        forNameOption(jss, "link"), forNameOption(jss, "logo"))
       val pub = Publisher.findByTag(tag).get
-      val colls = (jss \ "collections")
+      val colls = (jss \ "collections").get
       procJsArray(colls, 0, collFromPublisherModel(pub.id))
-      val harvests = (jss \ "harvests")
+      val harvests = (jss \ "harvests").get
       procJsArray(harvests, 0, harvestFromPublisherModel(pub.id))
     }
   }
@@ -424,7 +424,7 @@ object subscriberModelJson {
 
   // deserialization methods
   def buildSubscriberModel(model: JsValue) = {
-    val subs = (model \ "subscribers")
+    val subs = (model \ "subscribers").get
     procJsArray(subs, 0, subFromSubscriberModel)
     println("finished subscribers")
   }
@@ -434,11 +434,11 @@ object subscriberModelJson {
     val sub = Subscriber.make(1, forName(jss, "name"), forName(jss, "category"),
                               forName(jss, "contact"), forNameOption(jss, "link"),
                               forNameOption(jss, "logo"))
-    val channels = (jss \ "channels")
+    val channels = (jss \ "channels").get
     procJsArray(channels, 0, chanFromSubscriberModel(sub.id))
-    val plans = (jss \ "plans")
+    val plans = (jss \ "plans").get
     procJsArray(channels, 0, planFromSubscriberModel(sub.id))
-    val interests = (jss \ "interests")
+    val interests = (jss \ "interests").get
     procJsArray(interests, 0, intFromSubscriberModel(sub.id))
   }
 
@@ -456,7 +456,7 @@ object subscriberModelJson {
     val plan = Plan.make(sid, chan.id, forName(jss, "name"), forName(jss, "description"), forName(jss, "icon"),
                         forName(jss, "fulfill"), forName(jss, "pick"), forName(jss, "interest"),
                         forName(jss, "template"))
-    val schemes = (jss \ "schemes")
+    val schemes = (jss \ "schemes").get
     procJsArray(schemes, 0, addSchemeFromSubscriberModel(plan))
   }
 
@@ -470,7 +470,7 @@ object jsonHelpers {
   def procJsArray(arr: JsValue, index: Int, func: JsValue => Unit): Unit = {
     arr(index) match {
       case und: JsUndefined => Nil
-      case jsval: JsValue => func(jsval); procJsArray(arr, index + 1, func)
+      case _ => func(_); procJsArray(arr, index + 1, func)
     }
   }
 

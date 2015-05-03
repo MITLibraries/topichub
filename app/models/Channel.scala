@@ -11,8 +11,7 @@ import play.api._
 import play.api.Play.current
 
 import anorm.SqlParser._
-import anorm.~
-import anorm.SQL
+import anorm.{SQL, ~}
 
 /** Channel contains coordinates and credentials to effect a content transfer
   * or notification between a hub and a specified address or endpoint of a subscriber

@@ -314,9 +314,9 @@ class TopicSpec extends Specification {
         val t2 = Topic.make(s.id, "topictag2", "name2")
         val t3 = Topic.make(s2.id, "topictag3", "name3")
 
-        t1.scheme must equalTo(Some(s))
-        t2.scheme must equalTo(Some(s))
-        t3.scheme must equalTo(Some(s2))
+        t1.scheme must equalTo(s)
+        t2.scheme must equalTo(s)
+        t3.scheme must equalTo(s2)
       }
     }
 

@@ -5,8 +5,8 @@
  *****************************************************************************@
 @(item: Item, sub: Option[Subscriber])(implicit request: play.api.mvc.RequestHeader)
 @layout.main("Item - TopicHub") {
-  <div itemscope itemtype="http://schema.org/@item.contentType.get.label" class="jumbotron">
-    <h3>~ @item.contentType.get.tag ~</h3>
+  <div itemscope itemtype="http://schema.org/@item.contentType.label" class="jumbotron">
+    <h3>~ @item.contentType.tag ~</h3>
     <h2 itemprop="name">@Html(item.metadataValue("title"))</h2>
     <p itemprop="author">
       @tags.item_authors(item.metadataValues("author"))

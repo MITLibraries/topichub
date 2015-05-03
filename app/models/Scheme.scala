@@ -26,8 +26,7 @@ case class Scheme(id: Int, tag: String, gentype: String, category: String, descr
 
   def topicCount = {
     DB.withConnection { implicit c =>
-      val count = SQL("select count(*) as c from topic where scheme_id = {id}").on('id -> id).apply.head
-      count[Long]("c")
+      SQL("select count(*) as c from topic where scheme_id = {id}").on('id -> id).as(scalar[Long].single)
     }
   }
 

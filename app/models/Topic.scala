@@ -64,30 +64,27 @@ case class Topic(id: Int, scheme_id: Int, tag: String, name: String,
 
   def itemCount = {
     DB.withConnection { implicit c =>
-      val count = SQL("select count(*) as c from item_topic where topic_id = {id}").on('id -> id).apply.head
-      count[Long]("c")
+      SQL("select count(*) from item_topic where topic_id = {id}").on('id -> id).as(scalar[Long].single)
     }
   }
 
   def itemCountSince(start: Date) = {
     DB.withConnection { implicit c =>
-      val count = SQL("select count(*) as c from item_topic where topic_id = {id} and item_created >= {created}")
-      .on('id -> id, 'created -> start).apply.head
-      count[Long]("c")
+      SQL("select count(*) from item_topic where topic_id = {id} and item_created >= {created}")
+      .on('id -> id, 'created -> start).as(scalar[Long].single)
     }
   }
 
   def scheme = {
     DB.withConnection { implicit c =>
       SQL("select * from scheme where id = {scheme_id}")
-      .on('scheme_id -> scheme_id).as(Scheme.scheme.singleOpt)
+      .on('scheme_id -> scheme_id).as(Scheme.scheme.single)
     }
   }
 
   def subscriptionCount = {
     DB.withConnection { implicit c =>
-      val count = SQL("select count(*) as c from subscription where topic_id = {id}").on('id -> id).apply.head
-      count[Long]("c")
+      SQL("select count(*) from subscription where topic_id = {id}").on('id -> id).as(scalar[Long].single)
     }
   }
 

@@ -10,30 +10,30 @@ import play.api.db.DB
 import play.api.Play.current
 
 import anorm.SqlParser._
-import anorm.~
-import anorm.SQL
+import anorm.{SQL, ~}
 
 /** Interest represents a subscriber intent toward a value in a namespace (scheme).
   * The value may be exact, or represent a 'template' or pattern that
-  * describes a value space.
+  * describes a range of values.
   *
   * @author richardrodgers
   */
 
 case class Interest(id: Int, subscriberId: Int, schemeTag: String,
                     intValue: String, template: Boolean, created: Date) {
+  require(schemeTag != null && intValue != null)
 
   def subscriber = {
     DB.withConnection { implicit c =>
       SQL("select * from subscriber where id = {subscriber_id}")
-      .on('subscriber_id -> subscriberId).as(Subscriber.sub.singleOpt)
+      .on('subscriber_id -> subscriberId).as(Subscriber.sub.single)
     }
   }
 
   def scheme = {
     DB.withConnection { implicit c =>
       SQL("select * from scheme where tag = {scheme_tag}")
-      .on('scheme_tag -> schemeTag).as(Scheme.scheme.singleOpt)
+      .on('scheme_tag -> schemeTag).as(Scheme.scheme.single)
     }
   }
 }
@@ -64,9 +64,8 @@ object Interest {
   // of schemes... which would always be 1 as we pass in the Scheme to count.
   def schemeCount(subscriberId: Int, schemeTag: String) = {
     DB.withConnection { implicit c =>
-      val count = SQL("select count(*) as c from interest where interest.subscriber_id = {sub_id} and interest.scheme_tag = {sch_tag}")
-      .on('sub_id -> subscriberId, 'sch_tag -> schemeTag).apply.head
-      count[Long]("c")
+      SQL("select count(*) from interest where interest.subscriber_id = {sub_id} and interest.scheme_tag = {sch_tag}")
+      .on('sub_id -> subscriberId, 'sch_tag -> schemeTag).as(scalar[Long].single)
     }
   }
 
@@ -88,16 +87,15 @@ object Interest {
   // of schemes... which would always be 1 as we pass in the Scheme to count.
   def planCount(subscriberId: Int, planId: Int) = {
     DB.withConnection { implicit c =>
-      val count = SQL(
+      SQL(
         """
-        select count(interest.*) as c from interest, scheme, plan_scheme
+        select count(interest.*) from interest, scheme, plan_scheme
         where interest.subscriber_id = {sub_id}
         and interest.scheme_tag = scheme.tag
         and plan_scheme.scheme_id = scheme.id
         and plan_scheme.plan_id = {plan_id}
         """
-      ).on('sub_id -> subscriberId, 'plan_id -> planId).apply.head
-      count[Long]("c")
+      ).on('sub_id -> subscriberId, 'plan_id -> planId).as(scalar[Long].single)
     }
   }
 
@@ -122,21 +120,20 @@ object Interest {
   // of schemes... which would always be 1 as we pass in the Scheme to count.
   def matchCount(subscriberId: Int, mType: String) = {
     DB.withConnection { implicit c =>
-      val count = if (mType == "sub") SQL(
+      if (mType == "sub") SQL(
         """
-          select count(*) as c from interest
+          select count(*) from interest
           where subscriber_id = {sub_id}
           and exists (select 1 from interest_subscription where interest_id = interest.id)
         """
-        ).on('sub_id -> subscriberId).apply.head
+        ).on('sub_id -> subscriberId).as(scalar[Long].single)
         else SQL(
           """
-            select count(*) as c from interest
+            select count(*) from interest
             where subscriber_id = {sub_id}
             and not exists (select 1 from interest_subscription where interest_id = interest.id)
           """
-          ).on('sub_id -> subscriberId).apply.head
-      count[Long]("c")
+        ).on('sub_id -> subscriberId).as(scalar[Long].single)
     }
   }
 

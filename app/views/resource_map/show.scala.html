@@ -2,7 +2,7 @@
  * Page with form to manage a Resource Map                                   *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(resmap: ResourceMap, rmform: Form[(Int, Int, String, Int)])(implicit request: play.api.mvc.RequestHeader)
+@(resmap: ResourceMap, rmform: Form[(Int, Int, String, Int)])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
 @import helper._
 @layout.main("Resource Map - TopicHub") {
   <h2>Resource Map: @resmap.tag</h2>

@@ -12,7 +12,7 @@
   </div>
   <ul>
     @subs.map { sub =>
-      <li><a href="@routes.Application.topic(sub.topic.get.id)">@sub.topic.get.tag</a> @sub.topic.get.name Transfers: @sub.transferCount</li>
+      <li><a href="@routes.Application.topic(sub.topic.id)">@sub.topic.tag</a> @sub.topic.name Transfers: @sub.transferCount</li>
     }
   </ul>
   @tags.pagination(page, 10, total, routes.Application.subscriptionBrowse(filter, value).toString, subs.length)

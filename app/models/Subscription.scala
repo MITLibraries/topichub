@@ -41,20 +41,19 @@ case class Subscription(id: Int,  // DB key
 
   def topic = {
     DB.withConnection { implicit c =>
-      SQL("select * from topic where id = {topic_id}").on('topic_id -> topicId).as(Topic.topic.singleOpt)
+      SQL("select * from topic where id = {topic_id}").on('topic_id -> topicId).as(Topic.topic.single)
     }
   }
 
   def subscriber = {
     DB.withConnection { implicit c =>
-      SQL("select * from subscriber where id = {sid}").on('sid -> subscriberId).as(Subscriber.sub.singleOpt)
+      SQL("select * from subscriber where id = {sid}").on('sid -> subscriberId).as(Subscriber.sub.single)
     }
   }
 
   def transferCount = {
     DB.withConnection { implicit c =>
-      val count = SQL("select count(*) as c from transfer where subscription_id = {id}").on('id -> id).apply.head
-      count[Long]("c")
+      SQL("select count(*) from transfer where subscription_id = {id}").on('id -> id).as(scalar[Long].single)
     }
   }
 
@@ -105,9 +104,8 @@ object Subscription {
   // of schemes... which would always be 1 as we pass in the Scheme to count.
   def schemeCount(subscriberId: Int, schemeId: Int) = {
     DB.withConnection { implicit c =>
-      val count = SQL("select count(*) as c from subscription, topic where subscription.subscriber_id = {sub_id} and subscription.topic_id = topic.id and topic.scheme_id = {sch_id}")
-      .on('sub_id -> subscriberId, 'sch_id -> schemeId).apply.head
-      count[Long]("c")
+      SQL("select count(*) from subscription, topic where subscription.subscriber_id = {sub_id} and subscription.topic_id = topic.id and topic.scheme_id = {sch_id}")
+      .on('sub_id -> subscriberId, 'sch_id -> schemeId).as(scalar[Long].single)
     }
   }
 

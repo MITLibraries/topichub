@@ -52,17 +52,17 @@ object Conveyor {
 
   def newTopic(topic: Topic) = {
     // check for unmatched interests in this topic, grouped by Subscriber for efficiency
-    val interests = Interest.unmatched(topic.scheme.get.tag).groupBy(_.subscriberId)
+    val interests = Interest.unmatched(topic.scheme.tag).groupBy(_.subscriberId)
     interests.map { case (subId, ints) => processInterests(subId, topic, ints) }
     // the same for interest templates
-    val templates = Interest.templates(topic.scheme.get.tag).groupBy(_.subscriberId)
+    val templates = Interest.templates(topic.scheme.tag).groupBy(_.subscriberId)
     templates.map { case (subId, tints) => processTemplates(subId, topic, tints) }
   }
 
   private def processInterests(subscriberId: Int, topic: Topic, ints: List[Interest]) = {
     val sub = Subscriber.findById(subscriberId).get
     val mints = ints.filter(_.intValue == topic.tag)
-    sub.planFor(topic.scheme.get.id).map { plan =>
+    sub.planFor(topic.scheme.id).map { plan =>
       plan.interest match {
         case "subscribe" => subscribe(plan.fulfill)
         case "review" => review()
@@ -80,7 +80,7 @@ object Conveyor {
   private def processTemplates(subscriberId: Int, topic: Topic, tints: List[Interest]) = {
     val sub = Subscriber.findById(subscriberId).get
     val mints = tints.filter(tmp => topic.tag.contains(tmp.intValue))
-    sub.planFor(topic.scheme.get.id).map { plan =>
+    sub.planFor(topic.scheme.id).map { plan =>
       plan.template match {
         case "subscribe" => subscribe(plan.fulfill)
         case "review" => review()
@@ -99,9 +99,9 @@ object Conveyor {
 
   def newSubscription(sub: Subscription) = {
     // create and/or link backing interest
-    val subscr = sub.subscriber.get
-    val topic = sub.topic.get
-    val scheme = topic.scheme.get
+    val subscr = sub.subscriber
+    val topic = sub.topic
+    val scheme = topic.scheme
     val interest = subscr.interestWithValue(scheme.tag, topic.tag).
                    getOrElse(subscr.templatesInScheme(scheme.tag).find(t => topic.tag.contains(t.intValue)).
                    getOrElse(subscr.addInterest(scheme, topic.tag, false)))
@@ -112,8 +112,8 @@ object Conveyor {
 
   def newInterest(interest: Interest) = {
     // find the plan governing this interest (ignore if not in a plan)
-    val sub = interest.subscriber.get
-    val scheme = interest.scheme.get
+    val sub = interest.subscriber
+    val scheme = interest.scheme
     val plan = sub.planFor(scheme.id)
     if (plan.isDefined) {
       plan.get.interest match {
@@ -126,7 +126,7 @@ object Conveyor {
   private def reviewInterest(interest: Interest, plan: Plan) = {
     if (interest.template) {
       // look through all topics attempting a match
-      val scheme = interest.scheme.get
+      val scheme = interest.scheme
       var idx = 0
       var mPage = Topic.withScheme(scheme.id, idx)
       while (! mPage.isEmpty) {
@@ -209,9 +209,7 @@ object Conveyor {
 
   private def transfer(item: Item, sub: Subscription) = {
     val trans = Transfer.make(sub.subscriberId, sub.id, item.id, sub.action)
-    sub.subscriber.map { subscr =>
-      doTransfer(item, subscr, trans)
-    }
+    doTransfer(item, sub.subscriber, trans)
   }
 
   private def transfer(item: Item, trans: Transfer) = {
@@ -243,11 +241,9 @@ object Conveyor {
   }
 
   private def notify(item: Item, sub: Subscription) = {
-    sub.subscriber.map { subscr =>
-      val text = views.txt.email.item_notify(item)
-      val topic = sub.topic.get
-      Emailer.notify(subscr.contact,
+    val text = views.txt.email.item_notify(item)
+    val topic = sub.topic
+    Emailer.notify(sub.subscriber.contact,
         "Scoap3Hub Alert - new in " + topic.tag + ":" + topic.name, text.body)
-    }
   }
 }

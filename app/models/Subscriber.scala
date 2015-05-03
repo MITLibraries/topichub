@@ -15,9 +15,7 @@ import play.api._
 import play.api.Play.current
 
 import anorm.SqlParser._
-import anorm.~
-import anorm.SQL
-import anorm.Row
+import anorm.{Row, SQL, ~}
 
 /** Subscriber is a consumer of content on a hub, where consumption may
   * range from email notifications, SWORD delivery of packages, etc
@@ -90,9 +88,9 @@ case class Subscriber(id: Int,  // DB key
 
   def newItemCountFor(topicId: Int) = {
     DB.withConnection { implicit c =>
-      val count = SQL(
+      SQL(
         """
-        select count(*) as c from item_topic
+        select count(*) from item_topic
         where topic_id = {topic_id}
         and item_created > {created}
         and not exists (
@@ -101,8 +99,7 @@ case class Subscriber(id: Int,  // DB key
           and item_id = item_topic.item_id
         )
         """
-      ).on('topic_id -> topicId, 'created -> created, 'sub_id -> id).apply.head
-      count[Long]("c")
+      ).on('topic_id -> topicId, 'created -> created, 'sub_id -> id).as(scalar[Long].single)
     }
   }
 
@@ -143,8 +140,7 @@ case class Subscriber(id: Int,  // DB key
 
   def holdCount = {
     DB.withConnection { implicit c =>
-      val count = SQL("select count(*) as c from hold where subscriber_id = {id}").on('id -> id).apply.head
-      count[Long]("c")
+      SQL("select count(*) from hold where subscriber_id = {id}").on('id -> id).as(scalar[Long].single)
     }
   }
 
@@ -170,8 +166,7 @@ case class Subscriber(id: Int,  // DB key
 
   def pickCount = {
     DB.withConnection { implicit c =>
-      val count = SQL("select count(*) as c from topic_pick where subscriber_id = {id}").on('id -> id).apply.head
-      count[Long]("c")
+      SQL("select count(*) from topic_pick where subscriber_id = {id}").on('id -> id).as(scalar[Long].single)
     }
   }
 
@@ -408,8 +403,8 @@ object Subscriber {
 
   def categoryCount(category: String) = {
     DB.withConnection { implicit c =>
-      val count = SQL("select count(*) as c from subscriber where category = {category}").on('category -> category).apply.head
-      count[Long]("c")
+      SQL("select count(*) from subscriber where category = {category}")
+      .on('category -> category).as(scalar[Long].single)
     }
   }
 

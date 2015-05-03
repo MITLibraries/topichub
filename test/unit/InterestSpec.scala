@@ -237,7 +237,7 @@ class InterestSpec extends Specification {
 
         Interest.findById(1) must equalTo(None)
         val i = Interest.make(sub.id, scheme.tag, "MIT", false)
-        i.subscriber.get must equalTo(sub)
+        i.subscriber must equalTo(sub)
       }
     }
 
@@ -249,7 +249,7 @@ class InterestSpec extends Specification {
 
         Interest.findById(1) must equalTo(None)
         val i = Interest.make(sub.id, scheme.tag, "MIT", false)
-        i.scheme.get must equalTo(scheme)
+        i.scheme must equalTo(scheme)
       }
     }
   }
