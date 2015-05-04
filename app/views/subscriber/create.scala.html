@@ -8,6 +8,15 @@
   <div class="container">
     <div class="row">
       <div class="col-md-4">
+
+        @if(Subscriber.all.size > 0) {
+          <div class="alert alert-info" role="alert">
+            You may also request to join an existing group. (coming soon!)
+            @* // todo: add link here when we do ticket
+                  https://github.com/MITLibraries/scoap3hub/issues/179 *@
+          </div>
+        }
+
       @form(routes.Application.createSubscriber) {
         @select(subForm("category"), options(Map("Institutional Repository" -> "Institutional Repository", "Subject Repository" -> "Subject Repository", "Other" -> "Other")))
         @inputText(subForm("name"))
