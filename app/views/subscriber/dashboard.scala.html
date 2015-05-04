@@ -66,7 +66,11 @@
                  date, etc. *@
         <li class="list-group-item">
           <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
-          @Harvest.findById(1).get.updated
+          @if(Harvest.findById(1)){
+            @Harvest.findById(1).get.updated
+          } else {
+            Unknown
+          }
         </li>
       </ul>
 

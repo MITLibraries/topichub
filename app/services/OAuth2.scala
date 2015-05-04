@@ -102,8 +102,21 @@ object OAuth2 extends Controller {
     }
     // todo: redirect back to the requested URL, not always home
     // https://github.com/MITLibraries/scoap3hub/issues/181
-    Redirect("/").withSession("connected" -> user.identity,
-                              "subscriber" -> currentSubscriber(user))
+    Redirect(loginDestination(user)).
+      withSession("connected" -> user.identity,
+                  "subscriber" -> currentSubscriber(user))
+  }
+
+  private def loginDestination(user: User) = {
+    if(currentSubscriber(user) != "0") {
+      "/dashboard"
+    } else if(user.hasRole("analyst")) {
+      "/workbench"
+    } else if(currentSubscriber(user) == "0") {
+      "/subscribers/create"
+    } else {
+      "/"
+    }
   }
 
   def currentSubscriber(user: User) = {
