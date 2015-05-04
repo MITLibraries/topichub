@@ -2,7 +2,7 @@
  * Page with form to create new Channel                                      *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
- @(subscriber_id: Int, planForm: Form[Plan])@*(implicit hubContext: HubContext)*@
+ @(subscriber_id: Int, planForm: Form[Plan])(implicit request: play.api.mvc.RequestHeader)
  @import helper._
  @layout.main("New Action Plan - TopicHub") {
    <div class="container-fluid">

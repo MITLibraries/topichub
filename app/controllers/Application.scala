@@ -37,7 +37,7 @@ object Application extends Controller with Security {
   val indexer = Akka.system.actorOf(Props[workers.IndexWorker], name="indexer")
   val conveyor = Akka.system.actorOf(Props[workers.ConveyorWorker], name="conveyor")
 
-  def index = Action {
+  def index = Action { implicit request =>
     Ok(views.html.static.home(Scheme.withGentype("topic").filter(!_.tag.equals("meta"))))
   }
 
@@ -80,7 +80,7 @@ object Application extends Controller with Security {
 
   def topic(id: Int) = Action { implicit request =>
     Topic.findById(id).map( t =>
-      Ok(views.html.topic.show(t, Subscriber.findByUserId(1)))
+      Ok(views.html.topic.show(t, Subscriber.findById(currentSubscriberId)))
     ).getOrElse(NotFound(views.html.static.trouble("No such topic: " + id)))
   }
 
@@ -97,7 +97,7 @@ object Application extends Controller with Security {
   }
 
   private def topicSubIfSubscriber(user: User, topic: Topic, cancel: Boolean)(implicit request: Request[AnyContent]): Result = {
-    Subscriber.findByUserId(user.id).map( sub => {
+    Subscriber.findById(currentSubscriberId).map( sub => {
         if (cancel) {
           sub.subscriptionFor(topic.id).map(sc => { sc.cancel; sc.unlinkInterest } )
           // remove backing interest if non-template
@@ -165,19 +165,9 @@ object Application extends Controller with Security {
 
   private def getCurrentIdentity(request: play.api.mvc.Request[play.api.mvc.AnyContent]) = {
     // This method is useful to get the identity of the current request user for methods
-    // that don't explicitly need a signed in user (i.e. it's okay to be anonymoys, but
+    // that don't explicitly need a signed in user (i.e. it's okay to be anonymous, but
     // if the user is signed in we want to know who they are for some reason).
-    // The test env condition is used to allow for testing without having to actually have
-    // a full oauth2 server available for testing.
-    if ( play.api.Play.isTest(play.api.Play.current) ) {
-      if (User.isValidIdentity("current_user")) {
-        User.findByIdentity("current_user").get.identity
-      } else {
-        ""
-      }
-    } else {
-      request.session.get("connected").getOrElse("")
-    }
+    request.session.get("connected").getOrElse("")
   }
 
   def createPublisher = isAuthenticated { identity =>
@@ -366,7 +356,7 @@ object Application extends Controller with Security {
 
   def scheme(id: Int) = isAnalyst { identity => implicit request =>
     Scheme.findById(id).map( scheme =>
-      Ok(views.html.scheme.show(scheme, Subscriber.findById(1)))
+      Ok(views.html.scheme.show(scheme, Subscriber.findById(currentSubscriberId)))
     ).getOrElse(NotFound(views.html.static.trouble("No such scheme: " + id)))
   }
 
@@ -817,9 +807,13 @@ object Application extends Controller with Security {
     )
   }
 
+  def currentSubscriberId(implicit request: play.api.mvc.RequestHeader) = {
+    request.session.get("subscriber").getOrElse("0").toInt
+  }
+
   def subscriberDashboard = isAuthenticated { identity =>
     implicit request =>
-    val sub = Subscriber.findByUserId(identity.id)
+    val sub = Subscriber.findById(currentSubscriberId)
     if (sub == None) {
       NotFound(views.html.static.trouble("No Subscriber found for your User Account"))
     } else {
@@ -935,7 +929,7 @@ object Application extends Controller with Security {
   }
 
   def interestBrowse(filter: String, value: String, page: Int) = Action { implicit request =>
-    val subId = 1 // should be derived Subscriber Id TODO
+    val subId = currentSubscriberId
     filter match {
       case "scheme" => Ok(views.html.interest.browse(subId, Interest.inScheme(subId, value, page), filter, value, page, Interest.schemeCount(subId, value)))
       case "plan" => Ok(views.html.interest.browse(subId, Interest.inPlan(subId, value.toInt, page), filter, value, page, Interest.planCount(subId, value.toInt)))
@@ -947,7 +941,7 @@ object Application extends Controller with Security {
   def subscriptionBrowse(filter: String, value: Int, page: Int) = isAuthenticated {
       identity => implicit request =>
 
-    val sub = Subscriber.findByUserId(identity.id)
+    val sub = Subscriber.findById(currentSubscriberId)
     if (sub == None) {
       Unauthorized(views.html.static.trouble("You are not authorized"))
     } else {

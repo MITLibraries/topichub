@@ -3,7 +3,7 @@
  * for new publisher account creation                                        *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
- @(id: Int, items: List[Item], filter: String, description: String, page: Int, total: Long)@*(implicit hubContext: HubContext)*@
+ @(id: Int, items: List[Item], filter: String, description: String, page: Int, total: Long)(implicit request: play.api.mvc.RequestHeader)
 
 @layout.main("Item Browse -  TopicHub") {
   <div class="page-header">

@@ -3,7 +3,7 @@
  * scheme's plan or other filter.                                            *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(id: Int, interests: List[Interest], filter: String, value: String, page: Int, total: Long)@*(implicit hubContext: HubContext)*@
+@(id: Int, interests: List[Interest], filter: String, value: String, page: Int, total: Long)(implicit request: play.api.mvc.RequestHeader)
 @layout.main("Interest Browse - TopicHub") {
   <div class="page-header">
     <h2>Browse Interests by @filter</h2>

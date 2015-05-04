@@ -2,7 +2,7 @@
  * Page to display list of defined content profiles                          *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(cprofs: List[ContentProfile])@*(implicit hubContext: HubContext)*@
+@(cprofs: List[ContentProfile])(implicit request: play.api.mvc.RequestHeader)
 @layout.main("Content Profiles - TopicHub") {
 <div class="container-fluid">
   <div class="row">

@@ -36,14 +36,18 @@ class SubscriptionPagesSpec extends Specification {
       // GET /subscriptions/browse?filter=scheme&value=scheme.id
       "browse redirects to trouble" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        val user = User.make("user_name", "user@example.com", "role", "current_user")
+        val user = User.make("user_name", "user@example.com", "role",
+                             "https://oidc.mit.edu/current_user")
         val sub_user = User.make("sub_name", "sub@example.com", "role", "sub_identity")
         val sub = Subscriber.make(sub_user.id, "Sub Name", "cat", "contact",
                                   Some("link"), Some("logo"))
         val scheme = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         val t = Topic.make(scheme.id, "tag0", "name0")
         Subscription.create(sub.id, t.id, "deliver", sub.created, sub.created)
-        browser.goTo("http://localhost:" + port + "/subscriptions/browse?filter=scheme&value=" + scheme.id)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
+        browser.goTo("http://localhost:" + port + "/subscriptions/browse?filter=scheme&value="
+                     + scheme.id)
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
       }
@@ -54,13 +58,17 @@ class SubscriptionPagesSpec extends Specification {
       // GET /subscriptions/browse?filter=scheme&value=scheme.id
       "browse is allowed" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        val user = User.make("user_name", "user@example.com", "role", "current_user")
+        val user = User.make("user_name", "user@example.com", "role",
+                             "https://oidc.mit.edu/current_user")
         val sub = Subscriber.make(user.id, "Sub Name", "cat", "contact",
                                   Some("link"), Some("logo"))
         val scheme = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         val t = Topic.make(scheme.id, "tag0", "name0")
         Subscription.create(sub.id, t.id, "deliver", sub.created, sub.created)
-        browser.goTo("http://localhost:" + port + "/subscriptions/browse?filter=scheme&value=" + scheme.id)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
+        browser.goTo("http://localhost:" + port + "/subscriptions/browse?filter=scheme&value="
+                     + scheme.id)
         assertThat(browser.title()).isEqualTo("Subscription Browse - TopicHub")
       }
     }

@@ -2,7 +2,7 @@
  * Page to display list of defined content formats                          *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(cformats: List[ContentFormat])@*(implicit hubContext: HubContext)*@
+@(cformats: List[ContentFormat])(implicit request: play.api.mvc.RequestHeader)
 @layout.main("Content Formats - TopicHub") {
 <div class="container-fluid">
   <div class="row">

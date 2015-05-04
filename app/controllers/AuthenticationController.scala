@@ -37,8 +37,6 @@ trait Security {
       } else {
         None
       }
-    } else if ( play.api.Play.isTest(play.api.Play.current) ) {
-      User.findByIdentity("current_user")
     } else {
       None
     }
@@ -58,7 +56,8 @@ trait Security {
         Action(request => f(user)(request))
       } else {
         Action(request =>
-          Results.Unauthorized(views.html.static.trouble("You are not authorized")))
+          Results.Unauthorized(
+            views.html.static.trouble("You are not authorized")(request)))
       }
     }
   }
@@ -69,7 +68,8 @@ trait Security {
         Action(request => f(user)(request))
       } else {
         Action(request =>
-          Results.Unauthorized(views.html.static.trouble("You are not authorized")))
+          Results.Unauthorized(
+            views.html.static.trouble("You are not authorized")(request)))
       }
     }
   }

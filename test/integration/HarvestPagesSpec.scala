@@ -14,7 +14,8 @@ import models.{ Collection, ContentType, Harvest, Publisher, ResourceMap, User, 
  */
 class HarvestPagesSpec extends Specification {
 
-  def create_user(role: String) = User.make("bob", "bob@example.com", role, "current_user")
+  def create_user(role: String) = User.make("bob", "bob@example.com", role,
+                                            "https://oidc.mit.edu/current_user")
   def make_subscriber(userid: Int) = Subscriber.make(userid, "Sub Name", "cat", "contact",
                                                      Some("link"), Some("logo"))
 
@@ -109,6 +110,8 @@ class HarvestPagesSpec extends Specification {
         val pub_user = User.make("pub", "pub@example.com", "some roles", "another_identity")
         val pub = Publisher.make(pub_user.id, "pubtag", "pubname", "pubdesc", "pubcat",
                                  "pubstatus", Some("http://www.example.com"), Some(""))
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/publisher/" + pub.id + "/createH")
         browser.pageSource must contain("Reason: You are not authorized")
       }
@@ -120,7 +123,8 @@ class HarvestPagesSpec extends Specification {
         val pub_user = User.make("pub", "pub@example.com", "some roles", "another_identity")
         val pub = Publisher.make(pub_user.id, "pubtag", "pubname", "pubdesc", "pubcat",
                                  "pubstatus", Some("http://www.example.com"), Some(""))
-        val action = route(FakeRequest(POST, "/harvest/" + pub.id).withSession(("connected", user.identity))).get
+        val action = route(FakeRequest(POST, "/harvest/" + pub.id).
+                           withSession(("connected", user.identity))).get
         redirectLocation(action) must beNone
         contentAsString(action) must contain ("Reason: You are not authorized")
         pub.harvestCount must equalTo(0)
@@ -135,6 +139,8 @@ class HarvestPagesSpec extends Specification {
                                  "pubstatus", Some("http://www.example.com"), Some(""))
         val harvest = Harvest.make(pub.id, "name", "protocol", "http://www.example.com",
                                    "http://example.org", 1, new Date)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/harvest/" + harvest.id)
         browser.pageSource must contain("Reason: You are not authorized")
       }
@@ -148,6 +154,8 @@ class HarvestPagesSpec extends Specification {
                                  "pubstatus", Some("http://www.example.com"), Some(""))
         val harvest = Harvest.make(pub.id, "name", "protocol", "http://www.example.com",
                                    "http://example.org", 1, new Date)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/harvest/" + harvest.id + "/start?span=1")
         Harvest.findById(harvest.id).get.updated must equalTo(harvest.updated)
         browser.pageSource must contain("Reason: You are not authorized")
@@ -162,6 +170,8 @@ class HarvestPagesSpec extends Specification {
                                  "pubstatus", Some("http://www.example.com"), Some(""))
         val harvest = Harvest.make(pub.id, "name", "protocol", "http://www.example.com",
                                    "http://example.org", 1, new Date)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/harvest/" + harvest.id + "/delete")
         Harvest.findById(harvest.id).get must equalTo(harvest)
         browser.pageSource must contain("Reason: You are not authorized")
@@ -179,6 +189,8 @@ class HarvestPagesSpec extends Specification {
         val ct = ContentType.make("tag", "label", "desc", Some("logo"))
         val rm = ResourceMap.make("tag", "desc", Some("swordurl"))
         var collection = Collection.make(pub.id, ct.id, rm.id, "coll", "desc", "open")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/knip/" + collection.id + "/" + harvest.id +
                      "/scoap:asdf:fdsa")
         browser.pageSource must contain("Reason: You are not authorized")
@@ -192,6 +204,8 @@ class HarvestPagesSpec extends Specification {
         val user = create_user("norole")
         val pub = Publisher.make(user.id, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus",
                                  Some("http://www.example.com"), Some(""))
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/publisher/" + pub.id + "/createH")
         assertThat(browser.title()).isEqualTo("Harvest - TopicHub")
         browser.pageSource must contain("Define a content harvest")
@@ -204,6 +218,8 @@ class HarvestPagesSpec extends Specification {
         val pub = Publisher.make(user.id, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus",
                                  Some("http://www.example.com"), Some(""))
         val pubHarvestCount = pub.harvestCount
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/publisher/" + pub.id + "/createH")
         browser.$("#name").text("harvest_name")
         browser.$("#protocol").text("protocol")
@@ -227,6 +243,8 @@ class HarvestPagesSpec extends Specification {
                                  Some("http://www.example.com"), Some(""))
         val harvest = Harvest.make(pub.id, "name", "protocol", "http://www.example.com",
                                    "http://example.org", 1, new Date)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/harvest/" + harvest.id)
         assertThat(browser.title()).isEqualTo("Harvest - TopicHub")
         browser.pageSource must contain("""<form action="/harvest/1/start" method="GET">""")
@@ -240,6 +258,8 @@ class HarvestPagesSpec extends Specification {
                                  Some("http://www.example.com"), Some(""))
         val harvest = Harvest.make(pub.id, "name", "protocol", "http://www.example.com",
                                    "http://example.org", 1, new Date)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/harvest/" + harvest.id + "/start?span=1")
         Harvest.findById(harvest.id).get.updated.toInstant must equalTo(harvest.updated.toInstant.plusSeconds(86400))
         assertThat(browser.title()).isEqualTo("Harvest - TopicHub")
@@ -254,6 +274,8 @@ class HarvestPagesSpec extends Specification {
                                  Some("http://www.example.com"), Some(""))
         val harvest = Harvest.make(pub.id, "name", "protocol", "http://www.example.com",
                                    "http://example.org", 1, new Date)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/harvest/" + harvest.id + "/delete")
         Harvest.findById(harvest.id) must equalTo(None)
         assertThat(browser.title()).isEqualTo("Publisher - TopicHub")
@@ -271,6 +293,8 @@ class HarvestPagesSpec extends Specification {
         val ct = ContentType.make("tag", "label", "desc", Some("logo"))
         val rm = ResourceMap.make("tag", "desc", Some("swordurl"))
         var collection = Collection.make(pub.id, ct.id, rm.id, "coll", "desc", "open")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/knip/" + collection.id + "/" + harvest.id +
                      "/scoap:asdf:fdsa")
         assertThat(browser.title()).isEqualTo("TopicHub")

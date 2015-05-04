@@ -16,7 +16,8 @@ class SysAdminPagesSpec extends Specification {
 
   "SysAdmin pages" should {
 
-    def create_user(role: String) = User.make("bob", "bob@example.com", role, "current_user")
+    def create_user(role: String) = User.make("bob", "bob@example.com", role,
+                                              "https://oidc.mit.edu/current_user")
 
     // GET /reindex
     "reindex" should {
@@ -29,6 +30,8 @@ class SysAdminPagesSpec extends Specification {
       "as an analyst redirects to Error" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/reindex/topic")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -37,6 +40,8 @@ class SysAdminPagesSpec extends Specification {
       "as an admin reindexes" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("sysadmin")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/reindex/topic")
         browser.pageSource must contain("Reindexing topics")
       }
@@ -53,6 +58,8 @@ class SysAdminPagesSpec extends Specification {
       "as an analyst displays workbench" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/workbench")
         assertThat(browser.title()).isEqualTo("Workbench - TopicHub")
       }
@@ -60,6 +67,8 @@ class SysAdminPagesSpec extends Specification {
       "as an admin redirects to error" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("sysadmin")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/workbench")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -77,6 +86,8 @@ class SysAdminPagesSpec extends Specification {
       "as an analyst redirects to Error" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/purge")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -85,6 +96,8 @@ class SysAdminPagesSpec extends Specification {
       "as an admin reindexes" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("sysadmin")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/purge")
         browser.pageSource must contain("too late to go back now")
       }
@@ -101,6 +114,8 @@ class SysAdminPagesSpec extends Specification {
       "as an analyst displays form" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/sandbox")
         assertThat(browser.title()).isEqualTo("Sandbox - TopicHub")
         browser.pageSource must contain("""<form action="/testExpression" method="POST">""")
@@ -109,6 +124,8 @@ class SysAdminPagesSpec extends Specification {
       "as an admin redirects to Error" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("sysadmin")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/sandbox")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -125,16 +142,18 @@ class SysAdminPagesSpec extends Specification {
 
       "as an analyst displays form" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        create_user("analyst")
-        val action = route(FakeRequest(POST, "/testExpression")).get
+        val user = create_user("analyst")
+        val action = route(FakeRequest(POST, "/testExpression").
+                           withSession(("connected", user.identity))).get
         redirectLocation(action) must beNone
         contentAsString(action) must contain ("This field is required")
       }
 
       "as an admin redirects to Error" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        create_user("sysadmin")
-        val action = route(FakeRequest(POST, "/testExpression")).get
+        val user = create_user("sysadmin")
+        val action = route(FakeRequest(POST, "/testExpression").
+                           withSession(("connected", user.identity))).get
         redirectLocation(action) must beNone
         contentAsString(action) must contain ("Reason: You are not authorized")
       }
@@ -151,6 +170,8 @@ class SysAdminPagesSpec extends Specification {
       "as an analyst redirects to error" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/model/create")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -159,6 +180,8 @@ class SysAdminPagesSpec extends Specification {
       "as an admin display form" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("sysadmin")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/model/create")
         assertThat(browser.title()).isEqualTo("Create Model - TopicHub")
       }
@@ -174,16 +197,18 @@ class SysAdminPagesSpec extends Specification {
 
       "as an analyst redirects to error" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        create_user("analyst")
-        val action = route(FakeRequest(POST, "/cmodel")).get
+        val user = create_user("analyst")
+        val action = route(FakeRequest(POST, "/cmodel").
+                           withSession(("connected", user.identity))).get
         redirectLocation(action) must beNone
         contentAsString(action) must contain ("Reason: You are not authorized")
       }
 
       "as an admin is allowed" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        create_user("sysadmin")
-        val action = route(FakeRequest(POST, "/cmodel")).get
+        val user = create_user("sysadmin")
+        val action = route(FakeRequest(POST, "/cmodel").
+                           withSession(("connected", user.identity))).get
         redirectLocation(action) must beNone
         contentAsString(action) must contain ("This field is required")
       }
@@ -199,16 +224,18 @@ class SysAdminPagesSpec extends Specification {
 
       "as an analyst redirects to error" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        create_user("analyst")
-        val action = route(FakeRequest(POST, "/pubmodel")).get
+        val user = create_user("analyst")
+        val action = route(FakeRequest(POST, "/pubmodel").
+                           withSession(("connected", user.identity))).get
         redirectLocation(action) must beNone
         contentAsString(action) must contain ("Reason: You are not authorized")
       }
 
       "as an admin is allowed" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        create_user("sysadmin")
-        val action = route(FakeRequest(POST, "/pubmodel")).get
+        val user = create_user("sysadmin")
+        val action = route(FakeRequest(POST, "/pubmodel").
+                           withSession(("connected", user.identity))).get
         redirectLocation(action) must beNone
         contentAsString(action) must contain ("This field is required")
       }
@@ -224,16 +251,18 @@ class SysAdminPagesSpec extends Specification {
 
       "as an analyst redirects to error" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        create_user("analyst")
-        val action = route(FakeRequest(POST, "/submodel")).get
+        val user = create_user("analyst")
+        val action = route(FakeRequest(POST, "/submodel").
+                           withSession(("connected", user.identity))).get
         redirectLocation(action) must beNone
         contentAsString(action) must contain ("Reason: You are not authorized")
       }
 
       "as an admin is allowed" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        create_user("sysadmin")
-        val action = route(FakeRequest(POST, "/submodel")).get
+        val user = create_user("sysadmin")
+        val action = route(FakeRequest(POST, "/submodel").
+                           withSession(("connected", user.identity))).get
         redirectLocation(action) must beNone
         contentAsString(action) must contain ("This field is required")
       }

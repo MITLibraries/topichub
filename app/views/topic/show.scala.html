@@ -2,7 +2,7 @@
  * Display information on a topic. Include buttons for subscription actions  *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(topic: Topic, sub: Option[Subscriber])@*(implicit hubContext: HubContext)*@
+@(topic: Topic, sub: Option[Subscriber])(implicit request: play.api.mvc.RequestHeader)
 @layout.main("Topic - TopicHub") {
     <div class="jumbotron">
        <h3>~ Topic ~</h3>

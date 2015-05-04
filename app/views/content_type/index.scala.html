@@ -2,7 +2,7 @@
  * Page to display list of defined content types                            *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(ctypes: List[ContentType])@*(implicit hubContext: HubContext)*@
+@(ctypes: List[ContentType])(implicit request: play.api.mvc.RequestHeader)
 @layout.main("Content Types - TopicHub") {
 <div class="container-fluid">
   <div class="row">

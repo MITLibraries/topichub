@@ -2,7 +2,7 @@
  * Page with form to create a new Content Harvest                       *
  * Copyright (c) 2015 MIT Libraries                                     *
  ************************************************************************@
-@(pub: Publisher, harvestForm: Form[Harvest])@*(implicit hubContext: HubContext)*@
+@(pub: Publisher, harvestForm: Form[Harvest])(implicit request: play.api.mvc.RequestHeader)
 @import helper._
 @layout.main("Harvest - TopicHub") {
      <h2>Define a content harvest</h2>

@@ -14,7 +14,8 @@ import models.{ User, Subscriber }
  */
 class SubscriberPagesSpec extends Specification {
 
-  def create_user(role: String) = User.make("bob", "bob@example.com", role, "current_user")
+  def create_user(role: String) = User.make("bob", "bob@example.com", role,
+                                            "https://oidc.mit.edu/current_user")
 
   "Subscriber pages" should {
     "as an unauthenticated User" should {
@@ -83,6 +84,8 @@ class SubscriberPagesSpec extends Specification {
       "accessing new form is allowed" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("someone")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/subscribers/create")
         assertThat(browser.title()).isEqualTo("Create Subscriber - TopicHub")
       }
@@ -91,6 +94,8 @@ class SubscriberPagesSpec extends Specification {
       "posting to create is allowed" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val user = create_user("someone")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/subscribers/create")
 
         // without required fields
@@ -116,6 +121,8 @@ class SubscriberPagesSpec extends Specification {
         val sub = Subscriber.make(sub_user.id, "Sub Name", "cat", "contact",
                                   Some("link"), Some("logo"))
         create_user("someone")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/subscriber/" + sub.id + "/edit")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -126,9 +133,11 @@ class SubscriberPagesSpec extends Specification {
       // GET /subscribers/create
       "accessing new form is allowed" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        val user = User.make("sub", "sub@example.com", "role", "current_user")
+        val user = User.make("sub", "sub@example.com", "role", "https://oidc.mit.edu/current_user")
         val sub = Subscriber.make(user.id, "Sub Name", "cat", "contact",
                                   Some("link"), Some("logo"))
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/subscribers/create")
         assertThat(browser.title()).isEqualTo("Create Subscriber - TopicHub")
       }
@@ -136,9 +145,11 @@ class SubscriberPagesSpec extends Specification {
       // POST /subscribers
       "posting to create is allowed (user can create multiple subscribers)" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        val user = User.make("sub", "sub@example.com", "role", "current_user")
+        val user = User.make("sub", "sub@example.com", "role", "https://oidc.mit.edu/current_user")
         val sub = Subscriber.make(user.id, "Sub Name", "cat", "contact",
                                   Some("link"), Some("logo"))
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/subscribers/create")
         Subscriber.all.size must equalTo(1)
 
@@ -159,9 +170,11 @@ class SubscriberPagesSpec extends Specification {
       // GET /subscriber/:id/edit
       "edit is allowed" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        val user = User.make("sub", "sub@example.com", "role", "current_user")
+        val user = User.make("sub", "sub@example.com", "role", "https://oidc.mit.edu/current_user")
         val sub = Subscriber.make(user.id, "Sub Name", "cat", "contact",
                                   Some("link"), Some("logo"))
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/subscriber/" + sub.id + "/edit")
         assertThat(browser.title()).isEqualTo("Edit Subscriber - TopicHub")
       }

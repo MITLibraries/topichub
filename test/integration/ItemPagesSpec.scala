@@ -14,7 +14,8 @@ import models.{ Collection, ContentType, Item, Publisher, ResourceMap, Scheme, S
  */
 class ItemPagesSpec extends Specification {
 
-  def create_user(role: String) = User.make("bob", "bob@example.com", role, "current_user")
+  def create_user(role: String) = User.make("bob", "bob@example.com", role,
+                                            "https://oidc.mit.edu/current_user")
   def item_factory(count: Int) {
     val ct = ContentType.make("tag", "label", "desc", Some("logo"))
     val rm = ResourceMap.make("rm_tag", "rm_desc", Some("http://www.example.com"))
@@ -83,9 +84,10 @@ class ItemPagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val sub_user = User.make("sub", "sub@example.com", "", "sub_identity")
         Subscriber.make(sub_user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
-        create_user("current_user")
+        val user = create_user("current_user")
         item_factory(1)
-        val action = route(FakeRequest(GET, "/item/deposit/1")).get
+        val action = route(FakeRequest(GET, "/item/deposit/1").
+                           withSession(("connected", user.identity))).get
         contentAsString(action) must contain ("Reason: You are not a Subscriber")
       }.pendingUntilFixed(": currently we only support one subscriber so this works. See https://github.com/MITLibraries/scoap3hub/issues/46")
     }
@@ -94,10 +96,12 @@ class ItemPagesSpec extends Specification {
       // GET /item/deposit/:id
       "depositing an item redirects to error with no channel defined" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        val user = User.make("sub", "sub@example.com", "", "current_user")
-        Subscriber.make(user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        val user = User.make("sub", "sub@example.com", "", "https://oidc.mit.edu/current_user")
+        val sub = Subscriber.make(user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
         item_factory(1)
-        val action = route(FakeRequest(GET, "/item/deposit/1")).get
+        val action = route(FakeRequest(GET, "/item/deposit/1").
+                           withSession(("connected", user.identity),
+                                       ("subscriber", sub.id.toString))).get
         status(action) must throwA[RuntimeException](message = "You must define a Channel")
       }
 

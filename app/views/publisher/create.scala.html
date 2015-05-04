@@ -2,7 +2,7 @@
  * Page with form to create new Publisher                                    *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(pub: Publisher, pubForm: Form[Publisher])@*(implicit hubContext: HubContext)*@
+@(pub: Publisher, pubForm: Form[Publisher])(implicit request: play.api.mvc.RequestHeader)
 
 @import helper._
 @layout.main("Create Publisher - TopicHub") {

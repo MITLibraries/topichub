@@ -2,7 +2,7 @@
  * Page served for non-success Http results (404, 500 etc)                   *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(msg: String)@*(implicit hubContext: HubContext)*@
+@(msg: String)(implicit request: play.api.mvc.RequestHeader)
 @layout.main("Error - TopicHub") {
   <div class="jumbotron">
     <h2>We are very sorry, but we were unable to complete your request</h2>

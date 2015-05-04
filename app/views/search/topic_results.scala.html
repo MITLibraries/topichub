@@ -2,7 +2,7 @@
 * Search results page                                                        *
 * Copyright (c) 2015 MIT Libraries                                           *
 *****************************************************************************@
-@(q: String, target: String, page: Int, perpage: Int, topics: Seq[Topic], total: Long, sub: Option[Subscriber])@*(implicit hubContext: HubContext)*@
+@(q: String, target: String, page: Int, perpage: Int, topics: Seq[Topic], total: Long, sub: Option[Subscriber])(implicit request: play.api.mvc.RequestHeader)
 
 @start = @{(page * perpage + 1)}
 

@@ -2,7 +2,7 @@
  * Page for listing current schemes and link for new scheme creation         *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(schemes: List[Scheme])@*(implicit hubContext: HubContext)*@
+@(schemes: List[Scheme])(implicit request: play.api.mvc.RequestHeader)
 @layout.main("Schemes - TopicHub") {
 <div class="container-fluid">
   <div class="row">

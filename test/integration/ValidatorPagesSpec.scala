@@ -14,7 +14,8 @@ import models.{ Scheme, User, Validator }
  */
 class ValidatorPagesSpec extends Specification {
 
-  def create_user(role: String) = User.make("bob", "bob@example.com", role, "current_user")
+  def create_user(role: String) = User.make("bob", "bob@example.com", role,
+                                            "https://oidc.mit.edu/current_user")
 
   "Validator pages" should {
     "as an unauthenticated User" should {
@@ -57,6 +58,8 @@ class ValidatorPagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("somerole")
         val s = Scheme.make("s1_tag", "gentype", "cat", "s1_desc", Some("link"), Some("logo"))
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/scheme/" + s.tag + "/createvalidator")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -65,9 +68,10 @@ class ValidatorPagesSpec extends Specification {
       // POST /scheme/:tag/validator
       "posting to validator create redirects to trouble" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        create_user("somerole")
+        val user = create_user("somerole")
         val s = Scheme.make("s1_tag", "gentype", "cat", "s1_desc", Some("link"), Some("logo"))
-        val action = route(FakeRequest(POST, "/scheme/" + s.tag + "/validator")).get
+        val action = route(FakeRequest(POST, "/scheme/" + s.tag + "/validator").
+                           withSession(("connected", user.identity))).get
         redirectLocation(action) must beNone
         contentAsString(action) must contain ("Reason: You are not authorized")
         Validator.findByScheme(s.id).size must equalTo(0)
@@ -81,6 +85,8 @@ class ValidatorPagesSpec extends Specification {
         Validator.create(s.id, "desc", "user", "pass", "servicecode", "serviceurl", "someone")
         val v = Validator.findByScheme(s.id).head
         Validator.findByScheme(s.id).size must equalTo(1)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/scheme/" + s.tag + "/validator/" + v.id +
                      "/delete")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
@@ -96,6 +102,8 @@ class ValidatorPagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
         val s = Scheme.make("s1_tag", "gentype", "cat", "s1_desc", Some("link"), Some("logo"))
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/scheme/" + s.tag + "/createvalidator")
         assertThat(browser.title()).isEqualTo("Create Validator - TopicHub")
         browser.pageSource must contain(
@@ -107,6 +115,8 @@ class ValidatorPagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
         val s = Scheme.make("s1_tag", "gentype", "cat", "s1_desc", Some("link"), Some("logo"))
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/scheme/" + s.tag + "/createvalidator")
 
         // submit without required fields
@@ -135,6 +145,8 @@ class ValidatorPagesSpec extends Specification {
         Validator.create(s.id, "desc", "user", "pass", "servicecode", "serviceurl", "someone")
         val v = Validator.findByScheme(s.id).head
         Validator.findByScheme(s.id).size must equalTo(1)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/scheme/" + s.tag + "/validator/" + v.id +
                      "/delete")
         assertThat(browser.title()).isEqualTo("Finders - TopicHub")

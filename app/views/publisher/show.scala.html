@@ -2,7 +2,7 @@
  * Page for displaying publisher information including collections           *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(pub: Publisher, user: Option[User])@*(implicit hubContext: HubContext)*@
+@(pub: Publisher, user: Option[User])(implicit request: play.api.mvc.RequestHeader)
 @layout.main("Publisher - TopicHub") {
   <div itemscope itemtype="http://schema.org/Organization" class="jumbotron">
     <h3>~ Publisher ~</h3>

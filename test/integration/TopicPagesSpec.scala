@@ -15,7 +15,8 @@ import models.{ Agent, Channel, Collection, ContentType, Plan, Publisher, Resour
  */
 class TopicPagesSpec extends Specification {
 
-  def create_user(role: String) = User.make("bob", "bob@example.com", role, "current_user")
+  def create_user(role: String) = User.make("bob", "bob@example.com", role,
+                                            "https://oidc.mit.edu/current_user")
   def topic_factory(count: Int) {
     val ct = ContentType.make("tag", "label", "desc", Some("logo"))
     val rm = ResourceMap.make("rm_tag", "rm_desc", Some("http://www.example.com"))
@@ -85,6 +86,8 @@ class TopicPagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("current_user")
         topic_factory(1)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/topic/1/subscribe")
         assertThat(browser.title()).isEqualTo("Subscribers - TopicHub")
         browser.pageSource must contain("Sign Up »")
@@ -105,6 +108,8 @@ class TopicPagesSpec extends Specification {
         topic_factory(1)
         val s = Scheme.findByTag("tag").get
         plan.addScheme(s)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/topic/1")
         assertThat(browser.title()).isEqualTo("Topic - TopicHub")
         browser.pageSource must not contain("Cancel subscription to this topic")
@@ -117,6 +122,8 @@ class TopicPagesSpec extends Specification {
         val user = create_user("current_user")
         Subscriber.make(user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
         topic_factory(1)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/topic/1")
         assertThat(browser.title()).isEqualTo("Topic - TopicHub")
         browser.pageSource must not contain("Cancel subscription to this topic")
@@ -139,6 +146,8 @@ class TopicPagesSpec extends Specification {
         plan.addScheme(s)
         val agent = Agent.make("tag", "label", "description", "code", "params", Some("icon"))
         TopicPick.make(sub.id, 1, agent.id)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/topic/1")
         browser.pageSource must not contain("Cancel subscription to this topic")
         browser.pageSource must contain("Subscribe to this topic")
@@ -159,6 +168,8 @@ class TopicPagesSpec extends Specification {
         val s = Scheme.findByTag("tag").get
         plan.addScheme(s)
         Subscription.make(sub.id, 1, "deliver", sub.created, sub.created)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/topic/1")
         browser.pageSource must contain("Cancel subscription to this topic")
         browser.pageSource must not contain("Subscribe to this topic")
@@ -178,6 +189,8 @@ class TopicPagesSpec extends Specification {
         topic_factory(1)
         val s = Scheme.findByTag("tag").get
         plan.addScheme(s)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/topic/1/subscribe?cancel=false")
         browser.pageSource must contain("Cancel subscription to this topic")
         browser.pageSource must not contain("Subscribe to this topic")
@@ -198,6 +211,8 @@ class TopicPagesSpec extends Specification {
         val s = Scheme.findByTag("tag").get
         plan.addScheme(s)
         Subscription.make(sub.id, 1, "deliver", sub.created, sub.created)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/topic/1")
         browser.pageSource must contain("Cancel subscription to this topic")
         browser.pageSource must not contain("Subscribe to this topic")

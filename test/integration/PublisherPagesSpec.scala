@@ -14,8 +14,10 @@ import models.{ Publisher, User, Subscriber }
  */
 class PublisherPagesSpec extends Specification {
 
-  def create_user(role: String) = User.make("bob", "bob@example.com", role, "current_user")
-  def make_subscriber(userid: Int) = Subscriber.make(userid, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+  def create_user(role: String) = User.make("bob", "bob@example.com", role,
+                                            "https://oidc.mit.edu/current_user")
+  def make_subscriber(userid: Int) = Subscriber.make(userid, "Sub Name", "cat", "contact",
+                                                     Some("link"), Some("logo"))
 
   "Publisher pages" should {
     "index" should {
@@ -75,7 +77,10 @@ class PublisherPagesSpec extends Specification {
         "displays to user associated with publisher" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
           val user = create_user("norole")
           val sub = make_subscriber(user.id)
-          val pub = Publisher.make(user.id, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some("http://www.example.com"), Some(""))
+          val pub = Publisher.make(user.id, "pubtag", "pubname", "pubdesc", "pubcat",
+                                   "pubstatus", Some("http://www.example.com"), Some(""))
+          browser.goTo("http://localhost:" + port + "/login")
+          browser.$("#openid").click
           browser.goTo("http://localhost:" + port + "/publisher/" + pub.id)
           assertThat(browser.title()).isEqualTo("Publisher - TopicHub")
           browser.pageSource must contain("/publisher/1/edit")
@@ -93,7 +98,10 @@ class PublisherPagesSpec extends Specification {
         "not display to logged in user not associated with publisher" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
           val user = create_user("norole")
           val pub_user = User.make("pub", "pub@example.com", "some roles", "another_identity")
-          val pub = Publisher.make(pub_user.id, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some("http://www.example.com"), Some(""))
+          val pub = Publisher.make(pub_user.id, "pubtag", "pubname", "pubdesc", "pubcat",
+                                   "pubstatus", Some("http://www.example.com"), Some(""))
+          browser.goTo("http://localhost:" + port + "/login")
+          browser.$("#openid").click
           browser.goTo("http://localhost:" + port + "/publisher/" + pub.id)
           assertThat(browser.title()).isEqualTo("Publisher - TopicHub")
           browser.pageSource must not contain("/publisher/1/edit")
@@ -111,6 +119,8 @@ class PublisherPagesSpec extends Specification {
 
       "display create publisher form if signed in" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val user = create_user("norole")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/publishers")
         browser.$("a[href*='/publishers/create']").click()
         assertThat(browser.title()).isEqualTo("Create Publisher - TopicHub")
@@ -118,6 +128,8 @@ class PublisherPagesSpec extends Specification {
 
       "creates publisher on submit" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val user = create_user("norole")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/publishers/create")
         browser.$("#tag").text("New Publisher Tag")
         browser.$("#name").text("New Publisher Name")
@@ -141,6 +153,8 @@ class PublisherPagesSpec extends Specification {
         val pub_user = User.make("pub", "pub@example.com", "some roles", "another_identity")
         val pub = Publisher.make(pub_user.id, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some("http://www.example.com"), Some(""))
 
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/publisher/1/edit")
         browser.pageSource must contain("Reason: You are not authorized")
       }
@@ -149,6 +163,8 @@ class PublisherPagesSpec extends Specification {
         val user = create_user("norole")
         val pub = Publisher.make(user.id, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some("http://www.example.com"), Some(""))
 
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/publisher/1/edit")
         assertThat(browser.title()).isEqualTo("Edit Publisher - TopicHub")
         browser.pageSource must contain("/publisher/" + pub.id + "/create")

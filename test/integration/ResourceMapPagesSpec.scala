@@ -14,7 +14,8 @@ import models.{ ContentFormat, ResourceMap, Scheme, User }
  */
 class ResourceMapPagesSpec extends Specification {
 
-  def create_user(role: String) = User.make("bob", "bob@example.com", role, "current_user")
+  def create_user(role: String) = User.make("bob", "bob@example.com", role,
+                                            "https://oidc.mit.edu/current_user")
 
   "Resource Map pages" should {
     "as an unauthenticated User" should {
@@ -83,6 +84,8 @@ class ResourceMapPagesSpec extends Specification {
       "accessing index page redirects to error" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("somerole")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/resmaps")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -93,6 +96,8 @@ class ResourceMapPagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("somerole")
         val rm = ResourceMap.make("rm_tag", "rm_desc", Some("http://www.example.com"))
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/resmap/" + rm.id)
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -102,6 +107,8 @@ class ResourceMapPagesSpec extends Specification {
       "accessing new form page redirects to error" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("somerole")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/resmaps/create")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -110,8 +117,9 @@ class ResourceMapPagesSpec extends Specification {
       // POST /resmaps
       "posting to create page redirects to error" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        create_user("somerole")
-        val action = route(FakeRequest(POST, "/resmaps")).get
+        val user = create_user("somerole")
+        val action = route(FakeRequest(POST, "/resmaps").
+                           withSession(("connected", user.identity))).get
         redirectLocation(action) must beNone
         contentAsString(action) must contain ("Reason: You are not authorized")
         ResourceMap.all.size must equalTo(0)
@@ -120,12 +128,13 @@ class ResourceMapPagesSpec extends Specification {
       // POST /resmap/:id
       "posting to add resource mapping redirects to error" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        create_user("somerole")
+        val user = create_user("somerole")
         val s = Scheme.make("s_tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         val cf = ContentFormat.make("cf_tag", "label", "desc", "http://www.example.com",
                                     "mimetype", Some("logo"))
         val rm = ResourceMap.make("rm_tag", "rm_desc", Some("http://www.example.com"))
-        val action = route(FakeRequest(POST, "/resmap/" + rm.id)).get
+        val action = route(FakeRequest(POST, "/resmap/" + rm.id).
+                           withSession(("connected", user.identity))).get
         redirectLocation(action) must beNone
         contentAsString(action) must contain ("Reason: You are not authorized")
         rm.mappingsForScheme(s).size must equalTo(0)
@@ -141,6 +150,8 @@ class ResourceMapPagesSpec extends Specification {
         val rm = ResourceMap.make("rm_tag", "rm_desc", Some("http://www.example.com"))
         rm.addMapping(s.id, cf.id, "source", 1)
         rm.mappingsForScheme(s).size must equalTo(1)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/resmap/" + rm.id + "/scheme?sid=" +
                      s.id +"&source=source")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
@@ -155,6 +166,8 @@ class ResourceMapPagesSpec extends Specification {
       "accessing index page is allowed" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/resmaps")
         assertThat(browser.title()).isEqualTo("Resource Maps - TopicHub")
       }
@@ -164,6 +177,8 @@ class ResourceMapPagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
         val rm = ResourceMap.make("rm_tag", "rm_desc", Some("http://www.example.com"))
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/resmap/" + rm.id)
         assertThat(browser.title()).isEqualTo("Resource Map - TopicHub")
         browser.pageSource must contain(s"Resource Map: ${rm.tag}")
@@ -173,6 +188,8 @@ class ResourceMapPagesSpec extends Specification {
       "accessing new form page is allowed" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/resmaps/create")
         assertThat(browser.title()).isEqualTo("New Resource Map - TopicHub")
         browser.pageSource must contain("""<form action="/resmaps" method="POST">""")
@@ -182,6 +199,8 @@ class ResourceMapPagesSpec extends Specification {
       "posting to create page is allowed" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("analyst")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/resmaps/create")
         ResourceMap.all.size must equalTo(0)
         // without required fields
@@ -205,6 +224,8 @@ class ResourceMapPagesSpec extends Specification {
         val cf = ContentFormat.make("cf_tag", "label", "desc", "http://www.example.com",
                                     "mimetype", Some("logo"))
         val rm = ResourceMap.make("rm_tag", "rm_desc", Some("http://www.example.com"))
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/resmap/" + rm.id)
         rm.mappingsForScheme(s).size must equalTo(0)
         // without required fields
@@ -226,6 +247,8 @@ class ResourceMapPagesSpec extends Specification {
         val rm = ResourceMap.make("rm_tag", "rm_desc", Some("http://www.example.com"))
         rm.addMapping(s.id, cf.id, "source", 1)
         rm.mappingsForScheme(s).size must equalTo(1)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/resmap/" + rm.id + "/scheme?sid=" +
                      s.id +"&source=source")
         assertThat(browser.title()).isEqualTo("Resource Map - TopicHub")

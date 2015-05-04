@@ -3,7 +3,7 @@
 * topic browsing                                                             *
 * Copyright (c) 2015 MIT Libraries                                           *
 *****************************************************************************@
-@(schemes: List[Scheme])@*(implicit hubContext: HubContext)*@
+@(schemes: List[Scheme])(implicit request: play.api.mvc.RequestHeader)
 @layout.main("SCOAP3 -  TopicHub") {
   <div class="container-fluid">
     <div class="row-fluid">

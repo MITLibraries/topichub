@@ -3,7 +3,7 @@
  * topics organized by scheme                                                *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(item: Item, sub: Option[Subscriber])@*(implicit hubContext: HubContext)*@
+@(item: Item, sub: Option[Subscriber])(implicit request: play.api.mvc.RequestHeader)
 @layout.main("Item - TopicHub") {
   <div itemscope itemtype="http://schema.org/@item.contentType.get.label" class="jumbotron">
     <h3>~ @item.contentType.get.tag ~</h3>

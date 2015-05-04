@@ -54,7 +54,8 @@ class TopicPickPagesSpec extends Specification {
       // GET /picks/browse?id=sub.id&page=x
       "browse redirects to error" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        val user = User.make("user_name", "user@example.com", "role", "current_user")
+        val user = User.make("user_name", "user@example.com", "role",
+                             "https://oidc.mit.edu/current_user")
         val user_sub = Subscriber.make(user.id, "User Sub Name", "cat", "contact",
                                   Some("link"), Some("logo"))
         val sub_user = User.make("sub_name", "sub@example.com", "role", "sub_identity")
@@ -64,6 +65,8 @@ class TopicPickPagesSpec extends Specification {
         val t = Topic.make(scheme.id, "tag0", "name0")
         val a = Agent.make("tag", "label", "description", "code", "params", Some("icon"))
         TopicPick.create(sub.id, t.id, a.id)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/picks/browse?id=" + sub.id)
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -72,7 +75,8 @@ class TopicPickPagesSpec extends Specification {
       // GET /pick/:id/resolve?accept=Boolean
       "resolve redirects to error" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        val user = User.make("user_name", "user@example.com", "role", "current_user")
+        val user = User.make("user_name", "user@example.com", "role",
+                             "https://oidc.mit.edu/current_user")
         val user_sub = Subscriber.make(user.id, "User Sub Name", "cat", "contact",
                                   Some("link"), Some("logo"))
         val sub_user = User.make("sub_name", "sub@example.com", "role", "sub_identity")
@@ -83,6 +87,8 @@ class TopicPickPagesSpec extends Specification {
         val a = Agent.make("tag", "label", "description", "code", "params", Some("icon"))
         val tp = TopicPick.make(sub.id, t.id, a.id)
         sub.pickCount must equalTo(1)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/pick/" + tp.id + "/resolve?accept=true")
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
@@ -95,13 +101,16 @@ class TopicPickPagesSpec extends Specification {
       // GET /picks/browse?id=sub.id&page=x
       "browse is allowed" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        val user = User.make("user_name", "user@example.com", "role", "current_user")
+        val user = User.make("user_name", "user@example.com", "role",
+                             "https://oidc.mit.edu/current_user")
         val sub = Subscriber.make(user.id, "Sub Name", "cat", "contact",
                                   Some("link"), Some("logo"))
         val scheme = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         val t = Topic.make(scheme.id, "tag0", "name0")
         val a = Agent.make("tag", "label", "description", "code", "params", Some("icon"))
         TopicPick.create(sub.id, t.id, a.id)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/picks/browse?id=" + sub.id)
         assertThat(browser.title()).isEqualTo("Topic Picks Browse - TopicHub")
       }
@@ -109,7 +118,8 @@ class TopicPickPagesSpec extends Specification {
       // GET /pick/:id/resolve?accept=Boolean
       "resolve with true removes pick" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        val user = User.make("sub_name", "sub@example.com", "role", "current_user")
+        val user = User.make("sub_name", "sub@example.com", "role",
+                             "https://oidc.mit.edu/current_user")
         val sub = Subscriber.make(user.id, "Sub Name", "cat", "contact",
                                   Some("link"), Some("logo"))
         val scheme = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
@@ -117,6 +127,8 @@ class TopicPickPagesSpec extends Specification {
         val a = Agent.make("tag", "label", "description", "code", "params", Some("icon"))
         val tp = TopicPick.make(sub.id, t.id, a.id)
         sub.pickCount must equalTo(1)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/pick/" + tp.id + "/resolve?accept=true")
         assertThat(browser.title()).isEqualTo("Topic Picks Browse - TopicHub")
         sub.pickCount must equalTo(0)
@@ -125,7 +137,8 @@ class TopicPickPagesSpec extends Specification {
       // GET /pick/:id/resolve?accept=Boolean
       "resolve with false removes pick" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        val user = User.make("sub_name", "sub@example.com", "role", "current_user")
+        val user = User.make("sub_name", "sub@example.com", "role",
+                             "https://oidc.mit.edu/current_user")
         val sub = Subscriber.make(user.id, "Sub Name", "cat", "contact",
                                   Some("link"), Some("logo"))
         val scheme = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
@@ -133,6 +146,8 @@ class TopicPickPagesSpec extends Specification {
         val a = Agent.make("tag", "label", "description", "code", "params", Some("icon"))
         val tp = TopicPick.make(sub.id, t.id, a.id)
         sub.pickCount must equalTo(1)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/pick/" + tp.id + "/resolve?accept=false")
         assertThat(browser.title()).isEqualTo("Topic Picks Browse - TopicHub")
         sub.pickCount must equalTo(0)
