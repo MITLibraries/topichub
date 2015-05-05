@@ -114,6 +114,14 @@ POST    /subscribers                controllers.Application.createSubscriber
 GET     /subscriber/:id/edit        controllers.Application.editSubscriber(id: Int)
 GET     /subscriber/:id             controllers.Application.subscriber(id: Int)
 
+# Subscriber User Pages
+GET     /subscribers/join               controllers.Application.joinSubscriber
+POST    /subscribers/request            controllers.Application.joinRequest
+GET     /subscriber/:id/users           controllers.Application.subscriberUsers(id: Int)
+GET     /subscriber/:id/resolve/:user   controllers.Application.subscriberResolveUser(id: Int, user: Int, res: String)
+GET     /subscriber/:id/remove/:user    controllers.Application.subscriberRemoveUser(id: Int, user: Int)
+GET     /subscriber/:id/toggleadmin/:user controllers.Application.subscriberToggleAdmin(id: Int, user: Int)
+
 # Dashboards
 GET     /dashboard                  controllers.Application.subscriberDashboard
 

@@ -26,7 +26,6 @@ import anorm.Row
   */
 
 case class Subscriber(id: Int,  // DB key
-                      userId: Int, // DB key of controlling user
                       name: String, // Name of subscriber
                       category: String,  // descriptor: IR, hub, etc
                       contact: String,
@@ -247,15 +246,115 @@ case class Subscriber(id: Int,  // DB key
     rows().map(row => List(row[Int]("total"), row[Int]("deliverCount"), row[Int]("discardCount"))).head
     }
   }
+
+  def linkUser(userId: Int, approved: Boolean = false, admin: Boolean = false) = {
+    DB.withConnection { implicit c =>
+      SQL("""
+          INSERT INTO hub_user_subscriber (hub_user_id, subscriber_id, admin, approved)
+          VALUES ({userId}, {id}, {admin}, {approved})
+          """)
+      .on('userId -> userId, 'id -> id, 'admin -> admin, 'approved -> approved).executeUpdate()
+    }
+  }
+
+  def unlinkUser(userId: Int) = {
+    DB.withConnection { implicit c =>
+      SQL("""
+          DELETE FROM hub_user_subscriber
+          WHERE hub_user_id = {userId}
+          AND subscriber_id = {id}
+          """)
+      .on('userId -> userId, 'id -> id).executeUpdate()
+    }
+  }
+
+  // Default is to only return approved users. Pass approved = false to get a list
+  // of users that are pending administrative Approval.
+  def userList(approved: Boolean = true): List[User] = {
+    DB.withConnection { implicit c =>
+      SQL(
+        """
+          SELECT hub_user.* FROM hub_user
+          JOIN hub_user_subscriber ON hub_user.id = hub_user_subscriber.hub_user_id
+          WHERE hub_user_subscriber.subscriber_id = {id}
+          AND approved = {approved}
+        """
+      ).on('id -> id, 'approved -> approved).as(User.user *)
+    }
+  }
+
+  def adminList: List[User] = {
+    DB.withConnection { implicit c =>
+      SQL(
+        """
+          SELECT hub_user.* FROM hub_user
+          JOIN hub_user_subscriber ON hub_user.id = hub_user_subscriber.hub_user_id
+          WHERE hub_user_subscriber.subscriber_id = {id}
+          AND admin = true
+        """
+      ).on('id -> id).as(User.user *)
+    }
+  }
+
+  def approveUser(userId: Int) = {
+    DB.withConnection { implicit c =>
+      SQL(
+        """
+          UPDATE hub_user_subscriber
+          SET approved = true
+          WHERE hub_user_id = {userId}
+          AND subscriber_id = {id}
+        """
+      ).on('id -> id, 'userId -> userId).executeUpdate
+    }
+  }
+
+  def denyUser(userId: Int) = {
+    DB.withConnection { implicit c =>
+      SQL(
+        """
+          DELETE FROM hub_user_subscriber
+          WHERE hub_user_id = {userId}
+          AND subscriber_id = {id}
+        """
+      ).on('id -> id, 'userId -> userId).executeUpdate
+    }
+  }
+
+  def makeAdmin(userId: Int) = {
+    DB.withConnection { implicit c =>
+      SQL(
+        """
+          UPDATE hub_user_subscriber
+          SET admin = true
+          WHERE hub_user_id = {userId}
+          AND subscriber_id = {id}
+        """
+      ).on('id -> id, 'userId -> userId).executeUpdate
+    }
+  }
+
+  def removeAdmin(userId: Int) = {
+    DB.withConnection { implicit c =>
+      SQL(
+        """
+          UPDATE hub_user_subscriber
+          SET admin = false
+          WHERE hub_user_id = {userId}
+          AND subscriber_id = {id}
+        """
+      ).on('id -> id, 'userId -> userId).executeUpdate
+    }
+  }
 }
 
 object Subscriber {
 
   val sub = {
-    get[Int]("id") ~ get[Int]("hub_user_id") ~ get[String]("name") ~ get[String]("category") ~
+    get[Int]("id") ~ get[String]("name") ~ get[String]("category") ~
     get[String]("contact") ~ get[Option[String]]("link") ~ get[Option[String]]("logo") ~ get[Date]("created") map {
-      case id ~ userId ~ name ~ category ~ contact ~ link ~ logo ~ created =>
-        Subscriber(id, userId, name, category, contact, link, logo, created)
+      case id ~ name ~ category ~ contact ~ link ~ logo ~ created =>
+        Subscriber(id, name, category, contact, link, logo, created)
     }
   }
 
@@ -267,7 +366,12 @@ object Subscriber {
 
   def findByUserId(uid: Int): Option[Subscriber] = {
     DB.withConnection { implicit c =>
-      SQL("select * from subscriber where hub_user_id = {uid}").on('uid -> uid).as(sub.singleOpt)
+      SQL("""
+            SELECT subscriber.* FROM subscriber
+            JOIN hub_user_subscriber ON hub_user_subscriber.subscriber_id = subscriber.id
+            WHERE hub_user_id = {uid}
+            AND hub_user_subscriber.approved = true"""
+          ).on('uid -> uid).as(sub.singleOpt)
     }
   }
 
@@ -303,15 +407,17 @@ object Subscriber {
     }
   }
 
-  def create(userId: Int, name: String, category: String, contact: String, link: Option[String], logo: Option[String]) = {
+  def create(name: String, category: String, contact: String, link: Option[String], logo: Option[String]) = {
     DB.withConnection { implicit c =>
-      SQL("insert into subscriber (hub_user_id, name, category, contact, link, logo, created) values ({hub_user_id}, {name}, {category}, {contact}, {link}, {logo}, {created})")
-      .on('hub_user_id -> userId, 'name -> name, 'category -> category, 'contact -> contact, 'link -> link, 'logo -> logo, 'created -> new Date).executeInsert()
+      SQL("insert into subscriber (name, category, contact, link, logo, created) values ({name}, {category}, {contact}, {link}, {logo}, {created})")
+      .on('name -> name, 'category -> category, 'contact -> contact, 'link -> link, 'logo -> logo, 'created -> new Date).executeInsert()
     }
   }
 
   def make(userId: Int, name: String, category: String, contact: String, link: Option[String], logo: Option[String]) = {
-    findById(create(userId, name, category, contact, link, logo).get.toInt).get
+    val sub = findById(create(name, category, contact, link, logo).get.toInt).get
+    sub.linkUser(userId, approved = true, admin = true)
+    sub
   }
 
 }

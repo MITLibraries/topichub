@@ -40,6 +40,14 @@ trait EmailService {
     send(if (reply) props + ("h:Reply-To" -> from) else props)
   }
 
+  def subscriberEmails(to: String, subject: String, msg: String) = {
+    val props = Map("to" -> to, "from" -> "noreply@scoap3hub.org",
+                    "sender" -> "noreply@scoap3hub.org",
+                    "subject" -> subject,
+                    "text" -> msg)
+    send(props)
+  }
+
   def send(props: Map[String, String])
 }
 

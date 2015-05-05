@@ -100,11 +100,11 @@ object OAuth2 extends Controller {
       // todo: write tests to show what happens if this user is invalid
       check_user.get
     }
-    // todo: redirect back to the requested URL, not always home
-    // https://github.com/MITLibraries/scoap3hub/issues/181
     Redirect(loginDestination(user)).
       withSession("connected" -> user.identity,
-                  "subscriber" -> currentSubscriber(user))
+                  "subscriber" -> currentSubscriber(user)).flashing(
+        "success" -> "You are logged in. Welcome!"
+      )
   }
 
   private def loginDestination(user: User) = {

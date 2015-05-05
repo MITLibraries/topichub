@@ -11,9 +11,8 @@
 
         @if(Subscriber.all.size > 0) {
           <div class="alert alert-info" role="alert">
-            You may also request to join an existing group. (coming soon!)
-            @* // todo: add link here when we do ticket
-                  https://github.com/MITLibraries/scoap3hub/issues/179 *@
+            You may also <a href="@routes.Application.joinSubscriber" class="alert-link">
+            request to join</a> an existing group.
           </div>
         }
 
