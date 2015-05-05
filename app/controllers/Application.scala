@@ -163,11 +163,22 @@ object Application extends Controller with Security {
     }
   }
 
-  private def getCurrentIdentity(request: play.api.mvc.Request[play.api.mvc.AnyContent]) = {
+  def getCurrentIdentity(implicit request: play.api.mvc.RequestHeader) = {
     // This method is useful to get the identity of the current request user for methods
     // that don't explicitly need a signed in user (i.e. it's okay to be anonymous, but
     // if the user is signed in we want to know who they are for some reason).
     request.session.get("connected").getOrElse("")
+  }
+
+  // Used in views to allow conditional display of content based on role
+  def currentUserHasRole(role: String)(implicit request: play.api.mvc.RequestHeader) = {
+    if (getCurrentIdentity != "") {
+      User.findByIdentity(getCurrentIdentity).map( u =>
+        u.hasRole(role)
+      ).getOrElse(false)
+    } else {
+      false
+    }
   }
 
   def createPublisher = isAuthenticated { identity =>
@@ -350,11 +361,16 @@ object Application extends Controller with Security {
     )(Scheme.apply)(Scheme.unapply)
   )
 
-  def schemes = isAnalyst { identity => implicit request =>
-    Ok(views.html.scheme.index(Scheme.all))
+  def schemes = Action { implicit request =>
+    val s = if(currentUserHasRole("analyst")) {
+      Scheme.all
+    } else {
+      Scheme.all.filter(!_.tag.equals("meta"))
+    }
+    Ok(views.html.scheme.index(s))
   }
 
-  def scheme(id: Int) = isAnalyst { identity => implicit request =>
+  def scheme(id: Int) = Action { implicit request =>
     Scheme.findById(id).map( scheme =>
       Ok(views.html.scheme.show(scheme, Subscriber.findById(currentSubscriberId)))
     ).getOrElse(NotFound(views.html.static.trouble("No such scheme: " + id)))

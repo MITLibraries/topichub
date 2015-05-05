@@ -21,18 +21,28 @@ class SchemePagesSpec extends Specification {
     "as an unauthenticated User" should {
 
       // GET /schemes
-      "accessing index redirects to login" in new WithBrowser(
+      "accessing index displays schemes" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val s1 = Scheme.make("scheme_1_tag", "gentype", "cat", "scheme_1 description",
+                             Some("link"), Some("logo"))
+        val s2 = Scheme.make("scheme_2_tag", "gentype", "cat", "scheme_2 description",
+                             Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/schemes")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Schemes - TopicHub")
+        browser.pageSource must contain(s1.description)
+        browser.pageSource must contain(s2.description)
+        browser.pageSource must not contain("create a new scheme on this hub")
       }
 
       // GET /scheme/:id
-      "viewing scheme redirects to login" in new WithBrowser(
+      "viewing scheme displays scheme" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val s1 = Scheme.make("s1_tag", "gentype", "cat", "s1_desc", Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/scheme/" + s1.id)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Scheme - TopicHub")
+        browser.pageSource must contain(s1.description)
+        browser.pageSource must not contain("manage scheme")
+        browser.pageSource must contain("No topics")
       }
 
       // GET /scheme/:id/edit
@@ -62,26 +72,35 @@ class SchemePagesSpec extends Specification {
     "as a User lacking the Analyst role" should {
 
       // GET /schemes
-      "accessing index redirects to trouble" in new WithBrowser(
+      "accessing index displays schemes" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("somerole")
+        val s1 = Scheme.make("scheme_1_tag", "gentype", "cat", "scheme_1 description",
+                             Some("link"), Some("logo"))
+        val s2 = Scheme.make("scheme_2_tag", "gentype", "cat", "scheme_2 description",
+                             Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/login")
         browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/schemes")
-        assertThat(browser.title()).isEqualTo("Error - TopicHub")
-        browser.pageSource must contain("You are not authorized")
+        assertThat(browser.title()).isEqualTo("Schemes - TopicHub")
+        browser.pageSource must contain(s1.description)
+        browser.pageSource must contain(s2.description)
+        browser.pageSource must not contain("create a new scheme on this hub")
       }
 
       // GET /scheme/:id
-      "viewing scheme redirects to trouble" in new WithBrowser(
+      "viewing scheme displays scheme" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("somerole")
         val s1 = Scheme.make("s1_tag", "gentype", "cat", "s1_desc", Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/login")
         browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/scheme/" + s1.id)
-        assertThat(browser.title()).isEqualTo("Error - TopicHub")
-        browser.pageSource must contain("You are not authorized")
+        assertThat(browser.title()).isEqualTo("Scheme - TopicHub")
+        browser.pageSource must contain(s1.description)
+        browser.pageSource must not contain("manage scheme")
+        browser.pageSource must contain("No topics")
+
       }
 
       // GET /scheme/:id/edit
@@ -135,6 +154,7 @@ class SchemePagesSpec extends Specification {
         assertThat(browser.title()).isEqualTo("Schemes - TopicHub")
         browser.pageSource must contain(s1.description)
         browser.pageSource must contain(s2.description)
+        browser.pageSource must contain("create a new scheme on this hub")
       }
 
       // GET /scheme/:id

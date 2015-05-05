@@ -27,12 +27,22 @@
       }
 
       <div class="pull-right">
-       <a rel="tooltip" title="view METS.xml" href="@routes.ItemController.itemMets(item.id)" class="btn btn-primary">View METS &raquo;</a>
+        @if(Application.currentUserHasRole("analyst")) {
+          <a rel="tooltip" title="view METS.xml" href="@routes.ItemController.itemMets(item.id)" class="btn btn-primary">View METS &raquo;</a>
 
-        <a rel="tooltip" title="download whole package to desktop" href="@routes.ItemController.itemPackage(item.id)" class="btn btn-primary">Download &raquo;</a>
-        @*<a rel="tooltip" title="send an email notification with link to this item" href="@routes.ItemController.itemTransfer(item.id, "alert")" class="btn btn-primary btn-large pull-right">Remind Me &raquo;</a>
-        *@
-        <a rel="tooltip" title="start a SWORD deposit of package to my repository" href="@routes.ItemController.itemDeposit(item.id)" class="btn btn-primary">Deposit &raquo;</a>
+          <a rel="tooltip" title="download whole package to desktop" href="@routes.ItemController.itemPackage(item.id)" class="btn btn-primary">Download &raquo;</a>
+        }
+        @if(sub.isDefined) {
+          @if(sub.get.channels.size > 0) {
+            <a rel="tooltip" title="start a SWORD deposit of package to my repository"
+               href="@routes.ItemController.itemDeposit(item.id)"
+               class="btn btn-primary">Deposit &raquo;</a>
+          } else {
+            <a rel="tooltip" title="a channel is required to determine where to deposit a package"
+               href="@routes.Application.newChannel(sub.get.id)" class="btn btn-primary btn-alert">
+               Create a Channel to enable Deposits</a>
+          }
+        }
       </div>
     </p>
   </div>
@@ -48,7 +58,8 @@
         <p>@Scheme.findByTag(sc._1).get.description</p>
         <ul>
           @sc._2.map { tp =>
-            <li><a href="@routes.Application.topic(tp.id)">@tp.tag</a>: @tp.name</li>
+            <li><a href="@routes.Application.topic(tp.id)">@tp.tag</a>@if(tp.name != "No Label"){: @tp.name }
+            </li>
           }
         </ul>
       </div>

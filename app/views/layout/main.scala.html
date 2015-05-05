@@ -50,15 +50,32 @@
                       }</span>
                   </a>
                 </li>
-                <li><a id="nav_workbench" href="@routes.Application.editSubscriber(currentSubId)">Plans</a></li>
+                <li><a id="nav_plans" href="@routes.Application.editSubscriber(currentSubId)">Plans</a></li>
               }
-              <li><a id="nav_workbench" href="@routes.Application.workbench">Workbench</a></li>
+
+              @if(Application.currentUserHasRole("analyst")) {
+                <li><a id="nav_workbench" href="@routes.Application.workbench">Workbench</a></li>
+              }
+
               <li><a id="nav_search" href="@routes.Search.index">Search</a></li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+              @if(Application.getCurrentIdentity == "") {
+                <li>
+                  <a id="nav_login" href="@routes.AuthenticationController.login"><span class="glyphicon glyphicon-user"></span>&nbsp;Login</a>
+                </li>
+              } else {
+                <li>
+                  <a id="nav_login" href="@routes.AuthenticationController.logout"><span class="glyphicon glyphicon-off"></span>&nbsp;Logout</a>
+                </li>
+              }
+
             </ul>
           </div>
         </div>
       </nav>
       <div class="container-fluid">
+        @tags.flash()
         @content
       </div>
       <footer class="navbar navbar-default navbar-fixed-bottom">

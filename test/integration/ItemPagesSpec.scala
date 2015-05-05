@@ -7,7 +7,8 @@ import org.fest.assertions.Assertions.assertThat
 import play.api.Application
 import play.api.Play
 import play.api.Play.current
-import models.{ Collection, ContentType, Item, Publisher, ResourceMap, Scheme, Subscriber, Topic, User }
+import models.{ Channel, Collection, ContentType, Item, Publisher, ResourceMap, Scheme,
+                Subscriber, Topic, User }
 
 /**
  * An integration test will fire up a whole play application in a real (or headless) browser
@@ -44,14 +45,15 @@ class ItemPagesSpec extends Specification {
       }
 
       // GET /item/:id
-      "accessing an item works" in new WithBrowser(
+      "accessing an item works does not show mets, download, or deposit" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         item_factory(1)
         browser.goTo("http://localhost:" + port + "/item/1")
         assertThat(browser.title()).isEqualTo("Item - TopicHub")
-        browser.pageSource must contain("View METS »")
-        browser.pageSource must contain("Download »")
-        browser.pageSource must contain("Deposit »")
+        browser.pageSource must not contain("View METS »")
+        browser.pageSource must not contain("Download »")
+        browser.pageSource must not contain("Deposit »")
+        browser.pageSource must not contain("Create a Channel to enable Deposits")
       }
 
       // GET /item/package/:id
@@ -90,14 +92,62 @@ class ItemPagesSpec extends Specification {
                            withSession(("connected", user.identity))).get
         contentAsString(action) must contain ("Reason: You are not a Subscriber")
       }.pendingUntilFixed(": currently we only support one subscriber so this works. See https://github.com/MITLibraries/scoap3hub/issues/46")
+
+      // GET /item/:id
+      "accessing an item works does not show mets, download or deposit" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        item_factory(1)
+        browser.goTo("http://localhost:" + port + "/item/1")
+        assertThat(browser.title()).isEqualTo("Item - TopicHub")
+        browser.pageSource must not contain("View METS »")
+        browser.pageSource must not contain("Download »")
+        browser.pageSource must not contain("Deposit »")
+        browser.pageSource must not contain("Create a Channel to enable Deposits")
+      }
     }
 
     "as a signed in user with a subscriber affiliated" should {
+      // GET /item/:id
+      "accessing an item with no channel defined does not show mets, download or deposit" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val user = User.make("sub", "sub@example.com", "", "https://oidc.mit.edu/current_user")
+        val sub = Subscriber.make(user.id, "Sub Name", "cat", "contact",
+                                  Some("link"), Some("logo"))
+        item_factory(1)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
+        browser.goTo("http://localhost:" + port + "/item/1")
+        assertThat(browser.title()).isEqualTo("Item - TopicHub")
+        browser.pageSource must not contain("View METS »")
+        browser.pageSource must not contain("Download »")
+        browser.pageSource must not contain("Deposit »")
+        browser.pageSource must contain("Create a Channel to enable Deposits")
+      }
+
+      "accessing an item with a channel defined shows deposit, but no mets or download" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val user = User.make("sub", "sub@example.com", "", "https://oidc.mit.edu/current_user")
+        val sub = Subscriber.make(user.id, "Sub Name", "cat", "contact", Some("link"),
+                                  Some("logo"))
+        val ch = Channel.make(sub.id, "protocol", "mode", "description", "userid",
+                              "password", "http://example.com")
+        item_factory(1)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
+        browser.goTo("http://localhost:" + port + "/item/1")
+        assertThat(browser.title()).isEqualTo("Item - TopicHub")
+        browser.pageSource must not contain("View METS »")
+        browser.pageSource must not contain("Download »")
+        browser.pageSource must contain("Deposit »")
+        browser.pageSource must not contain("Create a Channel to enable Deposits")
+      }
+
       // GET /item/deposit/:id
       "depositing an item redirects to error with no channel defined" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val user = User.make("sub", "sub@example.com", "", "https://oidc.mit.edu/current_user")
-        val sub = Subscriber.make(user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        val sub = Subscriber.make(user.id, "Sub Name", "cat", "contact",
+                                  Some("link"), Some("logo"))
         item_factory(1)
         val action = route(FakeRequest(GET, "/item/deposit/1").
                            withSession(("connected", user.identity),
@@ -109,6 +159,26 @@ class ItemPagesSpec extends Specification {
       "depositing an item works with a channel defined" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         skipped("Need to consider how to actually test this.")
+      }
+    }
+
+    "as an analyst" should {
+      // GET /item/:id
+      "accessing an shows mets and download but not deposit" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        User.make("user", "user@example.com", "analyst", "https://oidc.mit.edu/current_user")
+        val sub_user = User.make("sub", "sub@example.com", "analyst",
+                                 "https://oidc.mit.edu/sub_user")
+        Subscriber.make(sub_user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        item_factory(1)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
+        browser.goTo("http://localhost:" + port + "/item/1")
+        assertThat(browser.title()).isEqualTo("Item - TopicHub")
+        browser.pageSource must contain("View METS »")
+        browser.pageSource must contain("Download »")
+        browser.pageSource must not contain("Deposit »")
+        browser.pageSource must not contain("Create a Channel to enable Deposits")
       }
     }
   }

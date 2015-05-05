@@ -37,11 +37,9 @@
         <input type="submit" value="Add">
       </p>
     }
-    @*
-    @if(! hubContext.user.isEmpty) {
-      *@
+
+    @if(Application.currentUserHasRole("analyst")) {
       <a rel="tooltip" title="manage scheme" href="@routes.Application.editScheme(scheme.id)" class="btn btn-primary btn-large pull-right">Manage &raquo;</a>
-    @*}
-    *@
+    }
   </div>
 }
