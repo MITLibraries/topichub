@@ -73,7 +73,7 @@ class AuthenticationPageSpec extends Specification with Mockito {
         browser.goTo("http://localhost:" + port + "/dashboard")
         User.findByIdentity("https://oidc.mit.edu/current_user") must equalTo(None)
         browser.$("#openid").click
-        assertThat(browser.title()).isEqualTo("SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Create Subscriber - TopicHub")
         User.findByIdentity("https://oidc.mit.edu/current_user") must not equalTo(None)
       }
 

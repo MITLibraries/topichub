@@ -43,6 +43,12 @@ class SubscriberSpec extends Specification {
       }
     }
 
+    "#findByUserId handles multiple" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        skipped(": implement with #46")
+      }
+    }
+
     "#all" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         Subscriber.all must haveSize(0)
