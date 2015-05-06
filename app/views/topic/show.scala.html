@@ -20,11 +20,13 @@
          @if(sub.get.subscribesTo(topic.id)) {
            <span><a rel="tooltip" title="Cancel subscription to this topic" href="@routes.Application.topicSubscribe(topic.id, true)" class="btn btn-primary btn-large">Unsubscribe &raquo;</a></span>
          } else {
-           @if(sub.get.plannedFor(topic.scheme_id)) {
-             <span><a rel="tooltip" title="Subscribe to this topic" href="@routes.Application.topicSubscribe(topic.id)" class="btn btn-primary btn-large">Subscribe <span class="badge">@sub.get.newItemCountFor(topic.id)</span> &raquo;</a></span>
-           }
            @if(sub.get.picked(topic.id).isDefined) {
+             <span><a rel="tooltip" title="Subscribe to this topic" href="@routes.Application.resolvePick(sub.get.picked(topic.id).get.id, true)" class="btn btn-primary btn-large">Subscribe <span class="badge">@sub.get.newItemCountFor(topic.id)</span> &raquo;</a></span>
              <span><a rel="tooltip" title="Forget this topic" href="@routes.Application.resolvePick(sub.get.picked(topic.id).get.id, false)" class="btn btn-primary btn-large pull-right">Meh &raquo;</a></span>
+           } else {
+             @if(sub.get.plannedFor(topic.scheme_id)) {
+               <span><a rel="tooltip" title="Subscribe to this topic" href="@routes.Application.topicSubscribe(topic.id)" class="btn btn-primary btn-large">Subscribe <span class="badge">@sub.get.newItemCountFor(topic.id)</span> &raquo;</a></span>
+             }
            }
          }
        }
