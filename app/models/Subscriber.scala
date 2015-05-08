@@ -364,14 +364,14 @@ object Subscriber {
     }
   }
 
-  def findByUserId(uid: Int): Option[Subscriber] = {
+  def findByUserId(uid: Int): List[Subscriber] = {
     DB.withConnection { implicit c =>
       SQL("""
             SELECT subscriber.* FROM subscriber
             JOIN hub_user_subscriber ON hub_user_subscriber.subscriber_id = subscriber.id
             WHERE hub_user_id = {uid}
             AND hub_user_subscriber.approved = true"""
-          ).on('uid -> uid).as(sub.singleOpt)
+          ).on('uid -> uid).as(sub *)
     }
   }
 

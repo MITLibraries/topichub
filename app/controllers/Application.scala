@@ -888,6 +888,13 @@ ${routes.Application.index.absoluteURL()}
     }
   }
 
+  def updateSessionSubscriber(id: Int) = isAuthenticated { identity => implicit request =>
+    subscriberMember(identity, Subscriber.findById(id).get, Redirect(routes.Application.userDashboard).
+      withSession("connected" -> identity.identity,
+                  "subscriber" -> Subscriber.findById(id).get.id.toString).flashing(
+                  "success" -> "Session Subscriber Updated"))
+  }
+
   val channelForm = Form(
     mapping(
       "id" -> ignored(0),
@@ -938,6 +945,10 @@ ${routes.Application.index.absoluteURL()}
     } else {
       Ok(views.html.subscriber.dashboard(sub.get))
     }
+  }
+
+  def userDashboard = isAuthenticated { identity => implicit request =>
+    Ok(views.html.user.dashboard(identity))
   }
 
   val planForm = Form(

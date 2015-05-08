@@ -39,7 +39,7 @@ class SubscriberSpec extends Specification {
         Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
         Subscriber.make(2, "Sub Name2", "cat", "contact", Some("link"), Some("logo"))
         Subscriber.all must haveSize(2)
-        Subscriber.findByUserId(1).get.name must equalTo("Sub Name")
+        Subscriber.findByUserId(1).head.name must equalTo("Sub Name")
       }
     }
 
@@ -51,17 +51,22 @@ class SubscriberSpec extends Specification {
         val s = Subscriber.make(u1.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
 
         s.linkUser(u2.id)
-        Subscriber.findByUserId(u1.id) must equalTo(Some(s))
-        Subscriber.findByUserId(u2.id) must equalTo(None)
+        Subscriber.findByUserId(u1.id) must contain(s)
+        Subscriber.findByUserId(u2.id) must not contain(s)
 
         s.approveUser(u2.id)
-        Subscriber.findByUserId(u2.id) must equalTo(Some(s))
+        Subscriber.findByUserId(u2.id) must contain(s)
       }
     }
 
     "#findByUserId handles multiple" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        skipped(": implement with #46")
+        Subscriber.all must haveSize(0)
+        val u1 = User.make("bob", "bob@example.com", "pwd", "role1")
+        val s = Subscriber.make(u1.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        val s2 = Subscriber.make(u1.id, "Sub Name2", "cat", "contact", Some("link"), Some("logo"))
+        Subscriber.findByUserId(u1.id) must contain(s)
+        Subscriber.findByUserId(u1.id) must contain(s2)
       }
     }
 

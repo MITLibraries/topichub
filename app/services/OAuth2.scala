@@ -121,10 +121,10 @@ object OAuth2 extends Controller {
 
   def currentSubscriber(user: User) = {
     val s = Subscriber.findByUserId(user.id)
-    if (s == None) {
+    if (s.size == 0 ) {
       "0"
     } else {
-      s.get.id.toString
+      s.head.id.toString
     }
   }
 }

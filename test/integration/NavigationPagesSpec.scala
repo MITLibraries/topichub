@@ -141,6 +141,14 @@ class NavigationPagesSpec extends Specification {
         browser.pageSource must contain("""<a id="nav_login" href="/login">""")
         browser.pageSource must not contain("""<a id="nav_login" href="/logout">""")
       }
+
+      "includes my account link" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        create_user("")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
+        browser.pageSource must contain("""<a id="nav_myaccount" href="/myaccount">""")
+      }
     }
 
     "as a User with an affiliated Subscriber" should {
