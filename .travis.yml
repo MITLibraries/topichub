@@ -3,12 +3,24 @@ scala:
  - "2.11.6"
 jdk:
  - oraclejdk8
-sudo: required
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.ivy2/cache
+    - $HOME/.sbt/boot/
+
 env:
   - MAILGUN_API_KEY=notarealkey DATABASE_URL=jdbc:postgresql://localhost/travis_ci_test
 addons:
-  postgresql: "9.3"
-script: "sbt clean coverage test"
+  postgresql: "9.4"
+script:
+  - sbt ++$TRAVIS_SCALA_VERSION -J-XX:ReservedCodeCacheSize=256M coverage test
+  # Tricks to avoid unnecessary cache updates
+  - find $HOME/.sbt -name "*.lock" | xargs rm
+  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
+
 after_success: "sbt coveralls"
+before_script:
 before_script:
   - psql -c 'create database travis_ci_test;' -U postgres
