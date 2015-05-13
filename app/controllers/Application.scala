@@ -790,14 +790,7 @@ object Application extends Controller with Security {
         subscriber.linkUser(identity.id)
         val adminEmails = subscriber.adminList.map {user => user.email}.mkString(",")
         val subject = "SCOAP3Hub Request to Join Subscriber"
-        val msg = s"""
-The following person has requested to join a Subscriber you are an administrator for.
-Subscriber Group: ${subscriber.name}
-User: ${identity.email}
-
-You can approve this user on the Subscriber User List:
-${routes.Application.subscriberUsers(subscriber.id).absoluteURL()}
-"""
+        val msg = views.txt.email.subscriber_join_request(subscriber, identity).body
         if ( !play.api.Play.isTest(play.api.Play.current) ) {
           Emailer.subscriberEmails(adminEmails, subject, msg)
         }
@@ -811,25 +804,20 @@ ${routes.Application.subscriberUsers(subscriber.id).absoluteURL()}
     subscriberMember(identity, sub, Ok(views.html.subscriber.users(sub)))
   }
 
-  def subscriberResolveUser(id: Int, user: Int, res: String) = isAuthenticated { identity => implicit request =>
+  def subscriberResolveUser(id: Int, userid: Int, res: String) = isAuthenticated { identity => implicit request =>
     val sub = Subscriber.findById(id).get
-    val adminEmails = sub.adminList.map {user => user.email}.mkString(",")
     val subject = s"SCOAP3Hub Request to Join Subscriber ${res}"
-    val msg = s"""
-Your request to join Subscriber Group: ${sub.name} has been ${res}.
-
-You may visit SCOAP3Hub at:
-${routes.Application.index.absoluteURL()}
-"""
+    val user = User.findById(userid).get
+    val msg = views.txt.email.subscriber_resolve(sub, res).body
 
     if (sub.adminList.contains(identity)) {
       if (res == "approved") {
-        sub.approveUser(user)
+        sub.approveUser(userid)
       } else {
-        sub.denyUser(user)
+        sub.denyUser(userid)
       }
       if ( !play.api.Play.isTest(play.api.Play.current) ) {
-        Emailer.subscriberEmails(adminEmails, subject, msg)
+        Emailer.subscriberEmails(user.email, subject, msg)
       }
       Redirect(routes.Application.subscriberUsers(sub.id)).flashing(
         "success" -> s"User was ${res} membership to this Subscriber Group."

@@ -1,0 +1,12 @@
+@*****************************************************************************
+ * Email template to notify Subscriber admins a User requested to join       *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(subscriber: Subscriber, identity: User)(implicit request: play.api.mvc.RequestHeader)
+
+The following person has requested to join a Subscriber you are an administrator for.
+Subscriber Group: @subscriber.name
+User: @identity.email
+
+You can approve this user on the Subscriber User List:
+@routes.Application.subscriberUsers(subscriber.id).absoluteURL()

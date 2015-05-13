@@ -1,0 +1,10 @@
+@*****************************************************************************
+ * Email template to notify Subscriber when admin responds to join request   *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(subscriber: Subscriber, resolution: String)(implicit request: play.api.mvc.RequestHeader)
+
+Your request to join Subscriber Group: @subscriber.name has been @resolution.
+
+You may visit SCOAP3Hub at:
+@routes.Application.index.absoluteURL()
