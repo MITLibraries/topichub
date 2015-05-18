@@ -28,7 +28,7 @@ class NavigationPagesSpec extends Specification {
       "does not include dashboard" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val sub_user = User.make("sub", "sub@example.com", "", "another_user")
-        Subscriber.create(sub_user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        Subscriber.make(sub_user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port)
         browser.pageSource must not contain("""<a id="nav_sub_dashboard" href="/dashboard">""")
       }
@@ -36,7 +36,7 @@ class NavigationPagesSpec extends Specification {
       "does not include plans" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val sub_user = User.make("sub", "sub@example.com", "", "another_user")
-        Subscriber.create(sub_user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        Subscriber.make(sub_user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port)
         browser.pageSource must not contain(s"""<a id="nav_plans" href="/subscriber/">""")
       }
@@ -44,7 +44,7 @@ class NavigationPagesSpec extends Specification {
       "does not include workbench"  in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val sub_user = User.make("sub", "sub@example.com", "", "another_user")
-        Subscriber.create(sub_user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        Subscriber.make(sub_user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port)
         browser.pageSource must not contain("""<a id="nav_workbench" href="/workbench">""")
       }
@@ -81,7 +81,7 @@ class NavigationPagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("")
         val sub_user = User.make("sub", "sub@example.com", "", "another_user")
-        Subscriber.create(sub_user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        Subscriber.make(sub_user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/login")
         browser.$("#openid").click
         browser.pageSource must not contain("""<a id="nav_sub_dashboard" href="/dashboard">""")
@@ -91,7 +91,7 @@ class NavigationPagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("")
         val sub_user = User.make("sub", "sub@example.com", "", "another_user")
-        Subscriber.create(sub_user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        Subscriber.make(sub_user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/login")
         browser.$("#openid").click
         browser.pageSource must not contain(s"""<a id="nav_plans" href="/subscriber/">""")
@@ -101,7 +101,7 @@ class NavigationPagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         create_user("")
         val sub_user = User.make("sub", "sub@example.com", "", "another_user")
-        Subscriber.create(sub_user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        Subscriber.make(sub_user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/login")
         browser.$("#openid").click
         browser.pageSource must not contain("""<a id="nav_workbench" href="/workbench">""")
@@ -141,12 +141,20 @@ class NavigationPagesSpec extends Specification {
         browser.pageSource must contain("""<a id="nav_login" href="/login">""")
         browser.pageSource must not contain("""<a id="nav_login" href="/logout">""")
       }
+
+      "includes my account link" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        create_user("")
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
+        browser.pageSource must contain("""<a id="nav_myaccount" href="/myaccount">""")
+      }
     }
 
     "as a User with an affiliated Subscriber" should {
       "includes dashboard with no counter if nothing to review" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        Subscriber.create(create_user("").id, "Sub Name", "cat", "contact",
+        Subscriber.make(create_user("").id, "Sub Name", "cat", "contact",
                           Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/login")
         browser.$("#openid").click
@@ -179,7 +187,7 @@ class NavigationPagesSpec extends Specification {
     "as a User with the Analyst role" should {
       "includes workbench" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        Subscriber.create(create_user("analyst").id, "Sub Name", "cat", "contact",
+        Subscriber.make(create_user("analyst").id, "Sub Name", "cat", "contact",
                           Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/login")
         browser.$("#openid").click
@@ -190,7 +198,7 @@ class NavigationPagesSpec extends Specification {
     "as a User with the Admin role" should {
       "does not include workbench" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        Subscriber.create(create_user("sysadmin").id, "Sub Name", "cat", "contact",
+        Subscriber.make(create_user("sysadmin").id, "Sub Name", "cat", "contact",
                           Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/login")
         browser.$("#openid").click

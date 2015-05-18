@@ -1,0 +1,19 @@
+@*****************************************************************************
+ * Page with receipt to confirm join request to Subscriber group             *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@()(implicit request: play.api.mvc.RequestHeader)
+@import helper._
+@layout.main("Join Subscriber - TopicHub") {
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        Your request to join the Subscriber Group has been submitted.
+
+        The group admins have been notified of your request. You will
+        receive an email when the admin has allowed or denied your
+        membership request.
+      </div>
+    </div>
+  </div>
+}

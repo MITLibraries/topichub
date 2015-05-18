@@ -44,7 +44,7 @@ class LoginRedirectSpec extends Specification {
         browser.goTo("http://localhost:" + port + "/login")
         browser.$("#openid").click
         assertThat(browser.title()).isEqualTo("Create Subscriber - TopicHub")
-        browser.pageSource must not contain("You may also request to join an existing")
+        browser.pageSource must not contain("request to join")
       }
 
       "redirects to Subscriber Create displaying note about joining group if groups exist" in new WithBrowser(
@@ -58,7 +58,7 @@ class LoginRedirectSpec extends Specification {
         browser.goTo("http://localhost:" + port + "/login")
         browser.$("#openid").click
         assertThat(browser.title()).isEqualTo("Create Subscriber - TopicHub")
-        browser.pageSource must contain("You may also request to join an existing group.")
+        browser.pageSource must contain("request to join")
       }
     }
 

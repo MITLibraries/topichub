@@ -163,6 +163,14 @@ object Application extends Controller with Security {
     }
   }
 
+  def currentUser(implicit request: play.api.mvc.RequestHeader) = {
+    if (getCurrentIdentity != "") {
+      User.findByIdentity(getCurrentIdentity).getOrElse("")
+    } else {
+      ""
+    }
+  }
+
   def getCurrentIdentity(implicit request: play.api.mvc.RequestHeader) = {
     // This method is useful to get the identity of the current request user for methods
     // that don't explicitly need a signed in user (i.e. it's okay to be anonymous, but
@@ -723,7 +731,6 @@ object Application extends Controller with Security {
   val subscriberForm = Form(
     mapping(
       "id" -> ignored(0),
-      "user_id" -> ignored(0),
       "name" -> nonEmptyText,
       "category" -> nonEmptyText,
       "contact" -> nonEmptyText,
@@ -764,8 +771,92 @@ object Application extends Controller with Security {
     )
   }
 
-  private def ownsSubscriber(user: User, sub: Subscriber, result: Result)(implicit request: Request[AnyContent]): Result = {
-    if (sub.userId == user.id) {
+  val joinSubscriberForm = Form(
+    single(
+      "subscriberid" -> number
+    )
+  )
+
+  def joinSubscriber = isAuthenticated { identity => implicit request =>
+    val subs = Subscriber.all.filterNot(_.userList(true).contains(identity))
+    Ok(views.html.subscriber.join(subs, joinSubscriberForm))
+  }
+
+  def joinRequest = isAuthenticated { identity => implicit request =>
+    joinSubscriberForm.bindFromRequest.fold(
+      errors => BadRequest(views.html.subscriber.join(Subscriber.all, errors)),
+      value => {
+        val subscriber = Subscriber.findById(value).get
+        subscriber.linkUser(identity.id)
+        val adminEmails = subscriber.adminList.map {user => user.email}.mkString(",")
+        val subject = "SCOAP3Hub Request to Join Subscriber"
+        val msg = views.txt.email.subscriber_join_request(subscriber, identity).body
+        if ( !play.api.Play.isTest(play.api.Play.current) ) {
+          Emailer.subscriberEmails(adminEmails, subject, msg)
+        }
+        Ok(views.html.subscriber.request())
+      }
+    )
+  }
+
+  def subscriberUsers(id: Int) = isAuthenticated { identity => implicit request =>
+    val sub = Subscriber.findById(id).get
+    subscriberMember(identity, sub, Ok(views.html.subscriber.users(sub)))
+  }
+
+  def subscriberResolveUser(id: Int, userid: Int, res: String) = isAuthenticated { identity => implicit request =>
+    val sub = Subscriber.findById(id).get
+    val subject = s"SCOAP3Hub Request to Join Subscriber ${res}"
+    val user = User.findById(userid).get
+    val msg = views.txt.email.subscriber_resolve(sub, res).body
+
+    if (sub.adminList.contains(identity)) {
+      if (res == "approved") {
+        sub.approveUser(userid)
+      } else {
+        sub.denyUser(userid)
+      }
+      if ( !play.api.Play.isTest(play.api.Play.current) ) {
+        Emailer.subscriberEmails(user.email, subject, msg)
+      }
+      Redirect(routes.Application.subscriberUsers(sub.id)).flashing(
+        "success" -> s"User was ${res} membership to this Subscriber Group."
+      )
+    } else {
+      Unauthorized(views.html.static.trouble("You are not authorized"))
+    }
+  }
+
+  def subscriberRemoveUser(id: Int, user: Int) = isAuthenticated { identity => implicit request =>
+    val sub = Subscriber.findById(id).get
+    if (sub.adminList.contains(identity)) {
+      sub.unlinkUser(user)
+      Redirect(routes.Application.subscriberUsers(sub.id)).flashing(
+        "success" -> "User was removed from this Subscriber Group."
+      )
+    } else {
+      Unauthorized(views.html.static.trouble("You are not authorized"))
+    }
+  }
+
+  def subscriberToggleAdmin(id: Int, user: Int) = isAuthenticated { identity => implicit request =>
+    val sub = Subscriber.findById(id).get
+    if (sub.adminList.contains(identity)) {
+      if (sub.adminList.contains(User.findById(user).getOrElse(""))) {
+        sub.removeAdmin(user)
+      } else {
+        sub.makeAdmin(user)
+      }
+      Redirect(routes.Application.subscriberUsers(sub.id)).flashing(
+        "success" -> "User admin status was updated for this Subscriber Group."
+      )
+    } else {
+      Unauthorized(views.html.static.trouble("You are not authorized"))
+    }
+  }
+
+  private def subscriberMember(user: User, sub: Subscriber, result: Result)(implicit request: Request[AnyContent]): Result = {
+    if (sub.userList().contains(user)) {
       result
     } else {
       Unauthorized(views.html.static.trouble("You are not authorized"))
@@ -774,7 +865,7 @@ object Application extends Controller with Security {
 
   def editSubscriber(id: Int) = isAuthenticated { identity => implicit request =>
     Subscriber.findById(id).map( sub =>
-      ownsSubscriber(identity, sub, Ok(views.html.subscriber.edit(sub, planAddForm)))
+      subscriberMember(identity, sub, Ok(views.html.subscriber.edit(sub, planAddForm)))
     ).getOrElse(NotFound(views.html.static.trouble("No such subscriber: " + id)))
   }
 
@@ -783,6 +874,13 @@ object Application extends Controller with Security {
       case "category" => Ok(views.html.subscriber.browse(value, Subscriber.inCategory(value, page), value, page, Subscriber.categoryCount(value))) //publisherBrowseCategory(value, page)
       case _ => NotFound(views.html.static.trouble("No such filter"))
     }
+  }
+
+  def updateSessionSubscriber(id: Int) = isAuthenticated { identity => implicit request =>
+    subscriberMember(identity, Subscriber.findById(id).get, Redirect(routes.Application.userDashboard).
+      withSession("connected" -> identity.identity,
+                  "subscriber" -> Subscriber.findById(id).get.id.toString).flashing(
+                  "success" -> "Session Subscriber Updated"))
   }
 
   val channelForm = Form(
@@ -803,16 +901,16 @@ object Application extends Controller with Security {
 
   def channel(id: Int) = isAuthenticated { identity => implicit request =>
     Channel.findById(id).map( chan =>
-      ownsSubscriber(identity, chan.subscriber, Ok(views.html.channel.show(chan)))
+      subscriberMember(identity, chan.subscriber, Ok(views.html.channel.show(chan)))
       ).getOrElse(NotFound(views.html.static.trouble("No such subscriber destination: " + id)))
   }
 
   def newChannel(sid: Int) = isAuthenticated { identity => implicit request =>
-    ownsSubscriber(identity, Subscriber.findById(sid).get, Ok(views.html.channel.create(sid, channelForm)))
+    subscriberMember(identity, Subscriber.findById(sid).get, Ok(views.html.channel.create(sid, channelForm)))
   }
 
   def createChannel(sid: Int) = isAuthenticated { identity => implicit request =>
-    ownsSubscriber(identity, Subscriber.findById(sid).get,
+    subscriberMember(identity, Subscriber.findById(sid).get,
       channelForm.bindFromRequest.fold (
         errors => BadRequest(views.html.channel.create(sid, errors)),
         value => {
@@ -835,6 +933,10 @@ object Application extends Controller with Security {
     } else {
       Ok(views.html.subscriber.dashboard(sub.get))
     }
+  }
+
+  def userDashboard = isAuthenticated { identity => implicit request =>
+    Ok(views.html.user.dashboard(identity))
   }
 
   val planForm = Form(
@@ -861,17 +963,17 @@ object Application extends Controller with Security {
 
   def plan(id: Int) = isAuthenticated { identity => implicit request =>
     Plan.findById(id).map( plan =>
-      ownsSubscriber(identity, plan.subscriber.get, Ok(views.html.plan.show(plan)))
+      subscriberMember(identity, plan.subscriber.get, Ok(views.html.plan.show(plan)))
     ).getOrElse(NotFound(views.html.static.trouble("No such subscriber plan: " + id)))
   }
 
   def newPlan(sid: Int) = isAuthenticated { identity => implicit request =>
-    ownsSubscriber(identity, Subscriber.findById(sid).get,
+    subscriberMember(identity, Subscriber.findById(sid).get,
                    Ok(views.html.plan.create(sid, planForm)))
   }
 
   def createPlan(sid: Int) = isAuthenticated { identity => implicit request =>
-    ownsSubscriber(identity, Subscriber.findById(sid).get, planForm.bindFromRequest.fold (
+    subscriberMember(identity, Subscriber.findById(sid).get, planForm.bindFromRequest.fold (
         errors => BadRequest(views.html.plan.create(sid, errors)),
         value => {
           Plan.make(sid, value.channelId, value.name, value.description, value.icon, value.fulfill, value.pick, value.interest, value.template)
@@ -883,7 +985,7 @@ object Application extends Controller with Security {
 
   def addPlanScheme(id: Int) = isAuthenticated { identity => implicit request =>
     Plan.findById(id).map( plan => {
-      if (plan.subscriber.get.userId == identity.id) {
+      if (plan.subscriber.get.userList().contains(identity)) {
         planAddForm.bindFromRequest.fold (
           errors => BadRequest(views.html.subscriber.edit(plan.subscriber.get, errors)),
           value => {
@@ -901,7 +1003,7 @@ object Application extends Controller with Security {
 
   def removePlanScheme(id: Int, schemeId: Int) = isAuthenticated { identity => implicit request =>
     Plan.findById(id).map( plan => {
-      if (plan.subscriber.get.userId == identity.id) {
+      if (plan.subscriber.get.userList().contains(identity)) {
         Scheme.findById(schemeId).map( scheme => {
           plan.removeScheme(scheme)
           Redirect(routes.Application.editSubscriber(plan.subscriber.get.id))
@@ -914,7 +1016,7 @@ object Application extends Controller with Security {
 
   def deletePlan(id: Int) = isAuthenticated { identity => implicit request =>
     Plan.findById(id).map( plan => {
-      if (plan.subscriber.get.userId == identity.id) {
+      if (plan.subscriber.get.userList().contains(identity)) {
         Plan.delete(id)
         Redirect(routes.Application.subscriber(plan.subscriberId))
       } else {
@@ -973,7 +1075,7 @@ object Application extends Controller with Security {
 
   def holdBrowse(id: Int, page: Int) = isAuthenticated { identity => implicit request =>
     Subscriber.findById(id).map( sub =>
-      ownsSubscriber(identity, sub,
+      subscriberMember(identity, sub,
                     Ok(views.html.hold.browse(sub.id, sub.holds(page), page, sub.holdCount)))
     ).getOrElse(NotFound(views.html.static.trouble("No such subscriber: " + id)))
   }
@@ -981,7 +1083,7 @@ object Application extends Controller with Security {
   def resolveHold(id: Int, accept: Boolean) = isAuthenticated { identity => implicit request =>
     Hold.findById(id).map( hold => {
       val sub = Subscriber.findById(hold.subscriberId).get
-      if (sub.userId == identity.id) {
+      if (sub.userList().contains(identity)) {
         conveyor ! (hold, accept)
         Redirect(routes.Application.holdBrowse(sub.id, 0))
       } else {
@@ -993,7 +1095,7 @@ object Application extends Controller with Security {
 
   def pickBrowse(id: Int, page: Int) = isAuthenticated { identity => implicit request =>
     Subscriber.findById(id).map( sub =>
-      ownsSubscriber(identity, sub,
+      subscriberMember(identity, sub,
         Ok(views.html.topic_pick.browse(sub.id, sub.picks(page), page, sub.pickCount)))
     ).getOrElse(NotFound(views.html.static.trouble("No such subscriber: " + id)))
   }
@@ -1001,7 +1103,7 @@ object Application extends Controller with Security {
   def resolvePick(id: Int, accept: Boolean) = isAuthenticated { identity => implicit request =>
     TopicPick.findById(id).map( pick => {
       val sub = Subscriber.findById(pick.subscriberId).get
-      if (sub.userId == identity.id) {
+      if (sub.userList().contains(identity)) {
         conveyor ! (pick, accept)
         Redirect(routes.Application.pickBrowse(sub.id, 0))
       } else {

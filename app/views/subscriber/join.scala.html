@@ -1,0 +1,25 @@
+@*****************************************************************************
+ * Page with form to join and existing Subscriber                                   *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(subs: List[Subscriber], subsForm: Form[Int])(implicit request: play.api.mvc.RequestHeader)
+@import helper._
+@layout.main("Join Subscriber - TopicHub") {
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        @if(subs.size == 0) {
+          There are no Subscibers to join. Would you like to
+          <a href="@routes.Application.newSubscriber">Create a New Subscriber?</a>
+        } else {
+          @form(routes.Application.joinRequest, 'id -> "join_subscriber_form") {
+            @select(subsForm("subscriberid"), options(
+              subs map (s => s.id.toString -> s.name) toMap
+            ))
+            <input id="submit" type="submit" value="Request to Join">
+          }
+        }
+      </div>
+    </div>
+  </div>
+}

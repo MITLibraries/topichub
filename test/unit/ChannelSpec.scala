@@ -14,7 +14,7 @@ class ChannelSpec extends Specification {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         Subscriber.all must haveSize(0)
         User.create("bob", "bob@example.com", "pwd", "role1")
-        Subscriber.create(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
 
         Channel.findById(1) must equalTo(None)
         Channel.create(Subscriber.findById(1).get.id, "protocol", "mode", "description", "userid", "password", "http://example.com")
@@ -26,7 +26,7 @@ class ChannelSpec extends Specification {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         Subscriber.all must haveSize(0)
         User.create("bob", "bob@example.com", "pwd", "role1")
-        Subscriber.create(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
 
         Channel.findByUrl("http://example.com") must equalTo(None)
         Channel.create(Subscriber.findById(1).get.id, "protocol", "mode", "description", "userid", "password", "http://example.com")
@@ -38,7 +38,7 @@ class ChannelSpec extends Specification {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         Subscriber.all must haveSize(0)
         User.create("bob", "bob@example.com", "pwd", "role1")
-        Subscriber.create(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
 
         Channel.findById(1) must equalTo(None)
         Channel.create(Subscriber.findById(1).get.id, "protocol", "mode", "description", "userid", "password", "http://example.com")
@@ -50,7 +50,7 @@ class ChannelSpec extends Specification {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         Subscriber.all must haveSize(0)
         User.create("bob", "bob@example.com", "pwd", "role1")
-        Subscriber.create(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
 
         Channel.findById(1) must equalTo(None)
         val c = Channel.make(Subscriber.findById(1).get.id, "protocol", "mode", "description", "userid", "password", "http://example.com")
@@ -62,7 +62,7 @@ class ChannelSpec extends Specification {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         Subscriber.all must haveSize(0)
         User.create("bob", "bob@example.com", "pwd", "role1")
-        Subscriber.create(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
 
         Channel.findById(1) must equalTo(None)
         val c = Channel.make(Subscriber.findById(1).get.id, "protocol", "mode", "description", "userid", "password", "http://example.com")
@@ -76,7 +76,7 @@ class ChannelSpec extends Specification {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         Subscriber.all must haveSize(0)
         User.create("bob", "bob@example.com", "pwd", "role1")
-        Subscriber.create(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
 
         Channel.findById(1) must equalTo(None)
         var c = Channel.make(Subscriber.findById(1).get.id, "protocol", "mode", "description", "userid", "password", "http://example.com")

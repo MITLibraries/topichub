@@ -1,0 +1,59 @@
+@*****************************************************************************
+ * Page to manage User membership in a Subscriber group                      *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(sub: Subscriber)(implicit request: play.api.mvc.RequestHeader)
+@import helper._
+@layout.main("Subscriber Users - TopicHub") {
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <h2>Current Users</h2>
+        <ul id="approved_users">
+          @for(u <- sub.userList(approved = true)) {
+            <li>@u.email
+
+              @if(sub.adminList.contains(Application.currentUser)) {
+                <a id = "toggleadmin_@u.id" class="btn btn-default btn-xs"
+                   href="@routes.Application.subscriberToggleAdmin(sub.id, u.id)">
+                  @if(sub.adminList.contains(u)) {
+                    Remove Admin
+                  } else {
+                    Add Admin
+                  }
+                </a>
+
+                <a id="remove_@u.id" class="btn btn-default btn-xs"
+                   href="@routes.Application.subscriberRemoveUser(sub.id, u.id)">
+                  Remove
+                </a>
+              }
+            </li>
+          }
+        </ul>
+
+        @if(sub.adminList.contains(Application.currentUser)) {
+          <h2>Pending Users</h2>
+          <ul id="pending_users">
+            @if(sub.userList(approved = false).size == 0) {
+              There are no users waiting for approval.
+            } else {
+              @for(u <- sub.userList(approved = false)) {
+                <li>@u.email
+                  <a id="approve_@u.id" class="btn btn-default btn-xs"
+                     href="@routes.Application.subscriberResolveUser(sub.id, u.id, "approved")">
+                     Approve
+                  </a>
+                  <a id="deny_@u.id" class="btn btn-default btn-xs"
+                     href="@routes.Application.subscriberResolveUser(sub.id, u.id, "denied")">
+                     Deny
+                  </a>
+                </li>
+              }
+            }
+          </ul>
+        }
+    </div>
+    </div>
+  </div>
+}

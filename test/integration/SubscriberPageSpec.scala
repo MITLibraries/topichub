@@ -101,7 +101,7 @@ class SubscriberPagesSpec extends Specification {
         // without required fields
         browser.$("#submit").click
         browser.pageSource must contain("This field is required")
-        Subscriber.findByUserId(user.id) must equalTo(None)
+        Subscriber.findByUserId(user.id).size must equalTo(0)
         Subscriber.all.size must equalTo(0)
 
         // with required fields
@@ -110,7 +110,7 @@ class SubscriberPagesSpec extends Specification {
         browser.$("#link").text("http://example.com")
         browser.$("#logo").text("http://example.com/logo.png")
         browser.$("#submit").click
-        Subscriber.findByUserId(user.id) must not equalTo(None)
+        Subscriber.findByUserId(user.id).size must equalTo(1)
         Subscriber.all.size must equalTo(1)
       }
 

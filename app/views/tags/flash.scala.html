@@ -1,25 +1,33 @@
 @()(implicit request: play.api.mvc.RequestHeader)
 
 @if(request.flash.get("success").getOrElse("") != "") {
-  <div class="alert alert-success" role="alert">
+  <div class="alert alert-success alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span></button>
     @request.flash.get("success").getOrElse("")
   </div>
 }
 
 @if(request.flash.get("info").getOrElse("") != "") {
-  <div class="alert alert-info" role="alert">
+  <div class="alert alert-info alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span></button>
     @request.flash.get("info").getOrElse("")
   </div>
 }
 
 @if(request.flash.get("warning").getOrElse("") != "") {
-  <div class="alert alert-warning" role="alert">
+  <div class="alert alert-warning alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span></button>
     @request.flash.get("warning").getOrElse("")
   </div>
 }
 
 @if(request.flash.get("danger").getOrElse("") != "") {
-  <div class="alert alert-danger" role="alert">
+  <div class="alert alert-danger alert-dismissible" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span></button>
     @request.flash.get("danger").getOrElse("")
   </div>
 }

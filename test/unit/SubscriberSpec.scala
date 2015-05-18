@@ -24,8 +24,8 @@ class SubscriberSpec extends Specification {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         Subscriber.all must haveSize(0)
         User.create("bob", "bob@example.com", "pwd", "role1")
-        Subscriber.create(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
-        Subscriber.create(1, "Sub Name2", "cat", "contact", Some("link"), Some("logo"))
+        Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        Subscriber.make(1, "Sub Name2", "cat", "contact", Some("link"), Some("logo"))
         Subscriber.all must haveSize(2)
         Subscriber.findById(1).get.name must equalTo("Sub Name")
       }
@@ -36,16 +36,37 @@ class SubscriberSpec extends Specification {
         Subscriber.all must haveSize(0)
         User.create("bob", "bob@example.com", "pwd", "role1")
         User.create("bob2", "bob2@example.com", "pwd", "role1")
-        Subscriber.create(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
-        Subscriber.create(2, "Sub Name2", "cat", "contact", Some("link"), Some("logo"))
+        Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        Subscriber.make(2, "Sub Name2", "cat", "contact", Some("link"), Some("logo"))
         Subscriber.all must haveSize(2)
-        Subscriber.findByUserId(1).get.name must equalTo("Sub Name")
+        Subscriber.findByUserId(1).head.name must equalTo("Sub Name")
+      }
+    }
+
+    "#findByUserId only finds approved users (not pending)" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        Subscriber.all must haveSize(0)
+        val u1 = User.make("bob", "bob@example.com", "pwd", "role1")
+        val u2 = User.make("bob2", "bob2@example.com", "pwd", "role1")
+        val s = Subscriber.make(u1.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+
+        s.linkUser(u2.id)
+        Subscriber.findByUserId(u1.id) must contain(s)
+        Subscriber.findByUserId(u2.id) must not contain(s)
+
+        s.approveUser(u2.id)
+        Subscriber.findByUserId(u2.id) must contain(s)
       }
     }
 
     "#findByUserId handles multiple" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        skipped(": implement with #46")
+        Subscriber.all must haveSize(0)
+        val u1 = User.make("bob", "bob@example.com", "pwd", "role1")
+        val s = Subscriber.make(u1.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        val s2 = Subscriber.make(u1.id, "Sub Name2", "cat", "contact", Some("link"), Some("logo"))
+        Subscriber.findByUserId(u1.id) must contain(s)
+        Subscriber.findByUserId(u1.id) must contain(s2)
       }
     }
 
@@ -54,8 +75,8 @@ class SubscriberSpec extends Specification {
         Subscriber.all must haveSize(0)
         User.create("bob", "bob@example.com", "pwd", "role1")
         User.create("bob2", "bob2@example.com", "pwd", "role1")
-        Subscriber.create(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
-        Subscriber.create(2, "Sub Name2", "cat", "contact", Some("link"), Some("logo"))
+        Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        Subscriber.make(2, "Sub Name2", "cat", "contact", Some("link"), Some("logo"))
         Subscriber.all must haveSize(2)
         Subscriber.all.contains(Subscriber.findById(1).get) must equalTo(true)
         Subscriber.all.contains(Subscriber.findById(2).get) must equalTo(true)
@@ -66,8 +87,8 @@ class SubscriberSpec extends Specification {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         Subscriber.all must haveSize(0)
         User.create("bob", "bob@example.com", "pwd", "role1")
-        Subscriber.create(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
-        Subscriber.create(1, "Sub Name2", "cat2", "contact", Some("link"), Some("logo"))
+        Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        Subscriber.make(1, "Sub Name2", "cat2", "contact", Some("link"), Some("logo"))
         Subscriber.all must haveSize(2)
         Subscriber.categories.size must equalTo(2)
         Subscriber.categories.contains("cat") must equalTo(true)
@@ -80,9 +101,9 @@ class SubscriberSpec extends Specification {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         Subscriber.all must haveSize(0)
         User.create("bob", "bob@example.com", "pwd", "role1")
-        Subscriber.create(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
-        Subscriber.create(1, "Sub Name2", "cat2", "contact", Some("link"), Some("logo"))
-        Subscriber.create(1, "Sub Name3", "cat2", "contact", Some("link"), Some("logo"))
+        Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        Subscriber.make(1, "Sub Name2", "cat2", "contact", Some("link"), Some("logo"))
+        Subscriber.make(1, "Sub Name3", "cat2", "contact", Some("link"), Some("logo"))
         Subscriber.all must haveSize(3)
         Subscriber.categories.size must equalTo(2)
         Subscriber.categoryCount("cat") must equalTo(1)
@@ -118,7 +139,7 @@ class SubscriberSpec extends Specification {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         Subscriber.all must haveSize(0)
         User.create("bob", "bob@example.com", "pwd", "role1")
-        Subscriber.create(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        Subscriber.create("Sub Name", "cat", "contact", Some("link"), Some("logo"))
         Subscriber.all must haveSize(1)
         Subscriber.findById(1).get.name must equalTo("Sub Name")
       }
@@ -654,5 +675,132 @@ class SubscriberSpec extends Specification {
       }
     }
 
+    "#userList" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        Subscriber.all must haveSize(0)
+        val user = User.make("bob", "bob@example.com", "pwd", "role1")
+        val user2 = User.make("bob2", "bob2@example.com", "pwd", "role1")
+        val s1 = Subscriber.make(user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+
+        // make prelinks the user
+        s1.userList().contains(user) must equalTo(true)
+        s1.userList().contains(user2) must equalTo(false)
+        s1.userList().size must equalTo(1)
+
+        s1.linkUser(user2.id)
+        s1.userList().contains(user) must equalTo(true)
+        s1.userList().contains(user2) must equalTo(false)
+        s1.userList(approved = false).contains(user2) must equalTo(true)
+        s1.userList().size must equalTo(1)
+      }
+    }
+
+    "#adminList" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val user = User.make("bob", "bob@example.com", "pwd", "role1")
+        val user2 = User.make("bob2", "bob2@example.com", "pwd", "role1")
+        val s1 = Subscriber.make(user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+
+        // make prelinks the user
+        s1.adminList.contains(user) must equalTo(true)
+        s1.adminList.contains(user2) must equalTo(false)
+        s1.adminList.size must equalTo(1)
+
+        s1.linkUser(user2.id, approved = true)
+        s1.adminList.contains(user) must equalTo(true)
+        s1.adminList.contains(user2) must equalTo(false)
+        s1.adminList.size must equalTo(1)
+      }
+    }
+
+    "#makeAdmin" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val user = User.make("bob", "bob@example.com", "pwd", "role1")
+        val user2 = User.make("bob2", "bob2@example.com", "pwd", "role1")
+        val s1 = Subscriber.make(user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+
+        // make prelinks the user
+        s1.adminList.contains(user) must equalTo(true)
+        s1.adminList.contains(user2) must equalTo(false)
+        s1.adminList.size must equalTo(1)
+
+        s1.linkUser(user2.id, approved = true)
+        s1.adminList.contains(user) must equalTo(true)
+        s1.adminList.contains(user2) must equalTo(false)
+        s1.adminList.size must equalTo(1)
+
+        s1.makeAdmin(user2.id)
+        s1.adminList.contains(user) must equalTo(true)
+        s1.adminList.contains(user2) must equalTo(true)
+        s1.adminList.size must equalTo(2)
+      }
+    }
+
+    "#removeAdmin" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val user = User.make("bob", "bob@example.com", "pwd", "role1")
+        val user2 = User.make("bob2", "bob2@example.com", "pwd", "role1")
+        val s1 = Subscriber.make(user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+
+        // make prelinks the user
+        s1.adminList.contains(user) must equalTo(true)
+        s1.adminList.contains(user2) must equalTo(false)
+        s1.adminList.size must equalTo(1)
+
+        s1.linkUser(user2.id, approved = true, admin = true)
+        s1.adminList.contains(user) must equalTo(true)
+        s1.adminList.contains(user2) must equalTo(true)
+        s1.adminList.size must equalTo(2)
+
+        s1.removeAdmin(user2.id)
+        s1.adminList.contains(user) must equalTo(true)
+        s1.adminList.contains(user2) must equalTo(false)
+        s1.adminList.size must equalTo(1)
+      }
+    }
+
+    "#linkUser" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        Subscriber.all must haveSize(0)
+        val user = User.make("bob", "bob@example.com", "pwd", "role1")
+        val user2 = User.make("bob2", "bob2@example.com", "pwd", "role1")
+        val s1 = Subscriber.make(user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+
+        // make prelinks the first user
+        s1.userList().contains(user) must equalTo(true)
+        s1.userList().contains(user2) must equalTo(false)
+        s1.userList().size must equalTo(1)
+
+        s1.linkUser(user2.id, approved = true)
+        s1.userList().contains(user) must equalTo(true)
+        s1.userList().contains(user2) must equalTo(true)
+        s1.userList().size must equalTo(2)
+      }
+    }
+
+    "#unlinkUser" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        Subscriber.all must haveSize(0)
+        val user = User.make("bob", "bob@example.com", "pwd", "role1")
+        val user2 = User.make("bob2", "bob2@example.com", "pwd", "role1")
+        val s1 = Subscriber.make(user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+
+        // make prelinks the user
+        s1.linkUser(user2.id, approved = true)
+        s1.userList().contains(user) must equalTo(true)
+        s1.userList().contains(user2) must equalTo(true)
+        s1.userList().size must equalTo(2)
+
+        s1.unlinkUser(user2.id)
+        s1.userList().contains(user) must equalTo(true)
+        s1.userList().contains(user2) must equalTo(false)
+        s1.userList().size must equalTo(1)
+
+        s1.unlinkUser(user.id)
+        s1.userList().contains(user) must equalTo(false)
+        s1.userList().contains(user2) must equalTo(false)
+        s1.userList().size must equalTo(0)
+      }
+    }
   }
 }
