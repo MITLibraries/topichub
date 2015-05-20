@@ -342,4 +342,54 @@ class SubscriberUserPagesSpec extends Specification {
       }
     }
   }
+
+  "Session Subscriber" should {
+    "points to non-existent Subscriber is treated like not set" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+      val user = create_user("schmuck")
+      val sub = make_subscriber(user.id)
+      browser.goTo("http://localhost:" + port + "/login")
+      browser.$("#openid").click
+      sub.delete
+      browser.goTo("http://localhost:" + port)
+      browser.pageSource must not contain("""<a id="nav_sub_dashboard" href="/dashboard">""")
+    }
+
+    "does not include User as member is treated like not set" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+      val user = create_user("schmuck")
+      val sub = make_subscriber(user.id)
+      browser.goTo("http://localhost:" + port + "/login")
+      browser.$("#openid").click
+      sub.unlinkUser(user.id)
+      browser.goTo("http://localhost:" + port)
+      browser.pageSource must not contain("""<a id="nav_sub_dashboard" href="/dashboard">""")
+    }
+
+    "is valid and associated with current user" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+      val user = create_user("schmuck")
+      val sub = make_subscriber(user.id)
+      browser.goTo("http://localhost:" + port + "/login")
+      browser.$("#openid").click
+      browser.goTo("http://localhost:" + port)
+      browser.pageSource must contain("""<a id="nav_sub_dashboard" href="/dashboard">""")
+    }
+
+    "is set for Current User when creating Subscriber" in  new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+      val user = create_user("schmuck")
+      browser.goTo("http://localhost:" + port + "/login")
+      browser.$("#openid").click
+      browser.pageSource must not contain("""<a id="nav_sub_dashboard" href="/dashboard">""")
+
+      browser.$("#name").text("Some Subscriber Name")
+      browser.$("#contact").text("sub@example.com")
+      browser.$("#link").text("http://example.com")
+      browser.$("#logo").text("http://example.com/logo.png")
+      browser.$("#submit").click
+
+      browser.pageSource must contain("""<a id="nav_sub_dashboard" href="/dashboard">""")
+    }
+  }
 }

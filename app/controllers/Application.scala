@@ -766,7 +766,10 @@ object Application extends Controller with Security {
       value => {
         val sub = Subscriber.make(identity.id, value.name, value.category,
                                   value.contact, value.link, value.logo)
-        Redirect(routes.Application.editSubscriber(sub.id))
+        Redirect(routes.Application.editSubscriber(sub.id)).
+                  withSession("connected" -> identity.identity,
+                  "subscriber" -> sub.id.toString).flashing(
+                  "success" -> "Session Created")
       }
     )
   }
@@ -922,7 +925,23 @@ object Application extends Controller with Security {
   }
 
   def currentSubscriberId(implicit request: play.api.mvc.RequestHeader) = {
-    request.session.get("subscriber").getOrElse("0").toInt
+    val sessionSubscriberId = request.session.get("subscriber").getOrElse("0").toInt
+    val identity = getCurrentIdentity
+    val sub = Subscriber.findById(sessionSubscriberId)
+
+    // anoymous users always return 0
+    if (identity == "") {
+      0
+    // if the Subscriber is invalid return 0
+    } else if (sub == None) {
+      0
+    // if the User is associated with the Subscriber, return stored value
+    } else if (sub.get.userList().contains(User.findByIdentity(identity).get)) {
+      sessionSubscriberId
+    // if anything else happens, return 0
+    } else {
+      0
+    }
   }
 
   def subscriberDashboard = isAuthenticated { identity =>
