@@ -66,13 +66,13 @@ class Harvester {
           case EvElemStart(_,"identifier",_,_) => readingId = true
           case EvElemStart(_,"setSpec",_,_) => readingSpec = true
           case EvText(text) if readingId => objId = Some(text); readingId = false
-          case EvText(text) if readingSpec => checkItem(objId, Some(text)); readingSpec = false
+          case EvText(text) if readingSpec => processItem(objId, Some(text)); readingSpec = false
           case _ =>
         }
       }
     }
 
-    def checkItem(objId: Option[String], collectionKey: Option[String]) = {
+    def processItem(objId: Option[String], collectionKey: Option[String]) = {
       println("Got OID:" + objId.getOrElse("Unknown") + " in coll: " + collectionKey.getOrElse("Unknown"))
       // look up collection, and process if known & item not already created
       val collOpt = Collection.findByTag(collectionKey.get);
@@ -88,17 +88,11 @@ class Harvester {
       }
     }
 
-    // OAI-PMH date filters are inclusive on both ends (from and until),
-    // so same from and until = 1 day. Thus a harvest starts from 1 day
-    // past the last updated date thru freqency - 1 additional days (clear as mud?)
-    val from = HubUtils.advanceDate(harvest.updated, 1)
-    val until = HubUtils.advanceDate(from, harvest.freq - 1)
-    val url = harvest.serviceUrl + "?verb=ListIdentifiers&metadataPrefix=oai_dc" +
-                                   "&from=" + HubUtils.fmtDate(from) +
-                                   "&until=" + HubUtils.fmtDate(until)
     // debug
-    println("About to call: " + url)
-    WS.url(url).get().map { response =>
+    println("About to call: " + harvest.harvestUrl)
+    // todo: handle timeouts here by setting the harvest as failed or something to let us know
+    // we need to try this date range again.
+    WS.url(harvest.harvestUrl).get().map { response =>
       parse(new XMLEventReader(Source.fromInputStream(
             new ByteArrayInputStream(response.body.getBytes))))
     }

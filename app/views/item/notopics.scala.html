@@ -1,0 +1,22 @@
+@*****************************************************************************
+ * Page to display Items missing Topics (which is an error state)            *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+ @(items: List[Item])(implicit request: play.api.mvc.RequestHeader)
+
+@layout.main("Items missing Topics -  TopicHub") {
+  <div class="page-header">
+    <h2>Items missing Topics</h2>
+    <p>These items are in an error state as all Items should have at least
+    one topic assigned by a successful cataloger worker.</p>
+    <p>At this time we have no method to clean up these records from this interface.
+    Once we know what likely steps we should take, we can add that.</p>
+  </div>
+  <ul>
+    @items.map { item =>
+      <li>
+        <a href="@routes.ItemController.item(item.id)">@Html(item.metadataValue("title"))</a>
+      </li>
+   }
+  </ul>
+}

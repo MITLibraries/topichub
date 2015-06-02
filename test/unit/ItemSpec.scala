@@ -54,18 +54,51 @@ class ItemSpec extends Specification {
 
     "#all" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        User.create("bob", "bob@example.com", "pass", "roley")
-        ContentType.create("tag", "label", "desc", Some("logo"))
-        ResourceMap.create("tag", "desc", Some("swordurl"))
-        Publisher.create(1, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
-        Collection.create(1, 1, 1, "coll", "desc", "open")
-        Item.create(1, 1, "loc", "scoap3:asdf:123")
-        Item.create(1, 1, "loc", "scoap3:asdf:456")
+        val u = User.make("bob", "bob@example.com", "pass", "roley")
+        val ct = ContentType.make("tag", "label", "desc", Some("logo"))
+        val rm = ResourceMap.make("tag", "desc", Some("swordurl"))
+        val p = Publisher.make(u.id, "pubtag", "pubname", "pubdesc", "pubcat",
+                               "pubstatus", Some(""), Some(""))
+        val col = Collection.make(p.id, ct.id, rm.id, "coll", "desc", "open")
+        val i1 = Item.make(col.id, ct.id, "loc", "scoap3:asdf:123")
+        val i2 = Item.make(col.id, ct.id, "loc", "scoap3:asdf:456")
 
         val item_list = Item.all
         item_list must haveSize(2)
-        item_list(0).objKey must equalTo("scoap3:asdf:123")
-        item_list(1).objKey must equalTo("scoap3:asdf:456")
+        item_list.contains(i1) must equalTo(true)
+        item_list.contains(i2) must equalTo(true)
+      }
+    }
+
+    "#allMissingMetadata" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val u = User.make("bob", "bob@example.com", "pass", "roley")
+        val ct = ContentType.make("tag", "label", "desc", Some("logo"))
+        val rm = ResourceMap.make("tag", "desc", Some("swordurl"))
+        val p = Publisher.make(u.id, "pubtag", "pubname", "pubdesc", "pubcat",
+                               "pubstatus", Some(""), Some(""))
+        val col = Collection.make(p.id, ct.id, rm.id, "coll", "desc", "open")
+        val i1 = Item.make(col.id, ct.id, "loc", "scoap3:asdf:123")
+        val i2 = Item.make(col.id, ct.id, "loc", "scoap3:asdf:456")
+
+        val s = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        val t = Topic.make(s.id, "tag", "abstract")
+        val item_list1 = Item.allMissingMetadata
+        item_list1 must haveSize(2)
+        item_list1.contains(i1) must equalTo(true)
+        item_list1.contains(i2) must equalTo(true)
+
+        i1.addTopic(t)
+        val item_list2 = Item.allMissingMetadata
+        item_list2 must haveSize(1)
+        item_list2.contains(i1) must equalTo(false)
+        item_list2.contains(i2) must equalTo(true)
+
+        i2.addTopic(t)
+        val item_list3 = Item.allMissingMetadata
+        item_list3 must haveSize(0)
+        item_list3.contains(i1) must equalTo(false)
+        item_list3.contains(i2) must equalTo(false)
       }
     }
 

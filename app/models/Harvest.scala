@@ -47,6 +47,17 @@ case class Harvest(id: Int,             // DB key
       .on('updated -> newDate, 'id -> id).executeUpdate()
     }
   }
+
+  def harvestUrl = {
+    // OAI-PMH date filters are inclusive on both ends (from and until),
+    // so same from and until = 1 day. Thus a harvest starts from 1 day
+    // past the last updated date thru freqency - 1 additional days (clear as mud?)
+    val from = HubUtils.advanceDate(updated, 1)
+    val until = HubUtils.advanceDate(from, freq - 1)
+    serviceUrl + "?verb=ListIdentifiers&metadataPrefix=oai_dc" +
+                 "&from=" + HubUtils.fmtDate(from) +
+                 "&until=" + HubUtils.fmtDate(until)
+  }
 }
 
 object Harvest {

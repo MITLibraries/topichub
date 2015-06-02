@@ -63,6 +63,16 @@ class WorkbenchPagesSpec extends Specification {
       browser.$("#sidenav_models").click
       assertThat(browser.title()).isEqualTo("Create Model - TopicHub")
     }
+
+    "provides link to items with no topics" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+      val user = create_user("sysadmin, analyst")
+      browser.goTo("http://localhost:" + port + "/login")
+      browser.$("#openid").click
+      browser.goTo("http://localhost:" + port + "/workbench")
+      browser.pageSource must contain("""<a id="sidenav_notopic_items" href="/items/missingtopics""")
+      browser.$("#sidenav_notopic_items").click
+      assertThat(browser.title()).isEqualTo("Items missing Topics - TopicHub")
+    }
   }
 
   "Workbench for analysts" should {
@@ -84,6 +94,14 @@ class WorkbenchPagesSpec extends Specification {
       browser.goTo("http://localhost:" + port + "/model/create")
       assertThat(browser.title()).isEqualTo("Error - TopicHub")
       browser.pageSource must contain("You are not authorized")
+    }
+
+    "does not provide link to items with no topics" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+      val user = create_user("analyst")
+      browser.goTo("http://localhost:" + port + "/login")
+      browser.$("#openid").click
+      browser.goTo("http://localhost:" + port + "/workbench")
+      browser.pageSource must not contain("""<a id="sidenav_notopic_items" href="/items/missingtopics""")
     }
 
     "provides link to Schemes" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
