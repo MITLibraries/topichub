@@ -346,6 +346,25 @@ case class Subscriber(id: Int,  // DB key
       ).on('id -> id, 'userId -> userId).executeUpdate
     }
   }
+
+  def delete = {
+    DB.withConnection { implicit c =>
+      SQL(
+        """
+          DELETE FROM hub_user_subscriber
+          WHERE subscriber_id = {id};
+        """
+      ).on('id -> id).executeUpdate
+    }
+    DB.withConnection { implicit c =>
+      SQL(
+        """
+          DELETE FROM subscriber
+          WHERE id = {id};
+        """
+      ).on('id -> id).executeUpdate
+    }
+  }
 }
 
 object Subscriber {
