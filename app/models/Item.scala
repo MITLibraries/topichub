@@ -283,6 +283,17 @@ object Item {
     }
   }
 
+  def allMissingMetadata: List[Item] = {
+    DB.withConnection { implicit c =>
+      SQL("""
+              SELECT item.*
+              FROM item
+              LEFT JOIN item_topic on item.id = item_topic.id
+              WHERE item_topic.id IS NULL
+          """).as(item *)
+    }
+  }
+
   def findByKey(key: String): Option[Item] = {
     DB.withConnection { implicit c =>
       SQL("select * from item where obj_key = {key}").on('key -> key).as(item.singleOpt)

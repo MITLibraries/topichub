@@ -98,6 +98,7 @@ GET     /item/:id                    controllers.ItemController.item(id: Int)
 GET     /item/package/:id            controllers.ItemController.itemPackage(id: Int)
 GET     /item/deposit/:id            controllers.ItemController.itemDeposit(id: Int)
 GET     /item/mets/:id               controllers.ItemController.itemMets(id: Int)
+GET     /items/missingtopics         controllers.ItemController.itemsWithNoTopics
 
 # Topic pages
 GET     /topics                      controllers.Application.topics

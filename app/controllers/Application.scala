@@ -260,6 +260,11 @@ object Application extends Controller with Security {
              val harv = harvest.copy(freq = value)
              harvester ! harv
              // optimistically update - so UI will show last harvest date
+
+             // todo: while appropriate to update the UI immediately, we need a way to determine
+             // whether the harvest was able to grabe a list of new items and create the Item
+             // records. If we don't protect for that it's possible we could miss entire days
+             // worth of Items and never know.
              harv.complete
              Redirect(routes.Application.harvest(id))
           }
