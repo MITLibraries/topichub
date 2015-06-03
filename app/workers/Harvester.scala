@@ -66,13 +66,13 @@ class Harvester {
           case EvElemStart(_,"identifier",_,_) => readingId = true
           case EvElemStart(_,"setSpec",_,_) => readingSpec = true
           case EvText(text) if readingId => objId = Some(text); readingId = false
-          case EvText(text) if readingSpec => checkItem(objId, Some(text)); readingSpec = false
+          case EvText(text) if readingSpec => processItem(objId, Some(text)); readingSpec = false
           case _ =>
         }
       }
     }
 
-    def checkItem(objId: Option[String], collectionKey: Option[String]) = {
+    def processItem(objId: Option[String], collectionKey: Option[String]) = {
       println("Got OID:" + objId.getOrElse("Unknown") + " in coll: " + collectionKey.getOrElse("Unknown"))
       // look up collection, and process if known & item not already created
       val collOpt = Collection.findByTag(collectionKey.get);

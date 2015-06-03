@@ -41,6 +41,11 @@ object ItemController extends Controller with Security {
     ).getOrElse(NotFound(views.html.static.trouble("No such collection")))
   }
 
+  def itemsWithNoTopics = isAdmin { identity => { implicit request =>
+      Ok(views.html.item.notopics(Item.allMissingMetadata))
+    }
+  }
+
   def itemMets(id: Int) = Action { implicit request =>
     Item.findById(id).map( item =>
       Ok(item.toMets)
