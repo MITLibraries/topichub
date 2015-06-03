@@ -78,6 +78,14 @@ class ItemPagesSpec extends Specification {
         status(action) must equalTo(OK)
         contentType(action) must beSome.which(_ == "application/xml")
       }
+
+      // GET /items/missingtopics
+      "viewing items in error state is denied" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        item_factory(1)
+        val action = route(FakeRequest(GET, "/items/missingtopics")).get
+        redirectLocation(action) must beSome.which(_ == "/login")
+      }
     }
 
     "as a signed in user with no subscriber affiliated" should {
@@ -179,6 +187,31 @@ class ItemPagesSpec extends Specification {
         browser.pageSource must contain("Download »")
         browser.pageSource must not contain("Deposit »")
         browser.pageSource must not contain("Create a Channel to enable Deposits")
+      }
+
+      // GET /items/missingtopics
+      "viewing items in error state is denied" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        User.make("user", "user@example.com", "analyst", "https://oidc.mit.edu/current_user")
+        item_factory(1)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
+        browser.goTo("http://localhost:" + port + "/items/missingtopics")
+        assertThat(browser.title()).isEqualTo("Error - TopicHub")
+        browser.pageSource must contain("You are not authorized")
+      }
+    }
+
+    "as a sysadmin" should {
+      // GET /items/missingtopics
+      "viewing items in error state is allowed" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        User.make("user", "user@example.com", "sysadmin", "https://oidc.mit.edu/current_user")
+        item_factory(1)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
+        browser.goTo("http://localhost:" + port + "/items/missingtopics")
+        assertThat(browser.title()).isEqualTo("Items missing Topics - TopicHub")
       }
     }
   }

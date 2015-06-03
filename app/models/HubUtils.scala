@@ -23,7 +23,12 @@ object HubUtils {
   val iso8601 = DateTimeFormatter.ISO_LOCAL_DATE
 
   def fmtDate(date: Date) = {
-      date.toInstant.atZone(ZoneId.systemDefault).toLocalDate.format(iso8601)
+    date.toInstant.atZone(ZoneId.systemDefault).toLocalDate.format(iso8601)
+  }
+
+  def fmtPreciseDateTime(date: Date) = {
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:SSS");
+    date.toInstant.atZone(ZoneId.systemDefault).toLocalDateTime.format(formatter)
   }
 
   def advanceDate(curDate: Date, days: Int): Date = {
