@@ -62,14 +62,28 @@ class Harvester {
       var objId: Option[String] = None
       var readingId = false
       var readingSpec = false
+      var onError = false
+      var attributes = ""
       while (xml.hasNext) {
         xml.next match {
+          case EvElemStart(_,"error",attrs,_) => onError = true; attributes = attrs.toString
           case EvElemStart(_,"identifier",_,_) => readingId = true
           case EvElemStart(_,"setSpec",_,_) => readingSpec = true
+          case EvText(text) if onError => onError = false;
+                                          handleOaiError(text, attributes); attributes = ""
           case EvText(text) if readingId => objId = Some(text); readingId = false
           case EvText(text) if readingSpec => processItem(objId, Some(text)); readingSpec = false
           case _ =>
         }
+      }
+    }
+
+    def handleOaiError(errorText: String, errorCode: String) = {
+      if(errorCode.contains("noRecordsMatch")) {
+        println("DEBUG: No records matched, but don't abort the Harvest because that's just fine.")
+      } else {
+        // Any other errorCode aborts which will generate an email to sysadmins with error details
+        abortHarvest(errorCode + " " + errorText)
       }
     }
 
@@ -107,6 +121,8 @@ class Harvester {
     val url = harvest.serviceUrl + "?verb=ListIdentifiers&metadataPrefix=oai_dc" +
                                    "&from=" + HubUtils.fmtDate(from) +
                                    "&until=" + HubUtils.fmtDate(until)
+    // To test handling of no records found, you can set url as below.
+    // val url = "http://repo.scoap3.org/oai2d?verb=ListIdentifiers&metadataPrefix=oai_dc&from=2012-05-04&until=2012-05-04"
     // debug
     println("About to call: " + url)
 
