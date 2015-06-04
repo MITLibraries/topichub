@@ -33,7 +33,7 @@ object HubUtils {
 
   def advanceDate(curDate: Date, days: Int): Date = {
     // clumsily convert to Java8 date for easy calculation of daily advance,
-    // but convernt back to old Date for JDBC ease of use
+    // but convert back to old Date for JDBC ease of use
     val newDt = curDate.toInstant.atZone(ZoneId.systemDefault).toLocalDateTime.plusDays(days)
     Date.from(newDt.atZone(ZoneId.systemDefault).toInstant)
   }

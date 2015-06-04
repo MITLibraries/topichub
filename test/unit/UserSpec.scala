@@ -40,6 +40,17 @@ class UserSpec extends Specification {
       }
     }
 
+    "#allByRole" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        User.allByRole("role1").size must equalTo(0)
+        val user = User.make("bob", "bob@example.com", "role1, role2", "identity")
+        val user2 = User.make("bob2", "bob2@example.com", "role1", "identity")
+        User.allByRole("role1").size must equalTo(2)
+        User.allByRole("role2").size must equalTo(1)
+        User.allByRole("sysadmin").size must equalTo(0)
+      }
+    }
+
     "#findByIdentity" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         User.findByIdentity("identity") must equalTo(None)
@@ -63,6 +74,19 @@ class UserSpec extends Specification {
 
         val p = Publisher.make(user.id, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
         user.hasPublisher(1) must equalTo(true)
+      }
+    }
+
+    "#hasRole" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val user = User.make("bob", "bob@example.com", "role1, role2", "identity")
+        user.hasRole("role1") must equalTo(true)
+        user.hasRole("role2") must equalTo(true)
+        user.hasRole("popcorn") must equalTo(false)
+
+        val user2 = User.make("bob2", "bob2@example.com", "role1", "identity")
+        user2.hasRole("role1") must equalTo(true)
+        user2.hasRole("role2") must equalTo(false)
       }
     }
   }
