@@ -31,7 +31,10 @@ case class User(id: Int, name: String, email: String,
 
   def hasRole(role: String): Boolean = {
     DB.withConnection { implicit c =>
-      val count = SQL("select count(*) as c from hub_user where role LIKE {role}").on('role -> ("%"+role+"%")).apply.head
+      val count = SQL("""SELECT COUNT(*) as c FROM hub_user
+                         WHERE id = {id}
+                         AND role LIKE {role}""")
+                      .on('id -> id, 'role -> ("%"+role+"%")).apply.head
       count[Long]("c") > 0
     }
   }
@@ -56,6 +59,15 @@ object User {
   def findByName(name: String): Option[User] = {
     DB.withConnection { implicit c =>
       SQL("select * from hub_user where name = {name}").on('name -> name).as(user.singleOpt)
+    }
+  }
+
+  def allByRole(role: String): List[User] = {
+    DB.withConnection { implicit c =>
+      SQL("""
+          SELECT * FROM hub_user
+          WHERE role LIKE {role}
+          """).on('role -> ("%"+role+"%")).as(user *)
     }
   }
 

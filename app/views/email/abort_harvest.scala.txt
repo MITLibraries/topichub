@@ -1,0 +1,13 @@
+@*****************************************************************************
+ * Email template used to notify sysadmins of harvest start failures         *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(harvest: Harvest, exception: String)
+An error occurred starting the following harvest:
+
+Harvest: @harvest.name
+Publisher: @harvest.publisher.get.name
+Link to Harvest: http://scoap3.topichub.org/harvest/@harvest.id
+
+Exception text:
+@exception

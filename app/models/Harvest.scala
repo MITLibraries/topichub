@@ -47,6 +47,14 @@ case class Harvest(id: Int,             // DB key
       .on('updated -> newDate, 'id -> id).executeUpdate()
     }
   }
+
+  def rollback = {
+    val newDate = HubUtils.advanceDate(updated, -freq)
+    DB.withConnection { implicit c =>
+      SQL("update harvest set updated = {updated} where id = {id}")
+      .on('updated -> newDate, 'id -> id).executeUpdate()
+    }
+  }
 }
 
 object Harvest {

@@ -19,7 +19,8 @@ import scala.xml.pull._
 
 import akka.actor.Props
 
-import models.{Collection, Harvest, HubUtils, Item}
+import models.{Collection, Harvest, HubUtils, Item, User}
+import services.Emailer
 
 /** Harvester is a worker responsible for performing content harvests
   * Only OAI-PMH currently supported
@@ -88,6 +89,16 @@ class Harvester {
       }
     }
 
+    def abortHarvest(exception: String) = {
+      Harvest.findById(harvest.id).get.rollback
+      val sysadminEmails = User.allByRole("sysadmin").map(x => x.email).mkString(",")
+      val msg = views.txt.email.abort_harvest(harvest, exception).body
+      println(msg)
+      if ( !play.api.Play.isTest(play.api.Play.current) ) {
+        Emailer.notify(sysadminEmails, "SCOAP3Hub: An error occurred starting a Harvest", msg)
+      }
+    }
+
     // OAI-PMH date filters are inclusive on both ends (from and until),
     // so same from and until = 1 day. Thus a harvest starts from 1 day
     // past the last updated date thru freqency - 1 additional days (clear as mud?)
@@ -98,10 +109,22 @@ class Harvester {
                                    "&until=" + HubUtils.fmtDate(until)
     // debug
     println("About to call: " + url)
-    WS.url(url).get().map { response =>
-      parse(new XMLEventReader(Source.fromInputStream(
+
+    val request = WS.url(url).get().map { response =>
+      response.status match {
+        case 200 => {
+          parse(new XMLEventReader(Source.fromInputStream(
             new ByteArrayInputStream(response.body.getBytes))))
+        }
+        case _ => {
+          abortHarvest(s"${response.status} response code received when requesting ${url}")
+        }
+      }
     }
+
+    request.recover {
+      case e: Exception => abortHarvest(e.toString)
+   }
   }
 }
 
