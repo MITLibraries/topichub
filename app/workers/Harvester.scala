@@ -16,6 +16,7 @@ import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.io.Source
 import scala.xml.pull._
+import scala.util.control.Breaks._
 
 import akka.actor.Props
 
@@ -64,8 +65,11 @@ class Harvester {
       var readingSpec = false
       var onError = false
       var attributes = ""
+      var oaiDetected = false
+      var counter = 0
       while (xml.hasNext) {
         xml.next match {
+          case EvElemStart(_,"OAI-PMH",_,_) => oaiDetected = true
           case EvElemStart(_,"error",attrs,_) => onError = true; attributes = attrs.toString
           case EvElemStart(_,"identifier",_,_) => readingId = true
           case EvElemStart(_,"setSpec",_,_) => readingSpec = true
@@ -73,7 +77,7 @@ class Harvester {
                                           handleOaiError(text, attributes); attributes = ""
           case EvText(text) if readingId => objId = Some(text); readingId = false
           case EvText(text) if readingSpec => processItem(objId, Some(text)); readingSpec = false
-          case _ =>
+          case _ => if (oaiDetected == false && counter > 2) { abortHarvest("OAI xml not detected."); break } else { counter = counter + 1 }
         }
       }
     }
@@ -123,14 +127,24 @@ class Harvester {
                                    "&until=" + HubUtils.fmtDate(until)
     // To test handling of no records found, you can set url as below.
     // val url = "http://repo.scoap3.org/oai2d?verb=ListIdentifiers&metadataPrefix=oai_dc&from=2012-05-04&until=2012-05-04"
+    // To test non-xml
+    // val url = "http://www.google.com"
+    // To test xml with no OAI
+    // val url = "http://api.npr.org/query?id=1029&apiKey=MDE5MDcxMDkzMDE0MzA5MjI3NDgxNDRkMA001"
     // debug
     println("About to call: " + url)
 
     val request = WS.url(url).get().map { response =>
       response.status match {
         case 200 => {
-          parse(new XMLEventReader(Source.fromInputStream(
-            new ByteArrayInputStream(response.body.getBytes))))
+          if (response.allHeaders("Content-Type").mkString.contains("text/xml")) {
+            parse(new XMLEventReader(Source.fromInputStream(
+              new ByteArrayInputStream(response.body.getBytes))))
+          } else {
+            abortHarvest(s"""Got Content-Type ${response.allHeaders("Content-Type").mkString}.
+                             |Expected that should contain 'text/xml' when requesting ${url}"""
+                             .stripMargin)
+          }
         }
         case _ => {
           abortHarvest(s"${response.status} response code received when requesting ${url}")
