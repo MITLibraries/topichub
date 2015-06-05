@@ -48,6 +48,8 @@ object HubUtils {
     }
   }
 
+  def toLabel(label: String) = if ("No Label" == label) "" else label
+
   def interpolate(token: String, full: Boolean = false) = {
     val start = token.indexOf("${")
     if (start >= 0) {
