@@ -6,16 +6,16 @@
 
 @start = @{(page * perpage + 1)}
 
-@subscribed(t: Topic, sub: Subscriber) = @{
-  if(sub.plannedFor(t.scheme_id) && sub.subscribesTo(t.id) ) {
+@subscribed(t: Topic, sub: Option[Subscriber]) = @{
+  if(sub && sub.get.plannedFor(t.scheme_id) && sub.get.subscribesTo(t.id) ) {
     "subscribed"
   } else {
     "not_subscribed"
   }
 }
 
-@star(t: Topic, sub: Subscriber) = @{
-  if(sub.plannedFor(t.scheme_id) && sub.subscribesTo(t.id) ) {
+@star(t: Topic, sub: Option[Subscriber]) = @{
+  if(sub && sub.get.plannedFor(t.scheme_id) && sub.get.subscribesTo(t.id) ) {
     <span class="badge alert-success" data-toggle="tooltip" title="You are subscribed to this Topic">
       <span class="glyphicon glyphicon-star" aria-hidden="true"></span>
     </span>
@@ -41,8 +41,8 @@
           @for((t, i) <- topics.zip((Stream from start))) {
             <li class="list-group-item">
               @i.
-              <a href="@routes.Application.topic(t.id)" class="@subscribed(t, sub.get)">@t.tag</a>
-              @star(t, sub.get)
+              <a href="@routes.Application.topic(t.id)" @if(sub){class="@subscribed(t, Some(sub.get))}">@t.tag</a>
+              @if(sub){@star(t, Some(sub.get))}
             </li>
           }
         </ul>
