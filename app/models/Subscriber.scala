@@ -135,10 +135,7 @@ case class Subscriber(id: Int,  // DB key
   }
 
   def removeInterest(scheme: Scheme, intValue: String) = {
-    DB.withConnection { implicit c =>
-      SQL("delete from interest where subscriber_id = {subscriber_id} and scheme_tag = {scheme_tag} and int_value = {int_value}")
-      .on('subscriber_id -> id, 'scheme_tag -> scheme.tag, 'int_value -> intValue).executeUpdate()
-    }
+    interestWithValue(scheme.tag, intValue).map(i => Interest.delete(i.id))
   }
 
   def holdCount = {
