@@ -30,7 +30,8 @@ case class Collection(id: Int,
                       policy: String,
                       created: Date,
                       updated: Date,
-                      deposits: Int) {
+                      deposits: Int,
+                      active: Boolean) {
 
   def recordDeposit {
     val newDep = deposits + 1
@@ -46,9 +47,9 @@ object Collection {
   val coll = {
     get[Int]("id") ~ get[Int]("publisher_id") ~ get[Int]("content_type_id") ~ get[Int]("resource_map_id") ~
     get[String]("tag") ~ get[String]("description") ~ get[String]("policy") ~
-    get[Date]("created") ~ get[Date]("updated") ~ get[Int]("deposits") map {
-      case id ~ publisherId ~ ctypeId ~ resmapId ~ tag ~ description ~ policy ~ created  ~ updated ~ deposits =>
-        Collection(id, publisherId, ctypeId, resmapId, tag, description, policy, created, updated, deposits)
+    get[Date]("created") ~ get[Date]("updated") ~ get[Int]("deposits") ~get[Boolean]("active") map {
+      case id ~ publisherId ~ ctypeId ~ resmapId ~ tag ~ description ~ policy ~ created  ~ updated ~ deposits ~ active =>
+        Collection(id, publisherId, ctypeId, resmapId, tag, description, policy, created, updated, deposits, active)
     }
   }
 
@@ -64,9 +65,13 @@ object Collection {
     }
   }
 
-  def findByTag(tag: String): Option[Collection] = {
+  def findByTag(tag: String, active: Boolean = true): Option[Collection] = {
     DB.withConnection { implicit c =>
-      SQL("select * from collection where tag = {tag}").on('tag -> tag).as(coll.singleOpt)
+      SQL("""
+          SELECT * FROM collection
+          WHERE tag = {tag}
+          AND active = {active}
+          """).on('tag -> tag, 'active -> active).as(coll.singleOpt)
     }
   }
 
@@ -76,16 +81,24 @@ object Collection {
     }
   }
 
-  def create(publisherId: Int, ctypeId: Int, resmapId: Int, tag: String, description: String, policy: String) = {
+  def create(publisherId: Int, ctypeId: Int, resmapId: Int, tag: String, description: String, policy: String, active: Boolean = true) = {
     val created = new Date
     val updated = created
 		DB.withConnection { implicit c =>
-			SQL("insert into collection (publisher_id, content_type_id, resource_map_id, tag, description, policy, created, updated, deposits) values ({publisher_id}, {ctype_id}, {resmap_id}, {tag}, {description}, {policy}, {created}, {updated}, {deposits})")
-      .on('publisher_id -> publisherId, 'ctype_id -> ctypeId, 'resmap_id -> resmapId, 'tag -> tag, 'description -> description, 'policy -> policy, 'created -> created, 'updated -> updated, 'deposits -> 0).executeInsert()
+			SQL("""
+          insert into collection (publisher_id, content_type_id, resource_map_id, tag,
+                                  description, policy, created, updated, deposits, active)
+          values ({publisher_id}, {ctype_id}, {resmap_id}, {tag}, {description}, {policy},
+                  {created}, {updated}, {deposits}, {active})
+          """).on('publisher_id -> publisherId, 'ctype_id -> ctypeId, 'resmap_id -> resmapId,
+                  'tag -> tag, 'description -> description, 'policy -> policy,
+                  'created -> created, 'updated -> updated, 'deposits -> 0, 'active -> active)
+              .executeInsert()
 		}
   }
 
-  def make(publisherId: Int, ctypeId: Int, resmapId: Int, tag: String, description: String, policy: String): Collection = {
-    findById(create(publisherId, ctypeId, resmapId, tag, description, policy).get.toInt).get
+  def make(publisherId: Int, ctypeId: Int, resmapId: Int, tag: String, description: String,
+           policy: String, active: Boolean = true): Collection = {
+    findById(create(publisherId, ctypeId, resmapId, tag, description, policy, active).get.toInt).get
   }
 }

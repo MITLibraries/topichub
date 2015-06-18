@@ -14,6 +14,7 @@
           @inputText(collForm("tag"))
           @textarea(collForm("description"))
           @inputText(collForm("policy"))
+          @select(collForm("active"), options(Map("true" -> "true", "false" -> "false")))
           <input id="submit" type="submit" value="Create">
        }
       </div>
