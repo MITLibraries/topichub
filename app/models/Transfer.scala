@@ -62,4 +62,11 @@ object Transfer {
   def make(subscriberId: Int, subscriptionId: Int, itemId: Int, action: String) = {
     findById(create(subscriberId, subscriptionId, itemId, action).get.toInt).get
   }
+
+  def delete(id: Int) = {
+    DB.withConnection { implicit c =>
+      SQL("DELETE FROM transfer WHERE id = {id}")
+      .on('id -> id).executeUpdate
+    }
+  }
 }
