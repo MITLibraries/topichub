@@ -470,7 +470,7 @@ object jsonHelpers {
   def procJsArray(arr: JsValue, index: Int, func: JsValue => Unit): Unit = {
     arr(index) match {
       case und: JsUndefined => Nil
-      case _ => func(_); procJsArray(arr, index + 1, func)
+      case jsv: JsDefined => func(jsv.get); procJsArray(arr, index + 1, func)
     }
   }
 
