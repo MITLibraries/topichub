@@ -225,8 +225,20 @@ case class Subscriber(id: Int,  // DB key
     val stimestamp = Timestamp.valueOf(start)
     val etimestamp = Timestamp.valueOf(end)
 
+    def transferCount(total: Int, deliverCount: Int, discardCount: Int) = {
+      List(total, deliverCount, discardCount)
+    }
+
+    val transferCount_parser = {
+        get[Int] ("total") ~
+        get[Int] ("deliverCount") ~
+        get[Int] ("discardCount") map({
+          case total~deliverCount~discardCount => transferCount(total, deliverCount, discardCount)
+        })
+    }
+
     DB.withConnection { implicit c =>
-      val rows = SQL(
+      SQL(
         """
           SELECT count(*) as total,
             COALESCE(sum(CASE WHEN action = 'deliver' then 1 else 0 end), 0) deliverCount,
@@ -235,7 +247,7 @@ case class Subscriber(id: Int,  // DB key
           WHERE subscriber_id = {id}
           AND created BETWEEN {stimestamp} AND {etimestamp}
         """).on('id -> id, 'stimestamp -> stimestamp, 'etimestamp -> etimestamp)
-    rows().map(row => List(row[Int]("total"), row[Int]("deliverCount"), row[Int]("discardCount"))).head
+        .as(transferCount_parser single)
     }
   }
 
