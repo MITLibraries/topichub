@@ -2,7 +2,7 @@
  * Page with form to create new Channel                                      *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
- @(subscriber_id: Int, chanForm: Form[Channel])(implicit request: play.api.mvc.RequestHeader)
+ @(subscriber_id: Int, chanForm: Form[Channel])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
  @import helper._
  @layout.main("New Destination - TopicHub") {
    <div class="container-fluid">

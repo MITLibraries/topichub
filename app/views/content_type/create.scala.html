@@ -2,7 +2,7 @@
  * Page with form to create a new Content Type                          *
  * Copyright (c) 2015 MIT Libraries                                     *
  ************************************************************************@
-@(ctypeForm: Form[ContentType])(implicit request: play.api.mvc.RequestHeader)
+@(ctypeForm: Form[ContentType])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
 @import helper._
 @layout.main("New Content Type - TopicHub") {
     <h2>Add a new content type</h2>

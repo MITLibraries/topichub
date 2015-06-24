@@ -60,7 +60,7 @@ object Indexer {
   def index(topic: Topic) = {
     // minimal indexing: dbId, schemeId, tag, and name
     val data = Map("dbId" -> toJson(topic.id),
-                   "schemeTag" -> toJson(topic.scheme.get.tag),
+                   "schemeTag" -> toJson(topic.scheme.tag),
                    "tag" -> toJson(topic.tag),
                    "name" -> toJson(topic.name))
     val jdata = stringify(toJson(data))
@@ -88,7 +88,7 @@ object Indexer {
     // add all defined index fields
     ctype.schemes("index").foreach(dataMap += addMetadata(_, item))
     // also add all topics
-    dataMap += "topicSchemeTag" -> toJson(item.topics.map(_.scheme.get.tag))
+    dataMap += "topicSchemeTag" -> toJson(item.topics.map(_.scheme.tag))
     dataMap += "topicTag" -> toJson(item.topics.map(_.tag))
     val jdata = stringify(toJson(dataMap))
     println("Item index: " + dataMap)

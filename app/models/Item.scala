@@ -11,9 +11,7 @@ import play.api._
 import play.api.Play.current
 
 import anorm.SqlParser._
-import anorm.~
-import anorm.SQL
-import anorm.Row
+import anorm.{Row, SQL, ~}
 
 /** Item represents a distinct content aggregation, typically containing
   * a prinary artifcat, and metadata or other auxillary files. While opaque
@@ -33,9 +31,8 @@ case class Item(id: Int,            // DB key
 
   def hasTopic(topic: Topic): Boolean = {
     DB.withConnection { implicit c =>
-      val count = SQL("select count(*) as c from item_topic where topic_id = {topic_id} and item_id = {item_id}")
-      .on('topic_id -> topic.id, 'item_id -> id).apply.head
-      count[Long]("c") > 0
+      SQL("select count(*) from item_topic where topic_id = {topic_id} and item_id = {item_id}")
+      .on('topic_id -> topic.id, 'item_id -> id).as(scalar[Long].single) > 0
     }
   }
 
@@ -65,7 +62,7 @@ case class Item(id: Int,            // DB key
   def contentType = {
     DB.withConnection { implicit c =>
       SQL("select * from content_type where id = {ctype_id}")
-      .on('ctype_id -> ctypeId).as(ContentType.ctype.singleOpt)
+      .on('ctype_id -> ctypeId).as(ContentType.ctype.single)
     }
   }
 
@@ -79,28 +76,21 @@ case class Item(id: Int,            // DB key
   def metadataValue(mdname: String) = {
     DB.withConnection { implicit c =>
       SQL("select mdvalue from metadata where item_id = {item_id} and mdname = {mdname}")
-      .on('item_id -> id, 'mdname -> mdname).apply().headOption match {
-        case Some(x) => x[String]("mdvalue")
-        case None => "Unknown Value"
-      }
+      .on('item_id -> id, 'mdname -> mdname).as(scalar[String] *).headOption.getOrElse("Unknown Value")
     }
   }
 
   def hasMetadata(mdname: String) = {
     DB.withConnection { implicit c =>
       SQL("select mdvalue from metadata where item_id = {item_id} and mdname = {mdname}")
-      .on('item_id -> id, 'mdname -> mdname).apply().headOption match {
-        case Some(x) => true
-        case None => false
-      }
+      .on('item_id -> id, 'mdname -> mdname).as(scalar[String] *).headOption.isDefined
     }
   }
 
   def metadataValues(mdname: String) = {
     DB.withConnection { implicit c =>
-      val rows = SQL("select mdvalue from metadata where item_id = {item_id} and mdname = {mdname}")
-      .on('item_id -> id, 'mdname -> mdname)
-      rows().map(row => row[String]("mdvalue")).toList
+      SQL("select mdvalue from metadata where item_id = {item_id} and mdname = {mdname}")
+      .on('item_id -> id, 'mdname -> mdname).as(scalar[String] *)
     }
   }
 
@@ -316,8 +306,7 @@ object Item {
 
   def collectionCount(coll_id: Int) = {
     DB.withConnection { implicit c =>
-      val count = SQL("select count(*) as c from item where collection_id = {id}").on('id -> coll_id).apply.head
-      count[Long]("c")
+      SQL("select count(*) from item where collection_id = {id}").on('id -> coll_id).as(scalar[Long].single)
     }
   }
 
@@ -331,8 +320,8 @@ object Item {
 
   def deleteBefore(date: Date) {
     DB.withConnection { implicit c =>
-      val rows = SQL("select id from item where created <= {created}").on('created -> date)
-      rows().map(row => row[Int]("id")).toList.foreach(delete)
+      SQL("select id from item where created <= {created}").on('created -> date).as(scalar[Int] *).foreach(delete)
+      // NB: stream-based approach may be preferable
     }
   }
 }

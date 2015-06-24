@@ -2,7 +2,7 @@
  * Page for display and editing of content formats                           *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(cfmt: ContentFormat, scForm: Form[(Int, Int)])(implicit request: play.api.mvc.RequestHeader)
+@(cfmt: ContentFormat, scForm: Form[(Int, Int)])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
 @import helper._
 @layout.main("Content Format - TopicHub") {
   <h2>Content Format: @cfmt.tag</h2>

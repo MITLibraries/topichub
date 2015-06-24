@@ -32,30 +32,25 @@ case class Publisher(id: Int,  // DB key
                      link: Option[String],  // Optional URL to publisher site
                      logo: Option[String],  // Optional URL to publisher logo
                      created: Date) {
+  require(tag != null && name != null && description != null)
 
   def collectionCount = {
     DB.withConnection { implicit c =>
-      val count = SQL("select count(*) as c from collection where publisher_id = {id}").on('id -> id).apply.head
-      count[Long]("c")
+      SQL("select count(*) from collection where publisher_id = {id}").on('id -> id).as(scalar[Long].single)
     }
   }
 
   def itemCount = {
     DB.withConnection { implicit c =>
       if (collectionCount > 0L) {
-        val sum = SQL("select sum(deposits) as sm from collection where publisher_id = {id}").on('id -> id).apply.head
-        sum match {
-          case sum: Row => sum[Long]("sm")
-          case _ => 0
-        }
+        SQL("select sum(deposits) from collection where publisher_id = {id}").on('id -> id).as(scalar[Long].single)
       } else 0
     }
   }
 
   def harvestCount = {
     DB.withConnection { implicit c =>
-      val count = SQL("select count(*) as c from harvest where publisher_id = {id}").on('id -> id).apply.head
-      count[Long]("c")
+      SQL("select count(*) from harvest where publisher_id = {id}").on('id -> id).as(scalar[Long].single)
     }
   }
 }
@@ -96,8 +91,7 @@ object Publisher {
 
   def categoryCount(category: String) = {
     DB.withConnection { implicit c =>
-      val count = SQL("select count(*) as c from publisher where category = {category}").on('category -> category).apply.head
-      count[Long]("c")
+      SQL("select count(*) from publisher where category = {category}").on('category -> category).as(scalar[Long].single)
     }
   }
 

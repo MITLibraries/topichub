@@ -3,7 +3,7 @@
  * Useful for authoring Finders                                              *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(sbForm: Form[(String, String)], results: List[String])(implicit request: play.api.mvc.RequestHeader)
+@(sbForm: Form[(String, String)], results: List[String])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
 @import helper._
 @layout.main("Sandbox - TopicHub") {
   <div class="container">

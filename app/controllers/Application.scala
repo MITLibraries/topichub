@@ -21,6 +21,7 @@ import play.api.libs.json._
 import play.api.mvc._
 import play.api.mvc.Security._
 import play.api.Play.current
+import play.api.i18n.Messages.Implicits._
 
 import models._
 import services.contentModelJson._
@@ -101,7 +102,7 @@ object Application extends Controller with Security {
         if (cancel) {
           sub.subscriptionFor(topic.id).map(sc => { sc.cancel; sc.unlinkInterest } )
           // remove backing interest if non-template
-          sub.interestWithValue(topic.scheme.get.tag, topic.tag).map(i => Interest.delete(i.id))
+          sub.interestWithValue(topic.scheme.tag, topic.tag).map(i => Interest.delete(i.id))
         } else {
           conveyor ! sub.subscribeTo(topic)
         }
@@ -1059,7 +1060,7 @@ object Application extends Controller with Security {
   def removeSubscriberInterest(sid: Int, iid: Int) = Action { implicit request =>
     Subscriber.findById(sid).map( sub =>
       Interest.findById(iid).map( interest => {
-        sub.removeInterest(interest.scheme.get, interest.intValue)
+        sub.removeInterest(interest.scheme, interest.intValue)
         Redirect(routes.Application.interestBrowse("scheme", interest.schemeTag))
       }).getOrElse(NotFound(views.html.static.trouble("No such interest: " + iid)))
     ).getOrElse(NotFound(views.html.static.trouble("No such subscriber: " + sid)))

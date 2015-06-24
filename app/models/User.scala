@@ -31,11 +31,10 @@ case class User(id: Int, name: String, email: String,
 
   def hasRole(role: String): Boolean = {
     DB.withConnection { implicit c =>
-      val count = SQL("""SELECT COUNT(*) as c FROM hub_user
-                         WHERE id = {id}
-                         AND role LIKE {role}""")
-                      .on('id -> id, 'role -> ("%"+role+"%")).apply.head
-      count[Long]("c") > 0
+      SQL("""SELECT COUNT(*) as c FROM hub_user
+             WHERE id = {id}
+             AND role LIKE {role}""")
+          .on('id -> id, 'role -> ("%"+role+"%")).as(scalar[Long].single) > 0
     }
   }
 }
@@ -90,8 +89,7 @@ object User {
 
   def isValidIdentity(identity: String): Boolean = {
     DB.withConnection { implicit c =>
-      val count = SQL("select count(*) as c from hub_user where identity = {identity}").on('identity -> identity).apply.head
-      count[Long]("c") > 0
+      SQL("select count(*) from hub_user where identity = {identity}").on('identity -> identity).as(scalar[Long].single) > 0
     }
   }
 }

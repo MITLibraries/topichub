@@ -2,7 +2,7 @@
  * Page with form to create new Collection                                   *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
-@(pub: Publisher, collForm: Form[Collection])(implicit request: play.api.mvc.RequestHeader)
+@(pub: Publisher, collForm: Form[Collection])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
 @import helper._
 @layout.main("New Collection - TopicHub") {
   <div class="container-fluid">

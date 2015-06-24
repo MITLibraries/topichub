@@ -275,7 +275,7 @@ class ItemSpec extends Specification {
         Topic.create(1, "tag", "meta")
 
         val item = Item.make(1, 1, "loc", "scoap3:asdf:123")
-        item.contentType must equalTo(ContentType.findById(1))
+        item.contentType must equalTo(ContentType.findById(1).get)
       }
     }
 

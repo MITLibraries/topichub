@@ -20,7 +20,8 @@ class ApplicationSpec extends Specification {
   "Application" should {
 
     "send 404 on a bad request" in new WithApplication(FakeApplication(additionalConfiguration = inMemoryDatabase())){
-      route(FakeRequest(GET, "/boum")) must beNone
+      val bogus = route(FakeRequest(GET, "/boum")).get
+      status(bogus) must equalTo(NOT_FOUND)
     }
 
     "render the index page" in new WithApplication(FakeApplication(additionalConfiguration = inMemoryDatabase())){
