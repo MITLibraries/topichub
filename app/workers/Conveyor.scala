@@ -7,7 +7,8 @@ package workers
 import java.util.Date
 
 import akka.actor.Actor
-
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Success, Failure}
 import play.api._
 import play.api.Play.current
 import play.api.libs.ws._
@@ -15,7 +16,7 @@ import play.api.mvc._
 import play.api.http.HeaderNames._
 
 import models.{Agent, Channel, Hold, Interest, Item, Plan, Scheme, Subscriber,
-               Subscription, Topic, TopicPick, Transfer}
+               Subscription, Topic, TopicPick, Transfer, User}
 import services.Emailer
 
 /** Conveyor is the worker responsible for transmitting notifications
@@ -225,7 +226,6 @@ object Conveyor {
         case "sword" => swordTransfer(item, chan, trans)
         case _ => println("Don't know how to transfer via: " + chan.protocol)
       }
-      chan.recordTransfer
     }
   }
 
@@ -236,8 +236,37 @@ object Conveyor {
       .withAuth(channel.userId, channel.password, WSAuthScheme.BASIC)
     println("About to deposit: " + req)
     val resp = req.post(Packager.packageItemAsFile(item))
-    // TODO: need to read response, and determine success, also
-    // update transfer object to indicate we are OK
+
+    resp onComplete {
+      case Success(response) => readSwordResponse(response)
+      case Failure(t) => failedSwordTransferAttempt(t.getMessage)
+    }
+
+    def failedSwordTransferAttempt(t: String) = {
+      println("An error occurred attempting to submit a Sword package")
+      val sysadminEmails = User.allByRole("sysadmin").map(x => x.email).mkString(",")
+      val msg = views.txt.email.sword_transfer_failure(item, channel, trans, t).body
+      sendSwordFailureEmail(sysadminEmails, msg)
+    }
+
+    def sendSwordFailureEmail(addresses: String, msg: String) = {
+      println(msg)
+      Emailer.notify(addresses, "SCOAP3Hub: failure of sword delivery detected", msg)
+      Transfer.delete(trans.id)
+    }
+
+    def readSwordResponse(response: play.api.libs.ws.WSResponse) = {
+      if (response.status == 201) {
+        println("Successful Transfer of " + item.objKey)
+        channel.recordTransfer
+      } else {
+        println("The SWORD server did not accept the transfer. Response was " + response.toString)
+        // email admin details
+        val sysadminEmails = User.allByRole("sysadmin").map(x => x.email).mkString(",")
+        val msg = views.txt.email.sword_transfer_failure(item, channel, trans, response.toString).body
+        sendSwordFailureEmail(sysadminEmails, msg)
+      }
+    }
   }
 
   private def notify(item: Item, sub: Subscription) = {
