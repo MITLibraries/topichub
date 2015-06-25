@@ -40,13 +40,13 @@ object Indexer {
   def reindex(dtype: String) = {
     // delete current index type
     if (indexSvc.contains("bonsai.io")) {
-      println("DEBUG: use basic auth for WS elasticsearch call")
+      // println("DEBUG: use basic auth for WS elasticsearch call")
       WS.url(indexSvc + dtype)
         .withAuth(extractCredentials("username", indexSvc),
                   extractCredentials("password", indexSvc),
                   WSAuthScheme.BASIC).delete()
     } else {
-      println("DEBUG: no auth for WS elasticsearch call")
+      // println("DEBUG: no auth for WS elasticsearch call")
       WS.url(indexSvc + dtype).delete()
     }
 
@@ -66,16 +66,16 @@ object Indexer {
     val jdata = stringify(toJson(data))
     val elastic_url = indexSvc.concat("topic/").concat(topic.id.toString)
     // debug
-    println("Topic index: " + jdata)
+    // println("Topic index: " + jdata)
 
     if (indexSvc.contains("bonsai.io")) {
-      println("DEBUG: use basic auth for WS elasticsearch call")
+      // println("DEBUG: use basic auth for WS elasticsearch call")
       WS.url(elastic_url)
         .withAuth(extractCredentials("username", indexSvc),
                   extractCredentials("password", indexSvc),
                   WSAuthScheme.BASIC).put(jdata)
     } else {
-      println("DEBUG: no auth for WS elasticsearch call")
+      // println("DEBUG: no auth for WS elasticsearch call")
       WS.url(elastic_url).put(jdata)
     }
   }
@@ -91,17 +91,17 @@ object Indexer {
     dataMap += "topicSchemeTag" -> toJson(item.topics.map(_.scheme.tag))
     dataMap += "topicTag" -> toJson(item.topics.map(_.tag))
     val jdata = stringify(toJson(dataMap))
-    println("Item index: " + dataMap)
-    println(indexSvc + "item/" + item.id)
+    // println("Item index: " + dataMap)
+    // println(indexSvc + "item/" + item.id)
 
     if (indexSvc.contains("bonsai.io")) {
-      println("DEBUG: use basic auth for WS elasticsearch call")
+      // println("DEBUG: use basic auth for WS elasticsearch call")
       WS.url(elastic_url)
         .withAuth(extractCredentials("username", indexSvc),
                   extractCredentials("password", indexSvc),
                   WSAuthScheme.BASIC).put(jdata)
     } else {
-      println("DEBUG: no auth for WS elasticsearch call")
+      // println("DEBUG: no auth for WS elasticsearch call")
       WS.url(elastic_url).put(jdata)
     }
   }

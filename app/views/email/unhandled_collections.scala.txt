@@ -1,0 +1,22 @@
+@*****************************************************************************
+ * Email template used to notify any unhandled collections in a harvest      *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(harvest: Harvest, collection: List[String])
+The following collections were not handled during a Harvest:
+
+Harvest: @harvest.name
+Publisher: @harvest.publisher.get.name
+Link to Harvest: http://scoap3.topichub.org/harvest/@harvest.id
+
+Unhandled Collections:
+@collection.map {c =>
+* @c
+}
+
+You should add this Collection to the Publisher.
+
+If you are not interested in a Collection listed above, you can stop
+receiving these notices by adding it as an Inactive Collection.
+
+If you are interested in a Collection, you should add it as an active Collection.

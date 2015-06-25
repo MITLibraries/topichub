@@ -49,7 +49,7 @@ class Cataloger(resmap: ResourceMap, content: StoredContent) {
       val (idHits, lblHits) = findValues(Finder.forSchemeAndFormat(scheme.id, format), source)
       // add cardinality checking here
       var idx = 0
-      println("IDHits size: " + idHits.size)
+      // println("IDHits size: " + idHits.size)
       for (id <- idHits) {
         // check for and utilize existing topics
         val topic = Topic.forSchemeAndTag(scheme.tag, id).getOrElse(createTopic(scheme, id, lblHits(idx)))
@@ -68,13 +68,13 @@ class Cataloger(resmap: ResourceMap, content: StoredContent) {
     var lblHits: Seq[String] = null
     if (doc != null) {
       // do Id & label
-      println("in process about to evaluate: " + finder.idKey)
+      // println("in process about to evaluate: " + finder.idKey)
       var keyParts = finder.idKey.split(" ")
       // new way
-      println("keyParts0: " + keyParts(0))
+      // println("keyParts0: " + keyParts(0))
       val xp = new ScalesXPath(keyParts(0)).withNameConversion(ScalesXPath.localOnly)
       val hits = xp.evaluate(top(doc))
-      println("Post eval num hits: " + hits.size)
+      // println("Post eval num hits: " + hits.size)
       if (hits.size > 0) {
         if (keyParts.length == 2) {
           val regX = keyParts(1).r
@@ -102,16 +102,16 @@ class Cataloger(resmap: ResourceMap, content: StoredContent) {
       }
     }
     // also stow in infoCache
-    idHits.foreach(println)
+    //idHits.foreach(println)
     //infoCache += ("id" -> idHits)
     if (idHits.size > 0) {
       val idl = finder.idLabel
       // if idl is an XPath, evaluate it
       if (idl != null && idl.length > 0 && idl.indexOf("/") >= 0) {
-        println("in process about to evaluate label: " + idl)
+        // println("in process about to evaluate label: " + idl)
         lblHits = xpathFind(idl, doc)
       } else if (idl != null && idl.length > 0) {
-        println("process filtered value; " + filteredValue(idl, 0))
+        // println("process filtered value; " + filteredValue(idl, 0))
         var lblList = List[String]()
         var count = 0
         for (a <- idHits) {
@@ -197,7 +197,7 @@ class Cataloger(resmap: ResourceMap, content: StoredContent) {
     // is value cached?
     var value = infoCache.get(token) match {
       case Some(x) =>
-      println("In filter token: " + token + " index: " + index + " size: " + x.size)
+      // println("In filter token: " + token + " index: " + index + " size: " + x.size)
       x(index)
       case _ => null
     }
@@ -232,7 +232,7 @@ class Cataloger(resmap: ResourceMap, content: StoredContent) {
 
   def docToParse(name: String) = {
     val fname = filteredValue(name, 0)
-    println("doc2p: fname: " + fname)
+    // println("doc2p: fname: " + fname)
     // check doc cache first
     docCache.get(fname) match {
       case Some(x) => x
@@ -267,9 +267,12 @@ object Cataloger {
     val resmap = ResourceMap.findById(coll.resmapId).get
     val cataloger = new Cataloger(resmap, Store.content(item))
     val ctype = ContentType.findById(item.ctypeId).get
+
+    println(s"Cataloging Item: ${item.objKey}")
+
     // start with metadata schemes
     ctype.schemes("meta").foreach( sch => {
-      println("Found scheme:" + sch.tag)
+      // println("Found scheme:" + sch.tag)
       cataloger.metadata(sch, item) }
     )
     // next topic schemes

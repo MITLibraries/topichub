@@ -81,6 +81,35 @@ class CollectionSpec extends Specification {
       }
     }
 
+    "#findByTag only returns active Collections by default" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val u = User.make("bob", "bob@example.com", "pass", "roley")
+        val ct = ContentType.make("tag", "label", "desc", Some("logo"))
+        val rm = ResourceMap.make("tag", "desc", Some("swordurl"))
+        val pub1 = Publisher.make(u.id, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
+        val pub2 = Publisher.make(u.id, "pubtag2", "pubname2", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
+        var c1 = Collection.make(pub1.id, ct.id, rm.id, "coll1", "desc", "open")
+        var c2 = Collection.make(pub2.id, ct.id, rm.id, "coll2", "desc", "open", false)
+
+        Collection.findByTag("coll1").contains(c1) must equalTo(true)
+        Collection.findByTag("coll2").contains(c2) must equalTo(false)
+      }
+    }
+
+    "#findByTag returns only inactive Collections if requested" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val u = User.make("bob", "bob@example.com", "pass", "roley")
+        val ct = ContentType.make("tag", "label", "desc", Some("logo"))
+        val rm = ResourceMap.make("tag", "desc", Some("swordurl"))
+        val pub1 = Publisher.make(u.id, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
+        val pub2 = Publisher.make(u.id, "pubtag2", "pubname2", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
+        var c1 = Collection.make(pub1.id, ct.id, rm.id, "coll1", "desc", "open", false)
+
+        Collection.findByTag("coll1").contains(c1) must equalTo(false)
+        Collection.findByTag("coll1", false).contains(c1) must equalTo(true)
+      }
+    }
+
     "#findById" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         User.create("bob", "bob@example.com", "pass", "roley")

@@ -333,7 +333,8 @@ object Application extends Controller with Security {
       "policy" -> nonEmptyText,
       "created" -> ignored(new Date),
       "updated" -> ignored(new Date),
-      "deposits" -> ignored(0)
+      "deposits" -> ignored(0),
+      "active" -> boolean
     )(Collection.apply)(Collection.unapply)
   )
 
@@ -349,7 +350,7 @@ object Application extends Controller with Security {
       collForm.bindFromRequest.fold(
         errors => BadRequest(views.html.collection.create(pub, errors)),
         value => {
-          val coll = Collection.make(id, value.ctypeId, value.resmapId, value.tag, value.description, value.policy)
+          val coll = Collection.make(id, value.ctypeId, value.resmapId, value.tag, value.description, value.policy, value.active)
           Redirect(routes.Application.publisher(id))
         }
       )

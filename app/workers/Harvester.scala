@@ -58,6 +58,7 @@ class Harvester {
   }
 
   def oaiHarvest(harvest: Harvest) = {
+    var unhandledCollections = scala.collection.mutable.ListBuffer.empty[String]
 
     def parse(xml: XMLEventReader) = {
       var objId: Option[String] = None
@@ -80,6 +81,16 @@ class Harvester {
           case _ => if (oaiDetected == false && counter > 2) { abortHarvest("OAI xml not detected."); break } else { counter = counter + 1 }
         }
       }
+      if (unhandledCollections.toList.distinct.size > 0) {
+        notifyUnhandledCollections(unhandledCollections.toList.distinct)
+      }
+    }
+
+    def notifyUnhandledCollections(collections: List[String]) = {
+      val sysadminEmails = User.allByRole("sysadmin").map(x => x.email).mkString(",")
+      val msg = views.txt.email.unhandled_collections(harvest, collections).body
+      println(msg)
+      Emailer.notify(sysadminEmails, "SCOAP3Hub: An unhandled collection was detected", msg)
     }
 
     def handleOaiError(errorText: String, errorCode: String) = {
@@ -94,7 +105,7 @@ class Harvester {
     def processItem(objId: Option[String], collectionKey: Option[String]) = {
       println("Got OID:" + objId.getOrElse("Unknown") + " in coll: " + collectionKey.getOrElse("Unknown"))
       // look up collection, and process if known & item not already created
-      val collOpt = Collection.findByTag(collectionKey.get);
+      val collOpt = Collection.findByTag(collectionKey.get)
       if (collOpt.isDefined && Item.findByKey(objId.get).isEmpty) {
         // create an Item and send to cataloger worker
         val coll = collOpt.get
@@ -104,6 +115,14 @@ class Harvester {
         val item = Item.make(coll.id, coll.ctypeId, "remote:" + resUrl, oid)
         coll.recordDeposit
         Harvester.cataloger ! item
+      } else if (collOpt.isDefined) {
+        println("DEBUG: collection is defined but Item is already cataloged")
+      } else if (Collection.findByTag(collectionKey.get, false).isDefined) {
+        println(s"DEBUG: Collection is ignored: ${collectionKey.get}")
+      } else {
+        // keep track so we can send an email so someone knows a new collection was found
+        println(s"DEBUG: Collection is not handled: ${collectionKey.get}")
+        unhandledCollections += collectionKey.get
       }
     }
 
