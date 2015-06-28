@@ -68,6 +68,13 @@ case class Plan(id: Int,                // DB key
       .on('plan_id -> id).as(Scheme.scheme *)
     }
   }
+
+  def setChannel(chan: Channel) = {
+    DB.withConnection { implicit c =>
+      SQL("update plan set channel_id = {chan_id} where id = {plan_id}")
+      .on('chan_id -> chan.id, 'plan_id -> id).executeUpdate()
+    }
+  }
 }
 
 object Plan {

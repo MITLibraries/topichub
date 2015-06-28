@@ -6,7 +6,7 @@
 @import java.time.YearMonth
 @import java.time.LocalDateTime
 @currentSubId = @{ Application.currentSubscriberId }
-@layout.main("Subscriber Dashboard -  TopicHub") {
+@layout.main("Subscriber Dashboard - TopicHub") {
 <div class="container-fluid">
   <div class="row-fluid">
     <div class="col-md-12">
@@ -28,34 +28,6 @@
       </ul>
       <hr />
 
-      <h4>Subscriptions by Scheme</h4>
-      <ul class="list-group">
-      @for(s <- sub.plannedSchemes) {
-        <li class="list-group-item">
-          <span class="badge">@Subscription.schemeCount(sub.id, s.id)</span>
-          <a href=@routes.Application.subscriptionBrowse("scheme", s.id)>@s.description</a>
-        </li>
-      }
-      </ul>
-      <h6>Note: deliveries and rejections can be seen as you click through the links above.</h6>
-      <hr />
-
-      <h4>Destinations</h4>
-      <ul class="list-group">
-        @sub.channels.map { chan =>
-          <li class="list-group-item alert-info">
-            <span class="badge">@chan.transfers</span>
-            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
-            <a href="@routes.Application.channel(chan.id)">@chan.description</a>
-          </li>
-        }
-        <li class="list-group-item alert-danger">
-          <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
-          <a href="@routes.Application.newChannel(sub.id)">Add a new destination</a>
-        </li>
-      </ul>
-      <hr />
-
       <h4>Last Harvest</h4>
       <ul class="list-group">
         @* todo: update logic to return all harvests for all publishers
@@ -73,11 +45,61 @@
           }
         </li>
       </ul>
+      <hr />
 
+      <h4>Destinations</h4>
+      <ul class="list-group" ondragstart="handleDragStart(event)">
+        @sub.channels.map { chan =>
+          <li class="list-group-item alert-info" id="channel-@chan.id" draggable="true">
+            <span class="badge">@chan.transfers</span>
+            <span class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+            <a href="@routes.Application.channel(chan.id)">@chan.description</a>
+          </li>
+        }
+        <li class="list-group-item alert-danger">
+          <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+          <a href="@routes.Application.newChannel(sub.id)">Add a new destination</a>
+        </li>
+      </ul>
     </div>
 
     <div class="col-md-9">
       <div id="chart_div2"></div>
+    </div>
+    <div class="col-md-12">
+      <h4>Subscriptions by Plan</h4>
+      <div class="row">
+        <div class="col-md-3">
+          <ul class="list-group" id="noplan" ondragenter="return false" ondragover="return false" ondragstart="handleDragStart(event)" ondrop="handleDrop(event, this)">
+          <h5>Unassigned Schemes</h5>
+          <h5>[No destination]</h5>
+          @for(s <- sub.unplannedSchemes) {
+            <li class="list-group-item" id="scheme-@s.id" draggable="true">
+              <span class="badge">@Subscription.schemeCount(sub.id, s.id)</span>
+              <a href="@routes.Application.scheme(s.id)" draggable="false"><img src="@s.logo"/></a>
+              <a href="@routes.Application.subscriptionBrowse("scheme", s.id)" draggable="false">@s.description</a>
+            </li>
+          }
+          </ul>
+        </div>
+        @for(plan <- sub.plans) {
+          <div class="col-md-3">
+            <ul class="list-group" id="plan-@plan.id" ondragenter="return false" ondragover="return false" ondragstart="handleDragStart(event)" ondrop="handleDrop(event, this)">
+            <h5>@plan.name <span class="glyphicon glyphicon-@plan.icon" aria-hidden="true"></span></h5>
+            <h5 id="chanplan-@plan.id">@plan.channel.get.description</h5>
+            @for(s <- plan.schemes) {
+              <li class="list-group-item" id="scheme-@s.id" draggable="true">
+                <span class="badge">@Subscription.schemeCount(sub.id, s.id)</span>
+                <a href="@routes.Application.scheme(s.id)" draggable="false"><img src="@s.logo"/></a>
+                <a href="@routes.Application.subscriptionBrowse("scheme", s.id)" draggable="false">@s.description</a>
+              </li>
+            }
+            </ul>
+          </div>
+        }
+      </div>
+      <h6>Note: Drag a scheme from/to unassigned to a plan to enable/disable subscriptions in it. Drag a destination to a plan to direct its subscriptions there.</h6>
+      <hr />
     </div>
   </div>
 </div>
@@ -115,5 +137,85 @@
     // Instantiate and draw our chart, passing in some options.
     var chart2 = new google.visualization.ColumnChart(document.getElementById('chart_div2'));
     chart2.draw(data2, options2);
+  }
+
+  function handleDragStart(event) {
+    if (event.target instanceof HTMLLIElement) {
+      event.dataTransfer.setData('text/x-dbid', event.target.id);
+      var effect = startsWith(event.target.id, "scheme") ? 'move' : 'copy';
+      event.dataTransfer.effectAllowed = effect;
+    } else {
+      event.preventDefault();
+    }
+  }
+
+  function handleDrop(event, target) {
+    var srcId = event.dataTransfer.getData('text/x-dbid');
+    var source = document.getElementById(srcId);
+    if (startsWith(srcId, "scheme")) {
+      var schemeId = source.id.substring(7); // strip off the "scheme-" from id string
+      // ignore any drop operation onto the parent of the source (i.e. circular drop)
+      if (source.parentNode.id !== target.id) {
+        // there are 3 cases to consider
+        if (source.parentNode.id === "noplan") {
+          // user dropping an unassigned scheme onto a plan - just add to target plan
+          addToPlan(schemeId, source, target);
+        } else if (target.id === "noplan") {
+          // user moving a scheme from a plan to unassigned status - remove from plan
+          removeFromPlan(schemeId, source, target, true);
+        } else {
+          // user moving a scheme from one plan to another - remove then add
+          removeFromPlan(schemeId, source, target, false);
+          addToPlan(schemeId, source, target);
+        }
+      }
+    } else {
+      // update of plan channel
+      updatePlan(source, target);
+    }
+    if (event.stopPropagation) {
+      event.stopPropagation(); // stops the browser from redirecting
+    }
+    event.preventDefault();
+    return false;
+  }
+
+  function addToPlan(schemeId, source, target) {
+    var addUrl = "plan/" + target.id.substring(5); // strip off the "plan-" from id string
+    $.post(addUrl, { scheme_id: schemeId },
+           function(data) { updateDOM(source, target); }
+    );
+  }
+
+  function removeFromPlan(schemeId, source, target, update) {
+    var planId = source.parentNode.id.substring(5); // strip off the "plan-" from id string
+    var remUrl = "plan/" + planId + "/remove/" + schemeId;
+    $.get(remUrl, function(data) {
+        if (update) { updateDOM(source, target);  }
+      }
+    );
+  }
+
+  function updatePlan(source, target) {
+    var planId = target.id.substring(5); // strip off the "plan-" from id string
+    var updUrl = "plan/" + planId + "/channel";
+    var chanId = source.id.substring(8); // strip off "channel-" from id string
+    //alert("URL: " + updUrl + "CID: " + chanId);
+    $.post(updUrl, { channel_id: chanId },
+      function(data) {
+        var chanName = source.getElementsByTagName("a")[0].innerHTML;
+        document.getElementById("chanplan-" + planId).innerHTML = chanName;
+      }
+    );
+  }
+
+  function updateDOM(source, target) {
+    var copy = source.cloneNode(true);
+    source.parentNode.removeChild(source);
+    target.appendChild(copy);
+  }
+
+  function startsWith(token, prefix) {
+    return token.substring(0, prefix.length) === prefix;
   }
 </script>

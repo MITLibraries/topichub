@@ -256,6 +256,27 @@ class SubscriberSpec extends Specification {
       }
     }
 
+    "#unplannedSchemes" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        Subscriber.all must haveSize(0)
+        User.create("bob", "bob@example.com", "pwd", "role1")
+        val sub = Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        sub.plans must haveSize(0)
+        val chan = Channel.make(Subscriber.findById(1).get.id, "protocol", "mode", "description", "userid", "password", "http://example.com")
+        val plan = Plan.make(sub.id, chan.id, "name", "description", "thumbs-up", "deliver", "review", "subscribe", "review")
+        val scheme1 = Scheme.make("tag", "topic", "cat", "desc", Some("link"), Some("logo"))
+        // scheme (topic-type) now exists, but not in plan - unplanned should be 1
+        sub.unplannedSchemes.size must equalTo(1)
+        plan.addScheme(scheme1)
+        sub.unplannedSchemes.size must equalTo(0)
+        // non-topic schemes should be ignored
+        val scheme2 = Scheme.make("tag2", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        sub.unplannedSchemes.size must equalTo(0)
+        plan.addScheme(scheme2)
+        sub.unplannedSchemes.size must equalTo(0)
+      }
+    }
+
     "#plannedFor" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         Subscriber.all must haveSize(0)
