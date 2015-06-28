@@ -33,14 +33,6 @@ class NavigationPagesSpec extends Specification {
         browser.pageSource must not contain("""<a id="nav_sub_dashboard" href="/dashboard">""")
       }
 
-      "does not include plans" in new WithBrowser(
-        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        val sub_user = User.make("sub", "sub@example.com", "", "another_user")
-        Subscriber.make(sub_user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
-        browser.goTo("http://localhost:" + port)
-        browser.pageSource must not contain(s"""<a id="nav_plans" href="/subscriber/">""")
-      }
-
       "does not include workbench"  in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val sub_user = User.make("sub", "sub@example.com", "", "another_user")
@@ -85,16 +77,6 @@ class NavigationPagesSpec extends Specification {
         browser.goTo("http://localhost:" + port + "/login")
         browser.$("#openid").click
         browser.pageSource must not contain("""<a id="nav_sub_dashboard" href="/dashboard">""")
-      }
-
-      "does not include plans" in new WithBrowser(
-        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        create_user("")
-        val sub_user = User.make("sub", "sub@example.com", "", "another_user")
-        Subscriber.make(sub_user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
-        browser.goTo("http://localhost:" + port + "/login")
-        browser.$("#openid").click
-        browser.pageSource must not contain(s"""<a id="nav_plans" href="/subscriber/">""")
       }
 
       "does not include workbench" in new WithBrowser(
@@ -163,15 +145,6 @@ class NavigationPagesSpec extends Specification {
 
       "includes dashboard with counter if something to review" in {
         skipped(": I'm too lazy to write this now")
-      }
-
-      "includes plans" in new WithBrowser(
-        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
-        val s = Subscriber.make(create_user("").id, "Sub Name", "cat", "contact",
-                          Some("link"), Some("logo"))
-        browser.goTo("http://localhost:" + port + "/login")
-        browser.$("#openid").click
-        browser.pageSource must contain(s"""<a id="nav_plans" href="/subscriber/${s.id}/edit">""")
       }
 
       "does not include workbench" in new WithBrowser(
