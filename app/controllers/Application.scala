@@ -796,9 +796,7 @@ object Application extends Controller with Security {
         val adminEmails = subscriber.adminList.map {user => user.email}.mkString(",")
         val subject = "SCOAP3Hub Request to Join Subscriber"
         val msg = views.txt.email.subscriber_join_request(subscriber, identity).body
-        if ( !play.api.Play.isTest(play.api.Play.current) ) {
-          Emailer.subscriberEmails(adminEmails, subject, msg)
-        }
+        Emailer.subscriberEmails(adminEmails, subject, msg)
         Ok(views.html.subscriber.request())
       }
     )
@@ -821,9 +819,7 @@ object Application extends Controller with Security {
       } else {
         sub.denyUser(userid)
       }
-      if ( !play.api.Play.isTest(play.api.Play.current) ) {
-        Emailer.subscriberEmails(user.email, subject, msg)
-      }
+      Emailer.subscriberEmails(user.email, subject, msg)
       Redirect(routes.Application.subscriberUsers(sub.id)).flashing(
         "success" -> s"User was ${res} membership to this Subscriber Group."
       )
