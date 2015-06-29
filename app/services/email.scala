@@ -29,19 +29,19 @@ trait EmailService {
   val adminEmail = Play.configuration.getString("hub.admin.email").get
 
   def notify(to: String, subject: String, msg: String) {
-    val props = Map("to" -> to, "from" -> "noreply@scoap3hub.org",
+    val props = Map("to" -> munge(to), "from" -> "noreply@scoap3hub.org",
                     "subject" -> subject, "text" -> msg)
     send(props)
   }
 
   def feedback(from: String, msg: String, reply: Boolean) = {
-    val props = Map("to" -> adminEmail, "from" -> from,
+    val props = Map("to" -> munge(adminEmail), "from" -> from,
                     "subject" -> "SCOAP3Hub Feedback", "text" -> msg)
     send(if (reply) props + ("h:Reply-To" -> from) else props)
   }
 
   def subscriberEmails(to: String, subject: String, msg: String) = {
-    val props = Map("to" -> to, "from" -> "noreply@scoap3hub.org",
+    val props = Map("to" -> munge(to), "from" -> "noreply@scoap3hub.org",
                     "sender" -> "noreply@scoap3hub.org",
                     "subject" -> subject,
                     "text" -> msg)
@@ -49,6 +49,9 @@ trait EmailService {
   }
 
   def send(props: Map[String, String])
+
+  def munge(addrs: String) = if (play.api.Play.isTest(play.api.Play.current)) mailinate(addrs) else addrs
+  def mailinate(addrs: String) = addrs.split(",").toList.map(_.replace("@", "at") + "@mailinator.com").mkString(",")
 }
 
 object MailgunProvider extends EmailService {

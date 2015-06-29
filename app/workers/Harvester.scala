@@ -131,9 +131,7 @@ class Harvester {
       val sysadminEmails = User.allByRole("sysadmin").map(x => x.email).mkString(",")
       val msg = views.txt.email.abort_harvest(harvest, exception).body
       println(msg)
-      if ( !play.api.Play.isTest(play.api.Play.current) ) {
-        Emailer.notify(sysadminEmails, "SCOAP3Hub: An error occurred starting a Harvest", msg)
-      }
+      Emailer.notify(sysadminEmails, "SCOAP3Hub: An error occurred starting a Harvest", msg)
     }
 
     // OAI-PMH date filters are inclusive on both ends (from and until),
