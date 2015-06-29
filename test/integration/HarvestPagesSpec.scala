@@ -225,7 +225,6 @@ class HarvestPagesSpec extends Specification {
         browser.$("#protocol").text("protocol")
         browser.$("#service_url").text("http://www.example.com/oai2d")
         browser.$("#resource_url").text("http://www.example.com/record/${recordId}/")
-        browser.$("#freq").text("1")
         browser.$("#submit").click
         browser.pageSource must contain("Valid date required")
 

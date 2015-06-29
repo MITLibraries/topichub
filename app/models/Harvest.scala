@@ -67,6 +67,12 @@ object Harvest {
     }
   }
 
+  def all: List[Harvest] = {
+    DB.withConnection { implicit c =>
+      SQL("SELECT * FROM harvest").as(harv *)
+    }
+  }
+
   def findById(id: Int): Option[Harvest] = {
     DB.withConnection { implicit c =>
       SQL("select * from harvest where id = {id}").on('id -> id).as(harv.singleOpt)

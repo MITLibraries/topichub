@@ -8,10 +8,9 @@
      <h2>Define a content harvest</h2>
     @form(routes.Application.createHarvest(pub.id)) {
         @inputText(harvestForm("name"))
-        @inputText(harvestForm("protocol"))
+        @inputText(harvestForm("protocol"), 'placeholder -> "oai-pmh is the only supported protocol at this time.")
         @inputText(harvestForm("service_url"))
         @inputText(harvestForm("resource_url"))
-        @inputText(harvestForm("freq"))
         @inputDate(harvestForm("start"))
         <input id="submit" type="submit" value="Create">
     }

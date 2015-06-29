@@ -14,6 +14,28 @@ class HarvestSpec extends Specification {
 
   "Harvest model" should {
 
+    "#all" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val u = User.make("bob", "bob@example.com", "pass", "roley")
+        val p = Publisher.make(u.id, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
+        Harvest.all must haveSize(0)
+
+        val h = Harvest.make(p.id, "name", "protocol", "http://www.example.com", "http://example.org", 1, new Date)
+        Harvest.all must haveSize(1)
+        Harvest.all must contain(h)
+
+        val h2 = Harvest.make(p.id, "name2", "protocol", "http://www.example.com", "http://example.org", 1, new Date)
+        Harvest.all must haveSize(2)
+        Harvest.all must contain(h)
+        Harvest.all must contain(h2)
+
+        Harvest.delete(h2.id)
+        Harvest.all must haveSize(1)
+        Harvest.all must contain(h)
+        Harvest.all must not contain(h2)
+      }
+    }
+
     "#findById" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         User.create("bob", "bob@example.com", "pass", "roley")

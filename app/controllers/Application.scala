@@ -228,10 +228,10 @@ object Application extends Controller with Security {
       "id" -> ignored(0),
       "publisher_id" -> ignored(1),
       "name" -> nonEmptyText,
-      "protocol" -> nonEmptyText,
+      "protocol" -> default(nonEmptyText, "oai-pmh"),
       "service_url" -> nonEmptyText,
       "resource_url" -> nonEmptyText,
-      "freq" -> number,
+      "freq" -> default(number, 1),
       "start" -> date,
       "updated" -> ignored(new Date)
     )(Harvest.apply)(Harvest.unapply)
@@ -268,6 +268,18 @@ object Application extends Controller with Security {
           Unauthorized(views.html.static.trouble("You are not authorized"))
         }
     ).getOrElse(NotFound(views.html.static.trouble("No such harvest: " + id)))
+  }
+
+  def startAllHarvests(key: String) = Action { implicit request =>
+    val authorized_key = Play.configuration.getString("auth.harvest.key").get
+    if (key == authorized_key) {
+      Harvest.all.map{ h =>
+        harvester ! h
+        h.complete }
+      Ok("kicked off all harvests")
+    } else {
+      Unauthorized(views.html.static.trouble("You are not authorized"))
+    }
   }
 
   def pullKnownItem(cid: Int, hid: Int, oid: String, force: Boolean) =
