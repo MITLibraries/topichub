@@ -109,17 +109,20 @@ object Subscription {
     }
   }
 
-  def inScheme(subscriberId: Int, schemeId: Int, page: Int) = {
+  def inScheme(subscriberId: Int, schemeId: Int, page: Int, active: Boolean = true) = {
     val offset = page * 10
     DB.withConnection { implicit c =>
       SQL(
         """
-          select subscription.* from subscription, topic where subscription.subscriber_id = {sub_id}
-          and subscription.topic_id = topic.id and topic.scheme_id = {sch_id}
+          select subscription.* from subscription, topic
+          where subscription.subscriber_id = {sub_id}
+          and subscription.topic_id = topic.id
+          and topic.scheme_id = {sch_id}
+          and active = {active}
           order by created desc
           limit 10 offset {offset}
         """
-      ).on('sub_id -> subscriberId, 'sch_id -> schemeId, 'offset -> offset).as(subscrip *)
+      ).on('sub_id -> subscriberId, 'sch_id -> schemeId, 'offset -> offset, 'active -> active).as(subscrip *)
     }
   }
 

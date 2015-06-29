@@ -190,6 +190,12 @@ class SubscriptionSpec extends Specification {
         inScheme.contains(s1t5) mustEqual(true)
         inScheme.contains(s2t1) mustEqual(false)
         inScheme.contains(s2t2) mustEqual(false)
+        // cancel a scheme - list should reflect only active
+        s1t5.cancel
+        val nowInScheme = Subscription.inScheme(sub.id, scheme.id, 0)
+        nowInScheme.size mustEqual(2)
+        val canceledInScheme = Subscription.inScheme(sub.id, scheme.id, 0, false)
+        canceledInScheme.size mustEqual(1)
       }
     }
 
