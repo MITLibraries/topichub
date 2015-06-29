@@ -978,6 +978,12 @@ object Application extends Controller with Security {
     )
   )
 
+  val planSetForm = Form(
+    single(
+      "channel_id" -> number
+    )
+  )
+
   def plan(id: Int) = isAuthenticated { identity => implicit request =>
     Plan.findById(id).map( plan =>
       subscriberMember(identity, plan.subscriber.get, Ok(views.html.plan.show(plan)))
@@ -1025,6 +1031,24 @@ object Application extends Controller with Security {
           plan.removeScheme(scheme)
           Redirect(routes.Application.editSubscriber(plan.subscriber.get.id))
         }).getOrElse(NotFound(views.html.static.trouble("No such scheme: " + schemeId)))
+      } else {
+        Unauthorized(views.html.static.trouble("You are not authorized"))
+      }
+    }).getOrElse(NotFound(views.html.static.trouble("No such subscriber plan: " + id)))
+  }
+
+  def setPlanChannel(id: Int) = isAuthenticated { identity => implicit request =>
+    Plan.findById(id).map( plan => {
+      if (plan.subscriber.get.userList().contains(identity)) {
+        planSetForm.bindFromRequest.fold (
+          errors => BadRequest(views.html.subscriber.edit(plan.subscriber.get, errors)),
+          value => {
+            Channel.findById(value).map( chan => {
+              plan.setChannel(chan)
+              Redirect(routes.Application.editSubscriber(plan.subscriber.get.id))
+            }).getOrElse(NotFound(views.html.static.trouble("No such channel: " + value)))
+          }
+        )
       } else {
         Unauthorized(views.html.static.trouble("You are not authorized"))
       }

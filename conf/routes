@@ -145,6 +145,7 @@ POST    /plans/:sid                 controllers.Application.createPlan(sid: Int)
 DELETE  /plan/:id                   controllers.Application.deletePlan(id: Int)
 POST    /plan/:id                   controllers.Application.addPlanScheme(id: Int)
 GET     /plan/:id/remove/:sid       controllers.Application.removePlanScheme(id: Int, sid: Int)
+POST    /plan/:id/channel           controllers.Application.setPlanChannel(id: Int)
 
 # Subscription pages
 GET     /subscriptions/browse       controllers.Application.subscriptionBrowse(filter: String, value: Int, page: Int ?= 0)

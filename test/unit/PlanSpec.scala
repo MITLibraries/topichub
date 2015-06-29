@@ -152,5 +152,20 @@ class PlanSpec extends Specification {
         p.schemes.size must equalTo(2)
       }
     }
+
+    "#setChannel" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        User.create("bob", "bob@example.com", "pwd", "role1")
+        val sub = Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        val chan = Channel.make(Subscriber.findById(1).get.id, "protocol", "mode", "description", "userid", "password", "http://example.com")
+        val chan2 = Channel.make(Subscriber.findById(1).get.id, "protocol", "mode", "description", "userid", "password", "http://example.com")
+
+        Plan.findById(1) must equalTo(None)
+        val p = Plan.make(sub.id, chan.id, "name", "description", "thumbs-up", "deliver", "review", "subscribe", "review")
+        p.channel.get.id must equalTo(chan.id)
+        p.setChannel(chan2)
+        Plan.findById(1).get.channel.get.id must equalTo(chan2.id)
+      }
+    }
   }
 }

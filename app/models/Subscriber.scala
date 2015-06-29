@@ -73,6 +73,24 @@ case class Subscriber(id: Int,  // DB key
     }
   }
 
+  def unplannedSchemes: List[Scheme] = {
+    DB.withConnection { implicit c =>
+      SQL(
+        """
+        select * from scheme
+        where gentype = 'topic'
+        and tag != 'meta'
+        and not exists (
+          select 1 from plan, plan_scheme
+          where plan_scheme.plan_id = plan.id
+          and plan_scheme.scheme_id = scheme.id
+          and plan.subscriber_id = {sub_id}
+        )
+        """
+      ).on('sub_id -> id).as(Scheme.scheme *)
+    }
+  }
+
   def subscriptionFor(topicId: Int): Option[Subscription] = {
     DB.withConnection { implicit c =>
       SQL("select * from subscription where subscriber_id = {sub_id} and topic_id = {topic_id} and active = true")
