@@ -36,6 +36,7 @@ GET     /harvest/:id                controllers.Application.harvest(id: Int)
 GET     /harvest/:id/start          controllers.Application.startHarvest(id: Int)
 GET     /harvest/:id/delete         controllers.Application.deleteHarvest(id: Int)
 GET     /knip/:cid/:hid/:oid        controllers.Application.pullKnownItem(cid: Int, hid: Int, oid: String, force: Boolean ?= false)
+GET     /harvests/startall/:key     controllers.Application.startAllHarvests(key: String)
 
 # Scheme pages
 GET     /schemes                    controllers.Application.schemes
