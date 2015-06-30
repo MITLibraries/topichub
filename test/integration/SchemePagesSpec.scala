@@ -192,7 +192,7 @@ class SchemePagesSpec extends Specification {
         browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/schemes/create")
         assertThat(browser.title()).isEqualTo("Create Scheme - TopicHub")
-        browser.pageSource must contain("""<form action="/schemes" method="POST">""")
+        browser.pageSource must contain("""<form action="/schemes" method="POST""")
       }
 
       // POST /schemes

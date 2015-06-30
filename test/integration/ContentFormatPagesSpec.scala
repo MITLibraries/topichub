@@ -134,7 +134,7 @@ class ContentFormatPagesSpec extends Specification {
         browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/cformats/create")
         assertThat(browser.title()).isEqualTo("New Content Format - TopicHub")
-        browser.pageSource must contain("""<form action="/cformats" method="POST">""")
+        browser.pageSource must contain("""<form action="/cformats" method="POST""")
       }
 
       // POST /cformats

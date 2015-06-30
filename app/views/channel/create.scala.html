@@ -2,32 +2,52 @@
  * Page with form to create new Channel                                      *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
- @(subscriber_id: Int, chanForm: Form[Channel])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
- @import helper._
- @layout.main("New Destination - TopicHub") {
-   <div class="container-fluid">
-     <div class="row">
-       <div class="col-md-4">
-       @form(routes.Application.createChannel(subscriber_id)) {
-         @select(chanForm("protocol"), options(Map("sword" -> "SWORD", "email" -> "email")))
-         @select(chanForm("mode"), options(Map("package" -> "package", "alert" -> "alert")))
-         @inputText(chanForm("description"))
-         @inputText(chanForm("userId"))
-         @inputText(chanForm("password"))
-         @inputText(chanForm("channelUrl"))
-         <input id="submit" type="submit" value="Create">
-       }
-       </div>
-       <div class="col-md-8">
-         <div class="jumbotron">
-           <h2>Define a content destination</h2>
-           <p>Each destination represents an 'address' where content packages or notifications can be sent.</p>
-           <p>The first two selections specify how content will be delivered - only choose them if you can support the protocol: unless you run a
-             repository, you are unlikely to have support for SWORD, but you almost certainly have an email client.</p>
-           <p>Choose a description that distinguishes one destination from another. The 'channelUrl' is an address: use an HTTP URL
-             for SWORD, or a 'mailto:' URL for email. If authenticaton is required, enter the credentials also.</p>
-         </div>
-       </div>
-     </div>
-   </div>
- }
+@(subscriber_id: Int, chanForm: Form[Channel])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
+@import helper._
+@implicitField = @{ helper.FieldConstructor(bootstrapHorizontal.f) }
+@layout.main("New Destination - TopicHub") {
+  <h2>Define a content destination</h2>
+  <p>Each destination represents an 'address' where content packages or notifications can be sent.</p>
+
+  @form(routes.Application.createChannel(subscriber_id), 'class -> "form-horizontal") {
+    <span id="helpBlock" class="help-block">* Denotes Required Element</span>
+
+    @select(chanForm("protocol"),
+            options(Map("sword" -> "SWORD", "email" -> "email")),
+            'class -> "form-control",
+            '_label -> "* Protocol",
+            '_help -> "Unless you run a repository, you are unlikely to have support for SWORD, but you almost certainly have an email client.")
+
+    @select(chanForm("mode"),
+            options(Map("package" -> "package", "alert" -> "alert")),
+            'class -> "form-control",
+            '_label -> "* Mode",
+            '_help -> "")
+
+    @inputText(chanForm("description"),
+              'class -> "form-control",
+              '_label -> "* Description",
+              '_help -> "")
+
+    @inputText(chanForm("userId"),
+              'class -> "form-control",
+              '_label -> "* UserID for Sword Endpoint",
+              '_help -> "")
+
+    @inputText(chanForm("password"),
+              'class -> "form-control",
+              '_label -> "* Password for Sword Endpoint",
+              '_help -> "")
+
+    @inputText(chanForm("channelUrl"),
+              'class -> "form-control",
+              '_label -> "* URL for Sword Endpoint",
+              '_help -> "Use an HTTP URL for SWORD, or a 'mailto:' URL for email.")
+
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button id="submit" type="submit" class="btn btn-primary">Create Channel</button>
+      </div>
+    </div>
+  }
+}

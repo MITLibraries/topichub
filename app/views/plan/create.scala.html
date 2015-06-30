@@ -2,33 +2,75 @@
  * Page with form to create new Channel                                      *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
- @(subscriber_id: Int, planForm: Form[Plan])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
- @import helper._
- @layout.main("New Action Plan - TopicHub") {
-   <div class="container-fluid">
-     <div class="row">
-       <div class="col-md-4">
-       @form(routes.Application.createPlan(subscriber_id)) {
-         @select(planForm("channelId"), options(Subscriber.findById(subscriber_id).get.channelMapView))
-         @inputText(planForm("name"))
-         @inputText(planForm("description"))
-         @select(planForm("icon"), options(Map("thumbs-up" -> "thumbs-up", "inbox" -> "inbox", "envelope" -> "envelope")))
-         @select(planForm("fulfill"), options(Map("deliver" -> "deliver", "review" -> "review", "notify" -> "notify")))
-         @select(planForm("pick"), options(Map("subscribe" -> "subscribe", "review" -> "review", "notify" -> "notify")))
-         @select(planForm("interest"), options(Map("subscribe" -> "subscribe", "review" -> "review", "notify" -> "notify")))
-         @select(planForm("template"), options(Map("subscribe" -> "subscribe", "review" -> "review", "notify" -> "notify")))
-         <input id="submit" type="submit" value="Create">
-       }
-       </div>
-       <div class="col-md-8">
-         <div class="jumbotron">
-           <h2>Define an action plan</h2>
-           <p>Each plan consists of a set of rules or instructions for changes in hub content.</p>
-           <p>Beyond a name and description, the 'fulfill' rule governs how items that you are currently subscribed to
-              ought to be handled: 'deliver' means transfer the packaged content using the destination supplied (usually SWORD deposit), 'review' means placing
-              the item on the hold list for your review, and 'notify' would cause an message to be sent.</p>
-         </div>
-       </div>
-     </div>
-   </div>
- }
+@(subscriber_id: Int, planForm: Form[Plan])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
+@import helper._
+@implicitField = @{ helper.FieldConstructor(bootstrapHorizontal.f) }
+@layout.main("New Action Plan - TopicHub") {
+  <h2>Define an action plan</h2>
+  <p>Each plan consists of a set of rules or instructions for changes in hub content.</p>
+
+  @form(routes.Application.createPlan(subscriber_id), 'class -> "form-horizontal") {
+    <span id="helpBlock" class="help-block">* Denotes Required Element</span>
+
+    @select(planForm("channelId"),
+            options(Subscriber.findById(subscriber_id).get.channelMapView),
+            'class -> "form-control",
+            '_label -> "* Channel",
+            '_help -> "")
+
+    @inputText(planForm("name"),
+                'class -> "form-control",
+                '_label -> "* Plan Name",
+                '_help -> "")
+
+    @inputText(planForm("description"),
+              'class -> "form-control",
+              '_label -> "* Description",
+              '_help -> "")
+
+    @select(planForm("icon"),
+            options(Map("thumbs-up" -> "thumbs-up", "inbox" -> "inbox", "envelope" -> "envelope")),
+            'class -> "form-control",
+            '_label -> "* Icon",
+            '_help -> "The icon shows up throughout the site to help remind how items will be handled.")
+
+    @select(planForm("fulfill"),
+            options(Map("deliver" -> "deliver", "review" -> "review", "notify" -> "notify")),
+            'class -> "form-control",
+            '_label -> "* Fullfill",
+            '_help -> """'deliver' means transfer the packaged content
+                      using the destination supplied (usually SWORD deposit), 'review' means
+                      placing the item on the hold list for your review, and 'notify' would
+                      cause an message to be sent.""")
+
+    @select(planForm("pick"),
+            options(Map("subscribe" -> "subscribe", "review" -> "review", "notify" -> "notify")),
+            'class -> "form-control",
+            '_label -> "* Pick",
+            '_help -> """'subscribe' means automatically subscribe to matches, 'review' means
+                      placing the item on a list for review, and 'notify' would cause an message
+                      to be sent.""")
+
+    @select(planForm("interest"),
+            options(Map("subscribe" -> "subscribe", "review" -> "review", "notify" -> "notify")),
+            'class -> "form-control",
+            '_label -> "* Interest",
+            '_help -> """'subscribe' means automatically subscribe to matches, 'review' means
+                      placing the item on a list for review, and 'notify' would cause an message
+                      to be sent.""")
+
+    @select(planForm("template"),
+            options(Map("subscribe" -> "subscribe", "review" -> "review", "notify" -> "notify")),
+            'class -> "form-control",
+            '_label -> "* Template",
+            '_help -> """'subscribe' means automatically subscribe to matches, 'review' means
+                      placing the item on a list for review, and 'notify' would cause an message
+                      to be sent.""")
+
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button id="submit" type="submit" class="btn btn-primary">Create Plan</button>
+      </div>
+    </div>
+  }
+}

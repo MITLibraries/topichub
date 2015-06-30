@@ -4,35 +4,49 @@
  *****************************************************************************@
 @(subForm: Form[Subscriber])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
 @import helper._
+@implicitField = @{ helper.FieldConstructor(bootstrapHorizontal.f) }
 @layout.main("Create Subscriber - TopicHub") {
-  <div class="container">
-    <div class="row">
-      <div class="col-md-4">
+  <h2>Define your subscriber profile</h2>
+    <p>Add a URL to your main site in the link field, and a URL for a logo if you have one.</p>
 
-        @if(Subscriber.all.size > 0) {
-          <div class="alert alert-info" role="alert">
-            You may also <a href="@routes.Application.joinSubscriber" class="alert-link">
-            request to join</a> an existing group.
-          </div>
-        }
+  @if(Subscriber.all.size > 0) {
+    <div class="alert alert-info" role="alert">
+      You may also <a href="@routes.Application.joinSubscriber" class="alert-link">
+      request to join</a> an existing group.
+    </div>
+  }
 
-      @form(routes.Application.createSubscriber) {
-        @select(subForm("category"), options(Map("Institutional Repository" -> "Institutional Repository", "Subject Repository" -> "Subject Repository", "Other" -> "Other")))
-        @inputText(subForm("name"))
-        @inputText(subForm("contact"))
-        @inputText(subForm("link"))
-        @inputText(subForm("logo"))
-        <input id="submit" type="submit" value="Create">
-      }
-      </div>
-      <div class="col-md-8">
-        <div class="jumbotron">
-          <h2>Define your subscriber profile</h2>
-          <p>Choose a category that best describes the type of subscriber, or 'other' if none fits.</p>
-          <p>Put the full name in the name field, and supply a contact email where notifications will be sent.</p>
-          <p>Add a URL to your main site in the link field, and a URL for a logo if you have one.</p>
-        </div>
+  @form(routes.Application.createSubscriber, 'class -> "form-horizontal") {
+    <span id="helpBlock" class="help-block">* Denotes Required Element</span>
+
+    @select(subForm("category"),
+            options(Map("Institutional Repository" -> "Institutional Repository",
+                        "Subject Repository" -> "Subject Repository",
+                        "Other" -> "Other")),
+                        'class -> "form-control",
+                        '_help -> "Choose a category that best describes the type of subscriber, or 'other' if none fits.",
+                        '_label -> "* Category")
+
+    @inputText(subForm("name"), 'class -> "form-control",
+              '_help -> "ex: MIT Open Access Collection",
+              '_label -> "* Subscriber Name")
+
+    @inputText(subForm("contact"),
+              'class -> "form-control",
+              '_label -> "* Contact Email",
+              '_help -> "")
+
+    @inputText(subForm("link"),
+              'class -> "form-control",
+              '_label -> "Link",
+              '_help -> "An optional link back to a webpage. Ex: http://dspace.mit.edu")
+
+    @inputText(subForm("logo"), 'class -> "form-control", '_label -> "Logo")
+
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button id="submit" type="submit" class="btn btn-primary">Create Subscriber</button>
       </div>
     </div>
-  </div>
+  }
 }

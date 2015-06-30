@@ -4,13 +4,37 @@
  ************************************************************************@
 @(ctypeForm: Form[ContentType])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
 @import helper._
+@implicitField = @{ helper.FieldConstructor(bootstrapHorizontal.f) }
 @layout.main("New Content Type - TopicHub") {
-    <h2>Add a new content type</h2>
-    @form(routes.Application.createContentType) {
-        @inputText(ctypeForm("tag"))
-        @inputText(ctypeForm("label"))
-        @inputText(ctypeForm("description"))
-        @inputText(ctypeForm("logo"))
-        <input id="submit" type="submit" value="Create">
-    }
+  <h2>Add a new Content Type</h2>
+  @form(routes.Application.createContentType, 'class -> "form-horizontal") {
+    <span id="helpBlock" class="help-block">* Denotes Required Element</span>
+
+    @inputText(ctypeForm("tag"),
+              'class -> "form-control",
+              '_label -> "* Tag",
+              '_help -> "A brief name to describe this Content Type. ex: article")
+
+    @inputText(ctypeForm("label"),
+              'class -> "form-control",
+              '_label -> "* Label",
+              '_help -> "A potentially richer name to display. ex: Article")
+
+    @inputText(ctypeForm("description"),
+              'class -> "form-control",
+              '_label -> "* Description",
+              '_help -> "ex. a published journal article")
+
+    @inputText(ctypeForm("logo"),
+              'class -> "form-control",
+              '_label -> "Logo",
+              '_help -> "An optional link to an image that represents this Content Type.")
+
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button id="submit" type="submit" class="btn btn-primary">Create Content Type</button>
+      </div>
+    </div>
+
+  }
 }

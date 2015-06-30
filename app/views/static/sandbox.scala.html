@@ -5,24 +5,33 @@
  *****************************************************************************@
 @(sbForm: Form[(String, String)], results: List[String])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
 @import helper._
+@implicitField = @{ helper.FieldConstructor(bootstrapHorizontal.f) }
 @layout.main("Sandbox - TopicHub") {
-  <div class="container">
-    <div class="row">
-      <div class="col-md-4">
-      @form(routes.Application.testExpression()) {
-        @textarea(sbForm("expression"), 'rows -> 8, 'cols -> 40)
-        @inputText(sbForm("resourceUrl"), 'size -> 50)
-        <input type="submit" value="Test Expression">
-      }
-      <br/>
-      <a href="@routes.Application.sandbox" class="btn btn-primary">Start Over</a>
-      </div>
-      <div class="col-md-8">
-        <h2>Results:</h2>
-        <div class="jumbotron">
-          @for(res <- results){<p>@res</p>}
-        </div>
+  @form(routes.Application.testExpression()) {
+    <span id="helpBlock" class="col-sm-offset-2 col-sm-10 help-block">* Denotes Required Element</span>
+
+    @textarea(sbForm("expression"),
+              '_label -> "* Expression",
+              '_help -> "ex: //datafield[@tag='100']/subfield[@code='v']",
+              'rows -> 8,
+              'cols -> 40,
+              'class -> "form-control")
+    @inputText(sbForm("resourceUrl"),
+              '_label -> "* Resource URL",
+              '_help -> "ex: http://repo.scoap3.org/record/10405/export/xm?ln=en",
+              'size -> 50,
+              'class -> "form-control")
+
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button id="submit" type="submit" class="btn btn-primary">Test Expression</button>
+        <a href="@routes.Application.sandbox" class="btn">Start Over</a>
       </div>
     </div>
-  </div>
+  }
+
+  <h2>Results:</h2>
+  <ul>
+    @for(res <- results){<li>@res</li>}
+  </ul>
 }

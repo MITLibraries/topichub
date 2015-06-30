@@ -4,15 +4,46 @@
  *****************************************************************************@
 @(schemeForm: Form[Scheme])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
 @import helper._
+@implicitField = @{ helper.FieldConstructor(bootstrapHorizontal.f) }
 @layout.main("Create Scheme - TopicHub") {
-    <h2>Add a new scheme</h2>
-    @form(routes.Application.createScheme) {
-        @inputText(schemeForm("tag"))
-        @inputText(schemeForm("gentype"))
-        @inputText(schemeForm("category"))
-        @textarea(schemeForm("description"))
-        @inputText(schemeForm("home"))
-        @inputText(schemeForm("logo"))
-        <input id="submit" type="submit" value="Create">
-    }
+  <h2>Add a new scheme</h2>
+  @form(routes.Application.createScheme, 'class -> "form-horizontal") {
+    <span id="helpBlock" class="help-block">* Denotes Required Element</span>
+
+    @inputText(schemeForm("tag"),
+              'class -> "form-control",
+              '_label -> "* Tag",
+              '_help -> "Tags must be unique, short with no spaces and be mnemonically helpful")
+
+    @inputText(schemeForm("gentype"),
+              'class -> "form-control",
+              '_label -> "* gentype",
+              '_help -> "meta or topic")
+
+    @inputText(schemeForm("category"),
+              'class -> "form-control",
+              '_label -> "* Category",
+              '_help -> "")
+
+    @textarea(schemeForm("description"),
+              'class -> "form-control",
+              '_label -> "* Description",
+              '_help -> "A brief description of this Scheme")
+
+    @inputText(schemeForm("home"),
+              'class -> "form-control",
+              '_label -> "Website",
+              '_help -> "An optional link to find more information about a Scheme. ex. http://orcid.org")
+
+    @inputText(schemeForm("logo"),
+              'class -> "form-control",
+              '_label -> "Logo",
+              '_help -> "An optional link to a logo for a Scheme. ex. http://www.doi.org/img/Logo_TM.png")
+
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button id="submit" type="submit" class="btn btn-primary">Create Scheme</button>
+      </div>
+    </div>
+  }
 }

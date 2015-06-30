@@ -4,35 +4,57 @@
  *****************************************************************************@
 @(pub: Publisher, collForm: Form[Collection])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
 @import helper._
+@implicitField = @{ helper.FieldConstructor(bootstrapHorizontal.f) }
 @layout.main("New Collection - TopicHub") {
-  <div class="container-fluid">
-    <div class="row">
-      <div class="col-md-4">
-        @form(routes.Application.createCollection(pub.id)) {
-          @select(collForm("ctype_id"), options(ContentType.mapView))
-          @select(collForm("resmap_id"), options(ResourceMap.mapView))
-          @inputText(collForm("tag"))
-          @textarea(collForm("description"))
-          @inputText(collForm("policy"))
-          @select(collForm("active"), options(Map("true" -> "true", "false" -> "false")))
-          <input id="submit" type="submit" value="Create">
-       }
-      </div>
-      <div class="col-md-8">
-        <div class="jumbotron">
-          <h2>Define a content collection</h2>
-          <p>All the content you publish to the hub must be placed in a <em>collection</em>.
-          You may define as many collections as you like, but items
-          in a given collection must share the first two attributes on the left:
-          a <em>content type</em> and a <em>package format</em>. If your content cannot be described by one of these choices,
-          you may not deposit it to the hub. Package format names abbreviate the kinds of files in a package; so
-          <code>mets-nlm</code> means that in addition to an article PDF, the package has a METS file and a metadata file
-          conforming to the NLM-DTD schema.</p>
-          <p>The description field is the collection name, and the policy describes any use or other restrictions
-          you wish to express. This policy will appear, e.g. in the SWORD service document for the collection.</p>
-          <p>When you have saved the collection definition, the hub will email you precise instructions on how to make deposits to it.</p>
-        </div>
+  <h2>Define a content collection</h2>
+
+  <p>All the content you publish to the hub must be placed in a <em>collection</em>.
+  You may define as many collections as you like, but items
+  in a given collection must share a Content Type and Resource Map (package format).
+
+  @form(routes.Application.createCollection(pub.id), 'class -> "form-horizontal") {
+    <span id="helpBlock" class="help-block">* Denotes Required Element</span>
+
+    @select(collForm("ctype_id"),
+            options(ContentType.mapView),
+            'class -> "form-control",
+            '_label -> "* Content Type",
+            '_help -> "")
+
+    @select(collForm("resmap_id"),
+            options(ResourceMap.mapView),
+            'class -> "form-control",
+            '_label -> "* Resource Map",
+            '_help -> """Resource Map names abbreviate the kinds of files in a package;
+                      so <code>mets-nlm</code> means that in addition to an article PDF,
+                      the package has a METS file and a metadata file conforming to the NLM-DTD
+                      schema.""")
+
+    @inputText(collForm("tag"),
+            'class -> "form-control",
+            '_label -> "* Tag",
+            '_help -> "Identifier of the Collection in the harvest feed. Ex: ACTA_PHYSICA_POLONICA")
+
+    @textarea(collForm("description"),
+            'class -> "form-control",
+            '_label -> "* Collection Name",
+            '_help -> "")
+
+    @inputText(collForm("policy"),
+            'class -> "form-control",
+            '_label -> "* Policy",
+            '_help -> "Describe any use or other restrictions you wish to express")
+
+    @select(collForm("active"),
+            options(Map("true" -> "true", "false" -> "false")),
+            'class -> "form-control",
+            '_label -> "* Active",
+            '_help -> "Leave active unless you want to ignore this collection in your data feed.")
+
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button id="submit" type="submit" class="btn btn-primary">Create Collection</button>
       </div>
     </div>
-  </div>
+  }
 }

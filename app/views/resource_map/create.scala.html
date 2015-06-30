@@ -4,12 +4,31 @@
  *****************************************************************************@
 @(resmapForm: Form[ResourceMap])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
 @import helper._
+@implicitField = @{ helper.FieldConstructor(bootstrapHorizontal.f) }
 @layout.main("New Resource Map - TopicHub") {
-  <h2>Add a new resource map</h2>
-  @form(routes.Application.createResourceMap) {
-    @inputText(resmapForm("tag"))
-    @inputText(resmapForm("description"))
-    @inputText(resmapForm("swordurl"))
-    <input id="submit" type="submit" value="Create">
+  <h2>Add a new Resource Map</h2>
+  @form(routes.Application.createResourceMap, 'class -> "form-horizontal") {
+    <span id="helpBlock" class="help-block">* Denotes Required Element</span>
+
+    @inputText(resmapForm("tag"),
+              'class -> "form-control",
+              '_label -> "* Tag",
+              '_help -> "")
+
+    @inputText(resmapForm("description"),
+              'class -> "form-control",
+              '_label -> "* Description",
+              '_help -> "")
+
+    @inputText(resmapForm("swordurl"),
+              'class -> "form-control",
+              '_label -> "Sword URL",
+              '_help -> "")
+
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button id="submit" type="submit" class="btn btn-primary">Create Resource Map</button>
+      </div>
+    </div>
   }
 }

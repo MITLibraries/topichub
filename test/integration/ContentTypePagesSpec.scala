@@ -182,7 +182,7 @@ class ContentTypePagesSpec extends Specification {
         browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/ctypes/create")
         assertThat(browser.title()).isEqualTo("New Content Type - TopicHub")
-        browser.pageSource must contain("""<form action="/ctypes" method="POST">""")
+        browser.pageSource must contain("""<form action="/ctypes" method="POST""")
       }
 
       // POST /ctypes
