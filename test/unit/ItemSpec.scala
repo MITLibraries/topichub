@@ -157,6 +157,21 @@ class ItemSpec extends Specification {
       }
     }
 
+    "#createdAfterCount" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val now = System.currentTimeMillis
+        val oldDate = new Date(now - 100000)
+        User.create("bob", "bob@example.com", "pass", "roley")
+        ContentType.create("tag", "label", "desc", Some("logo"))
+        ResourceMap.create("tag", "desc", Some("swordurl"))
+        Publisher.create(1, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
+        Collection.create(1, 1, 1, "coll", "desc", "open")
+        Item.createdAfterCount(oldDate) must equalTo(0)
+        Item.create(1, 1, "loc", "scoap3:asdf:123")
+        Item.createdAfterCount(oldDate) must equalTo(1)
+      }
+    }
+
     "#filename for items with doi" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         User.create("bob", "bob@example.com", "pass", "roley")

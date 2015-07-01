@@ -310,6 +310,12 @@ object Item {
     }
   }
 
+  def createdAfterCount(date: Date) = {
+    DB.withConnection { implicit c =>
+      SQL("select count(*) from item where created > {created}").on('created -> date).as(scalar[Long].single)
+    }
+  }
+
   def delete(id: Int) {
     DB.withConnection { implicit c =>
       SQL("delete from item_topic where item_id = {item_id}").on('item_id -> id).executeUpdate()
