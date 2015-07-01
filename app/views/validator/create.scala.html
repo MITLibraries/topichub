@@ -4,16 +4,51 @@
  *****************************************************************************@
 @(tag: String, valForm: Form[Validator])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
 @import helper._
+@implicitField = @{ helper.FieldConstructor(bootstrapHorizontal.f) }
 @layout.main("Create Validator - TopicHub") {
   <h2>Add a validator</h2>
   @form(routes.Application.createValidator(tag)) {
-    @select(valForm("scheme_id"), options(Scheme.mapView))
-    @textarea(valForm("description"))
-    @inputText(valForm("userId"))
-    @inputText(valForm("password"))
-    @inputText(valForm("serviceCode"))
-    @inputText(valForm("serviceUrl"))
-    @inputText(valForm("author"))
-    <input id="submit" type="submit" value="Create">
+    <span id="helpBlock" class="col-sm-offset-2 col-sm-10 help-block">* Denotes Required Element</span>
+
+    @select(valForm("scheme_id"), options(Scheme.mapView),
+            'class -> "form-control",
+            '_label -> "* Scheme",
+            '_help -> "")
+
+    @textarea(valForm("description"),
+              'class -> "form-control",
+              '_label -> "* Description",
+              '_help -> "")
+
+    @inputText(valForm("userId"),
+              'class -> "form-control",
+              '_label -> "* UserId",
+              '_help -> "")
+
+    @inputText(valForm("password"),
+              'class -> "form-control",
+              '_label -> "* Password",
+              '_help -> "")
+
+    @inputText(valForm("serviceCode"),
+              'class -> "form-control",
+              '_label -> "* Service Code",
+              '_help -> "")
+
+    @inputText(valForm("serviceUrl"),
+              'class -> "form-control",
+              '_label -> "* Service URL",
+              '_help -> "")
+
+    @inputText(valForm("author"),
+              'class -> "form-control",
+              '_label -> "* Author",
+              '_help -> "")
+
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button id="submit" type="submit" class="btn btn-primary">Create Validator</button>
+      </div>
+    </div>
   }
 }

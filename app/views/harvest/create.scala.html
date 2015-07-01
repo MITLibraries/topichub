@@ -4,14 +4,46 @@
  ************************************************************************@
 @(pub: Publisher, harvestForm: Form[Harvest])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
 @import helper._
+@implicitField = @{ helper.FieldConstructor(bootstrapHorizontal.f) }
 @layout.main("Harvest - TopicHub") {
-     <h2>Define a content harvest</h2>
-    @form(routes.Application.createHarvest(pub.id)) {
-        @inputText(harvestForm("name"))
-        @inputText(harvestForm("protocol"), 'placeholder -> "oai-pmh is the only supported protocol at this time.")
-        @inputText(harvestForm("service_url"))
-        @inputText(harvestForm("resource_url"))
-        @inputDate(harvestForm("start"))
-        <input id="submit" type="submit" value="Create">
-    }
+  <h2>Define a content harvest</h2>
+  @form(routes.Application.createHarvest(pub.id), 'class -> "form-horizontal") {
+    <span id="helpBlock" class="help-block">* Denotes Required Element</span>
+
+    @inputText(harvestForm("name"),
+            'class -> "form-control",
+            '_label -> "* Harvest Name",
+            '_help -> "")
+
+
+    @inputText(harvestForm("protocol"),
+              'class -> "form-control",
+              'placeholder -> "oai-pmh",
+              '_label -> "* Protocol",
+              '_help -> "oai-pmh is the only supported protocol at this time.")
+
+
+    @inputText(harvestForm("service_url"),
+              'class -> "form-control",
+              '_label -> "* Service URL",
+              '_help -> "ex. http://repo.scoap3.org/oai2d")
+
+
+    @inputText(harvestForm("resource_url"),
+              'class -> "form-control",
+              '_label -> "* Resource URL",
+              '_help -> "ex. http://repo.scoap3.org/record/${recordId}/")
+
+    @inputDate(harvestForm("start"),
+              'class -> "form-control",
+              '_label -> "* Start Date",
+              '_help -> "ex. What date should the Harvest Start in the format 'yyyy-MM-dd'?")
+
+
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button id="submit" type="submit" class="btn btn-primary">Create Harvest</button>
+      </div>
+    </div>
+  }
 }

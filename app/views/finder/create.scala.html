@@ -4,16 +4,56 @@
  *****************************************************************************@
 @(tag: String, finderForm: Form[Finder])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
 @import helper._
+@implicitField = @{ helper.FieldConstructor(bootstrapHorizontal.f) }
 @layout.main("Create Finder - TopicHub") {
-  <h2>Add a new finder</h2>
-  @form(routes.Application.createFinder(tag)) {
-    @select(finderForm("scheme_id"), options(Scheme.mapView))
-    @select(finderForm("content_format_id"), options(ContentFormat.mapView))
-    @textarea(finderForm("description"))
-    @inputText(finderForm("cardinality"))
-    @inputText(finderForm("idKey"))
-    @inputText(finderForm("idLabel"))
-    @inputText(finderForm("author"))
-    <input id="submit" type="submit" value="Create">
+  <h2>Add a New Finder</h2>
+  @form(routes.Application.createFinder(tag), 'class -> "form-horizontal") {
+    <span id="helpBlock" class="help-block">* Denotes Required Element</span>
+
+    @select(finderForm("scheme_id"),
+            options(Scheme.mapView),
+            'class -> "form-control",
+            '_label -> "* Scheme",
+            '_help -> "")
+
+    @select(finderForm("content_format_id"),
+            options(ContentFormat.mapView),
+            'class -> "form-control",
+            '_label -> "* Content Format",
+            '_help -> "")
+
+    @textarea(finderForm("description"),
+              'class -> "form-control",
+              '_label -> "* Description",
+              '_help -> "ex. Title from 245$a")
+
+    @inputText(finderForm("cardinality"),
+              'class -> "form-control",
+              '_label -> "* Cardinality",
+              '_help -> "Should we expect 1 or more than one. Enter '1' or 'n' to represent that.")
+
+    @inputText(finderForm("idKey"),
+            'class -> "form-control",
+            '_label -> "* Content Format",
+            '_help -> "ex. //datafield[@tag='245']/subfield[@code='a']")
+
+    @inputText(finderForm("idLabel"),
+            'class -> "form-control",
+            '_label -> "* Content Format",
+            '_help -> "ex. Title. Or you can do another xpath like: //datafield[@tag='100']/subfield[@code='j']/preceding-sibling::subfield[@code='a']")
+
+
+    @inputText(finderForm("author"),
+              'class -> "form-control",
+              '_label -> "* Author",
+              '_help -> """Who wrote this finder in case we need to make tweaks to get it
+                        working (probably this is you)?""")
+
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button id="submit" type="submit" class="btn btn-primary">Create Finder</button>
+      </div>
+    </div>
+
   }
 }

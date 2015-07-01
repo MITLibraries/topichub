@@ -5,34 +5,53 @@
 @(pub: Publisher, pubForm: Form[Publisher])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
 
 @import helper._
+@implicitField = @{ helper.FieldConstructor(bootstrapHorizontal.f) }
 @layout.main("Create Publisher - TopicHub") {
-  <div class="container">
-    <div class="row">
-      <div class="col-md-4">
-      @form(routes.Application.createPublisher) {
-        @select(pubForm("category"), options(Map("STM publisher" -> "STM publisher", "Subject Repository" -> "Subject Repository", "OA Journal" -> "OA Journal", "Other" -> "Other")))
-        @inputText(pubForm("tag"))
-        @inputText(pubForm("name"))
-        @textarea(pubForm("description"))
-        @inputText(pubForm("link"))
-        @inputText(pubForm("logo"))
-        <input id="submit" type="submit" value="Create">
-      }
-      </div>
-      <div class="col-md-8">
-        <div class="jumbotron">
-          <h2>Define your publisher profile</h2>
-          <p>Choose a category that best describes the type of publisher, or 'other' if none fits.</p>
-          <p>Fill in the fields at left making sure that you select a 'tag' that:
-          <ul>
-            <li>is not already in use on the hub.</li>
-            <li>is a short <em>handle</em> containing no spaces</li>
-            <li>is mnemonically helpful</li>
-          </ul></p>
-          <p>Put the full name in the name field, and add a terse description in the next one.</p>
-          <p>Add a URL to your main site in the link field, and a URL for a logo if you have one.</p>
-        </div>
+  <h2>Define your publisher profile</h2>
+
+    <p>Add a URL to your main site in the link field, and a URL for a logo if you have one.</p>
+
+  @form(routes.Application.createPublisher, 'class -> "form-horizontal") {
+    <span id="helpBlock" class="help-block">* Denotes Required Element</span>
+
+    @select(pubForm("category"),
+            options(Map("STM publisher" -> "STM publisher",
+                        "Subject Repository" -> "Subject Repository",
+                        "OA Journal" -> "OA Journal",
+                        "Other" -> "Other")),
+            'class -> "form-control",
+            '_label -> "* Category",
+            '_help -> "Choose a category that best describes the type of publisher, or 'other' if none fits")
+
+    @inputText(pubForm("tag"),
+              'class -> "form-control",
+              '_label -> "* Tag",
+              '_help -> "Tags must be unique, short with no spaces and be mnemonically helpful")
+
+    @inputText(pubForm("name"),
+              'class -> "form-control",
+              '_label -> "* Publisher Name",
+              '_help -> "")
+
+    @textarea(pubForm("description"),
+              'class -> "form-control",
+              '_label -> "* Description",
+              '_help -> "")
+
+    @inputText(pubForm("link"),
+              'class -> "form-control",
+              '_label -> "* Website",
+              '_help -> "a URL to your main site")
+
+    @inputText(pubForm("logo"),
+              'class -> "form-control",
+              '_label -> "Logo",
+              '_help -> "an optional URL for a logo if you have one")
+
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button id="submit" type="submit" class="btn btn-primary">Create Publisher</button>
       </div>
     </div>
-  </div>
+  }
 }

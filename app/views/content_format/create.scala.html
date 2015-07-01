@@ -4,15 +4,46 @@
  ************************************************************************@
 @(cfmtForm: Form[ContentFormat])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
 @import helper._
+@implicitField = @{ helper.FieldConstructor(bootstrapHorizontal.f) }
 @layout.main("New Content Format - TopicHub") {
-     <h2>Add a new content format</h2>
-    @form(routes.Application.createContentFormat) {
-        @inputText(cfmtForm("tag"))
-        @inputText(cfmtForm("label"))
-        @inputText(cfmtForm("description"))
-        @inputText(cfmtForm("url"))
-        @inputText(cfmtForm("mimetype"))
-        @inputText(cfmtForm("logo"))
-        <input id="submit" type="submit" value="Create">
-    }
+  <h2>Add a new Content Format</h2>
+  @form(routes.Application.createContentFormat, 'class -> "form-horizontal") {
+    <span id="helpBlock" class="help-block">* Denotes Required Element</span>
+
+    @inputText(cfmtForm("tag"),
+            'class -> "form-control",
+            '_label -> "* Tag",
+            '_help -> "A brief name to describe this Content Format. ex: marcxml")
+
+    @inputText(cfmtForm("label"),
+            'class -> "form-control",
+            '_label -> "* Label",
+            '_help -> "A potentially richer name to display. ex: NLM DTD 2.1")
+
+    @inputText(cfmtForm("description"),
+            'class -> "form-control",
+            '_label -> "* Description",
+            '_help -> "ex. Dublin Core Export")
+
+    @inputText(cfmtForm("url"),
+            'class -> "form-control",
+            '_label -> "* URL",
+            '_help -> "URL to a website with more information about this format. Ex. http://www.loc.gov/standards/marcxml/")
+
+    @inputText(cfmtForm("mimetype"),
+            'class -> "form-control",
+            '_label -> "* Mimetype",
+            '_help -> "ex. text/xml")
+
+    @inputText(cfmtForm("logo"),
+            'class -> "form-control",
+            '_label -> "Logo",
+            '_help -> "An optional link to an image that represents this format.")
+
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button id="submit" type="submit" class="btn btn-primary">Create Content Format</button>
+      </div>
+    </div>
+  }
 }

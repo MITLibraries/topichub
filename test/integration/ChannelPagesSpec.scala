@@ -149,7 +149,7 @@ class ChannelPagesSpec extends Specification {
         browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/channels/" + sub.id + "/create")
         assertThat(browser.title()).isEqualTo("New Destination - TopicHub")
-        browser.pageSource must contain(s"""<form action="/subscriber/${sub.id}/channels" method="POST">""")
+        browser.pageSource must contain(s"""<form action="/subscriber/${sub.id}/channels" method="POST""")
       }
 
       // POST /subscriber/:sid/channels

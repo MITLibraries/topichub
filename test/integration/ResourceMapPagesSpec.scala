@@ -192,7 +192,7 @@ class ResourceMapPagesSpec extends Specification {
         browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/resmaps/create")
         assertThat(browser.title()).isEqualTo("New Resource Map - TopicHub")
-        browser.pageSource must contain("""<form action="/resmaps" method="POST">""")
+        browser.pageSource must contain("""<form action="/resmaps" method="POST""")
       }
 
       // POST /resmaps

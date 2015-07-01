@@ -136,7 +136,7 @@ class FinderPagesSpec extends Specification {
         val s = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/scheme/" + s.tag + "/create")
         assertThat(browser.title()).isEqualTo("Create Finder - TopicHub")
-        browser.pageSource must contain(s"""<form action="/scheme/${s.tag}" method="POST">""")
+        browser.pageSource must contain(s"""<form action="/scheme/${s.tag}" method="POST""")
       }
 
       // POST /scheme/:tag

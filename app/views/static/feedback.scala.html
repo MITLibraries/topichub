@@ -3,19 +3,36 @@
  * which are emailed to the site administrator                               *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
- @(fbform: Form[(String,Boolean,String)])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
- @import helper._
- @layout.main("Feedback - TopicHub") {
-   <h2>Feedback</h2>
-   <p>We'd love to hear from you!</p>
-   <p>Please record any comments, questions, suggestions, etc you have in the field below. You may check the 'send reply' box if you would like a reply sent to the email supplied. You may comment on application design and usability, or on the content you find (or don't).</p>
-   @form(routes.Application.takeFeedback) {
-     @inputText(fbform("email"), '_label -> "your email")
-     @checkbox(fbform("reply"), '_label -> "send reply", '_help -> "")
-     @textarea(fbform("comment"), 'rows -> 8, 'cols -> 40)
-     <p>
-       <button type="submit" id="sendbutton">Send</button>
-     </p>
-   }
-   <p>Thanks for helping make SCOAP3 TopicHub a more valuable service!</p>
- }
+@(fbform: Form[(String,Boolean,String)])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
+@import helper._
+@implicitField = @{ helper.FieldConstructor(bootstrapHorizontal.f) }
+@layout.main("Feedback - TopicHub") {
+
+  <h2>We'd love to hear from you!</h2>
+
+  <p>Thanks for helping make SCOAP3 TopicHub a more valuable service!</p>
+
+  @form(routes.Application.takeFeedback, 'class -> "form-horizontal") {
+    <span id="helpBlock" class="help-block">* Denotes Required Element</span>
+
+    @inputText(fbform("email"), '_label -> "* Your Email", '_help -> "", 'class -> "form-control")
+
+    @checkbox(fbform("reply"),
+              '_label -> "Send Reply?",
+              '_help -> "Would you like a reply sent to the email supplied?",
+              'class -> "form-control")
+
+    @textarea(fbform("comment"),
+              '_label -> "* Your Message",
+              'rows -> 8,
+              'cols -> 40,
+              '_help -> "Please record any comments, questions, suggestions, etc you have in the field below. You may comment on application design and usability, or on the content you find (or don't).",
+              'class -> "form-control")
+
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button id="sendbutton" type="submit" class="btn btn-primary">Send</button>
+      </div>
+    </div>
+  }
+}
