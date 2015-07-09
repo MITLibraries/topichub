@@ -1,5 +1,6 @@
 import org.specs2.mutable._
 import org.specs2.runner._
+import java.util.Date
 
 import play.api.test._
 import play.api.test.Helpers._
@@ -7,7 +8,7 @@ import org.fest.assertions.Assertions.assertThat
 import play.api.Application
 import play.api.Play
 import play.api.Play.current
-import models.{ Channel, Collection, ContentType, Item, Publisher, ResourceMap, Scheme,
+import models.{ Channel, Collection, ContentType, Harvest, Item, Publisher, ResourceMap, Scheme,
                 Subscriber, Topic, User }
 
 /**
@@ -200,6 +201,17 @@ class ItemPagesSpec extends Specification {
         assertThat(browser.title()).isEqualTo("Error - TopicHub")
         browser.pageSource must contain("You are not authorized")
       }
+
+      "deleting an item is denied" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        User.make("user", "user@example.com", "analyst", "https://oidc.mit.edu/current_user")
+        item_factory(1)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
+        browser.goTo("http://localhost:" + port + "/item/delete/1")
+        assertThat(browser.title()).isEqualTo("Error - TopicHub")
+        browser.pageSource must contain("You are not authorized")
+      }
     }
 
     "as a sysadmin" should {
@@ -212,6 +224,56 @@ class ItemPagesSpec extends Specification {
         browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/items/missingtopics")
         assertThat(browser.title()).isEqualTo("Items missing Topics - TopicHub")
+      }
+
+      "reharvest link displays for Items from a Publisher with a single Harvest" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        User.make("user", "user@example.com", "sysadmin", "https://oidc.mit.edu/current_user")
+        item_factory(1)
+        Harvest.create(1, "name", "protocol", "http://www.example.com", "http://example.org", 1, new Date)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
+        browser.goTo("http://localhost:" + port + "/items/missingtopics")
+        browser.pageSource must contain("Attempt Reharvest")
+        browser.pageSource must contain("reharvest-1")
+        browser.pageSource must not contain("Unable to determine Harvest")
+      }
+
+      "reharvest link not shown for Items from a Publisher with multiple Harvests" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        User.make("user", "user@example.com", "sysadmin", "https://oidc.mit.edu/current_user")
+        item_factory(1)
+        Harvest.create(1, "name", "protocol", "http://www.example.com", "http://example.org", 1, new Date)
+        Harvest.create(1, "name2", "protocol", "http://www.example.com", "http://example.org", 1, new Date)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
+        browser.goTo("http://localhost:" + port + "/items/missingtopics")
+        browser.pageSource must not contain("Attempt Reharvest")
+        browser.pageSource must not contain("reharvest-1")
+        browser.pageSource must contain("Unable to determine Harvest")
+      }
+
+      "reharvest link not shown for Items from a Publisher with no Harvests" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        User.make("user", "user@example.com", "sysadmin", "https://oidc.mit.edu/current_user")
+        item_factory(1)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
+        browser.goTo("http://localhost:" + port + "/items/missingtopics")
+        browser.pageSource must not contain("Attempt Reharvest")
+        browser.pageSource must not contain("reharvest-1")
+        browser.pageSource must contain("Unable to determine Harvest")
+      }
+
+      "deleting an item is allowed" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        User.make("user", "user@example.com", "sysadmin", "https://oidc.mit.edu/current_user")
+        item_factory(1)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
+        browser.goTo("http://localhost:" + port + "/items/missingtopics")
+        browser.$("#delete-1").click
+        browser.pageSource must contain("Item deleted")
       }
     }
   }

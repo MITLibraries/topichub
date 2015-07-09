@@ -48,6 +48,16 @@ case class Publisher(id: Int,  // DB key
     }
   }
 
+  def harvests = {
+    DB.withConnection { implicit c =>
+      SQL("""
+            SELECT *
+            FROM harvest
+            WHERE publisher_id = {id}
+          """).on('id -> id).as(Harvest.harv *)
+    }
+  }
+
   def harvestCount = {
     DB.withConnection { implicit c =>
       SQL("select count(*) from harvest where publisher_id = {id}").on('id -> id).as(scalar[Long].single)

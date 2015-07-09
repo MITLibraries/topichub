@@ -29,6 +29,11 @@ object ItemController extends Controller with Security {
     }
   }
 
+  def delete(id: Int) = isAdmin { identity => implicit request =>
+    Item.delete(id)
+    Ok("Item deleted")
+  }
+
   private def itemBrowseTopic(id: Int, page: Int)(implicit request: Request[AnyContent]): Result = {
     Topic.findById(id).map( topic =>
       Ok(views.html.item.browse(id, topic.pagedItems(page, 10), "topic", topic.name, page, topic.itemCount))
@@ -42,7 +47,7 @@ object ItemController extends Controller with Security {
   }
 
   def itemsWithNoTopics = isAdmin { identity => { implicit request =>
-      Ok(views.html.item.notopics(Item.allMissingMetadata))
+      Ok(views.html.item.notopics(Item.allWithCatalogErrors))
     }
   }
 

@@ -102,6 +102,51 @@ class ItemSpec extends Specification {
       }
     }
 
+    "#allWithCatalogErrors" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val u = User.make("bob", "bob@example.com", "pass", "roley")
+        val ct = ContentType.make("tag", "label", "desc", Some("logo"))
+        val rm = ResourceMap.make("tag", "desc", Some("swordurl"))
+        val p = Publisher.make(u.id, "pubtag", "pubname", "pubdesc", "pubcat",
+                               "pubstatus", Some(""), Some(""))
+        val col = Collection.make(p.id, ct.id, rm.id, "coll", "desc", "open")
+        val i1 = Item.make(col.id, ct.id, "loc", "scoap3:asdf:123")
+        val i2 = Item.make(col.id, ct.id, "loc", "scoap3:asdf:456")
+
+        val s = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        val t = Topic.make(s.id, "tag", "abstract")
+        val t_any = Topic.make(s.id, "any", "Item with some topics")
+        val t_none = Topic.make(s.id, "none", "Item with no topics")
+        val item_list1 = Item.allWithCatalogErrors
+
+        // items without any topics are in the error list
+        item_list1 must haveSize(2)
+        item_list1.contains(i1) must equalTo(true)
+        item_list1.contains(i2) must equalTo(true)
+
+        // adding a 'normal' topic does not remove the item from the error list
+        i1.addTopic(t)
+        val item_list2 = Item.allWithCatalogErrors
+        item_list2 must haveSize(2)
+        item_list2.contains(i1) must equalTo(true)
+        item_list2.contains(i2) must equalTo(true)
+
+        // adding the special 'any' topic removes an item from the error list
+        i1.addTopic(t_any)
+        val item_list3 = Item.allWithCatalogErrors
+        item_list3 must haveSize(1)
+        item_list3.contains(i1) must equalTo(false)
+        item_list3.contains(i2) must equalTo(true)
+
+        // adding the special 'none' topic removes an item from the error list
+        i2.addTopic(t_none)
+        val item_list4 = Item.allWithCatalogErrors
+        item_list4 must haveSize(0)
+        item_list4.contains(i1) must equalTo(false)
+        item_list4.contains(i2) must equalTo(false)
+      }
+    }
+
     "#inCollection" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         User.create("bob", "bob@example.com", "pass", "roley")
