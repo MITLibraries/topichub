@@ -267,18 +267,25 @@ object Cataloger {
     val resmap = ResourceMap.findById(coll.resmapId).get
     val cataloger = new Cataloger(resmap, Store.content(item))
     val ctype = ContentType.findById(item.ctypeId).get
-
+    var errorDetected = false
     println(s"Cataloging Item: ${item.objKey}")
 
-    // start with metadata schemes
-    ctype.schemes("meta").foreach( sch => {
-      // println("Found scheme:" + sch.tag)
-      cataloger.metadata(sch, item) }
-    )
-    // next topic schemes
-    ctype.schemes("topic").foreach( cataloger.topics(_, item) )
+    try {
+      // start with metadata schemes
+      ctype.schemes("meta").foreach( sch => {
+        // println("Found scheme:" + sch.tag)
+        cataloger.metadata(sch, item) }
+      )
+      // next topic schemes
+      ctype.schemes("topic").foreach( cataloger.topics(_, item) )
+    } catch {
+      case e: Exception => println(e); errorDetected = true
+    }
+
     // now assign to meta-topics as appropriate
-    if (cataloger.addedTopics == 0) {
+    if (errorDetected == true) {
+      println("An error occurred cataloging this item.")
+    } else if (cataloger.addedTopics == 0) {
       // assign to 'null' meta-topic
       item.addTopic(Topic.forSchemeAndTag("meta", "null") match {
         case Some(x) => x
