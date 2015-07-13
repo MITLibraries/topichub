@@ -2,22 +2,35 @@
  * Page to display Items missing Topics (which is an error state)            *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
- @(items: List[Item])(implicit request: play.api.mvc.RequestHeader)
+@(items: List[Item])(implicit request: play.api.mvc.RequestHeader)
 
 @layout.main("Items missing Topics -  TopicHub") {
   <div class="page-header">
     <h2>Items missing Topics</h2>
     <p>These items are in an error state as all Items should have at least
     one topic assigned by a successful cataloger worker.</p>
-    <p>At this time we have no method to clean up these records from this interface.
-    Once we know what likely steps we should take, we can add that.</p>
   </div>
   <ul class="list-group">
     @items.map { item =>
       <li class="list-group-item">
         @HubUtils.fmtPreciseDateTime(item.created)
-        <a href="@routes.ItemController.item(item.id)">View Local record</a>
-        <a href="@item.location.substring(7)">View Remote Record</a>
+        <div class="btn-group" role="group">
+          <a class="btn btn-default" href="@routes.ItemController.item(item.id)">View Local</a>
+
+          <a class="btn btn-default" href="@item.location.substring(7)">View Remote</a>
+
+          @if(Publisher.findById(Collection.findById(item.collectionId).get.publisherId).get.harvestCount == 1) {
+            <a id="reharvest-@item.id" class="btn btn-default" href="@routes.Application.pullKnownItem(
+            item.collectionId,
+            Publisher.findById(Collection.findById(item.collectionId).get.publisherId).get.harvests.head.id,
+            item.objKey,
+            true)">Attempt Reharvest</a>
+          } else {
+            <a class="btn btn-default disabled">Unable to determine Harvest</a>
+          }
+
+          <a id="delete-@item.id" class="btn btn-default" href="@routes.ItemController.delete(item.id)">Delete</a>
+        </div>
       </li>
    }
   </ul>

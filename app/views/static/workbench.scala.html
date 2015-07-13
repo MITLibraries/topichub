@@ -17,7 +17,7 @@
             </a>
 
             <a id="sidenav_notopic_items" href="@routes.ItemController.itemsWithNoTopics" class="list-group-item">
-            Items with no Topics <span class="badge">@{ Item.allMissingMetadata.size }</span></a>
+            Items with no Topics <span class="badge">@{ Item.allWithCatalogErrors.size }</span></a>
           }
 
           <a id="sidenav_schemes" href="@routes.Application.schemes" class="list-group-item">Schemes</a>

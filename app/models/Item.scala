@@ -299,6 +299,24 @@ object Item {
     }
   }
 
+  def allWithCatalogErrors: List[Item] = {
+    DB.withConnection { implicit c =>
+      SQL("""
+            SELECT item.*
+            FROM item
+            WHERE id NOT IN (
+              SELECT DISTINCT item.id
+              FROM item
+              LEFT JOIN item_topic on item.id = item_topic.item_id
+              LEFT JOIN topic on topic.id = item_topic.topic_id
+              WHERE topic.tag = 'any'
+              OR topic.tag = 'none'
+              )
+            ORDER BY created DESC
+          """).as(item *)
+    }
+  }
+
   def findByKey(key: String): Option[Item] = {
     DB.withConnection { implicit c =>
       SQL("select * from item where obj_key = {key}").on('key -> key).as(item.singleOpt)

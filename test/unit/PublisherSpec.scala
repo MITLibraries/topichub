@@ -184,6 +184,30 @@ class PublisherSpec extends Specification {
       }
     }
 
+    "#harvests"  in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val u = User.make("bob", "bob@example.com", "pwd", "role1")
+        Publisher.all.size must equalTo(0)
+        val p = Publisher.make(u.id, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
+
+        p.harvests.size must equalTo(0)
+        val h1 = Harvest.make(p.id, "name", "protocol", "http://www.example.com", "http://example.org", 1, new Date)
+        p.harvests.size must equalTo(1)
+        p.harvests.contains(h1) must equalTo(true)
+        val h2 = Harvest.make(p.id, "name2", "protocol", "http://www.example.com", "http://example.org", 1, new Date)
+        p.harvests.contains(h1) must equalTo(true)
+        p.harvests.contains(h2) must equalTo(true)
+        p.harvests.size must equalTo(2)
+
+        val p2 = Publisher.make(u.id, "pubtag2", "pubname", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
+        val h3 = Harvest.make(p2.id, "name3", "protocol", "http://www.example.com", "http://example.org", 1, new Date)
+        p.harvests.contains(h1) must equalTo(true)
+        p.harvests.contains(h2) must equalTo(true)
+        p.harvests.contains(h3) must equalTo(false)
+        p.harvests.size must equalTo(2)
+      }
+    }
+
     "#harvestCount" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val u = User.make("bob", "bob@example.com", "pwd", "role1")
