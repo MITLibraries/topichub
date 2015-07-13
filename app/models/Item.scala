@@ -29,6 +29,20 @@ case class Item(id: Int,            // DB key
                 updated: Date,      // Time of last transfer
                 transfers: Int)  {  // Number of transfers
 
+  def collection = {
+    DB.withConnection { implicit c =>
+      SQL("select * from collection where id = {collection_id}")
+      .on('collection_id -> collectionId).as(Collection.coll.single)
+    }
+  }
+
+  def holds = {
+    DB.withConnection { implicit c =>
+      SQL("select count(*) from hold where item_id = {item_id}")
+      .on('item_id -> id).as(scalar[Long].single)
+    }
+  }
+
   def hasTopic(topic: Topic): Boolean = {
     DB.withConnection { implicit c =>
       SQL("select count(*) from item_topic where topic_id = {topic_id} and item_id = {item_id}")
@@ -307,6 +321,20 @@ object Item {
   def collectionCount(coll_id: Int) = {
     DB.withConnection { implicit c =>
       SQL("select count(*) from item where collection_id = {id}").on('id -> coll_id).as(scalar[Long].single)
+    }
+  }
+
+  def inPublisherRange(pubId: Int, from: Date, until: Date): List[Item] = {
+    DB.withConnection { implicit c =>
+      SQL(
+        """
+          select item.* from item, collection
+          where item.collection_id = collection.id
+          and collection.publisher_id = {pub_id}
+          and item.created >= {from}
+          and item.created <= {until}
+        """
+      ).on('pub_id -> pubId, 'from -> from, 'until -> until).as(item *)
     }
   }
 

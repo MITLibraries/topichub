@@ -1,0 +1,40 @@
+@************************************************************************
+ * Page with form to create a new Content Cull                          *
+ * Copyright (c) 2015 MIT Libraries                                     *
+ ************************************************************************@
+@(pub: Publisher, cullForm: Form[Cull])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
+@import helper._
+@implicitField = @{ helper.FieldConstructor(bootstrapHorizontal.f) }
+@layout.main("Cull - TopicHub") {
+  <h2>Define a content cull (removal)</h2>
+  @form(routes.Application.createCull(pub.id), 'class -> "form-horizontal") {
+    <span id="helpBlock" class="help-block">* Denotes Required Element</span>
+
+    @inputText(cullForm("name"),
+            'class -> "form-control",
+            '_label -> "* Cull Name",
+            '_help -> "")
+
+    @inputText(cullForm("policy"),
+              'class -> "form-control",
+              'placeholder -> "soft",
+              '_label -> "* Policy",
+              '_help -> "soft is the only supported policy at this time.")
+
+    @inputText(cullForm("notify_url"),
+              'class -> "form-control",
+              '_label -> "Notify URL",
+              '_help -> "ex. mailto:admin@repo.scoap3.org")
+
+    @inputDate(cullForm("start"),
+              'class -> "form-control",
+              '_label -> "* Start Date",
+              '_help -> "ex. What date should the Cull Start in the format 'yyyy-MM-dd'?")
+
+    <div class="form-group">
+      <div class="col-sm-offset-2 col-sm-10">
+        <button id="submit" type="submit" class="btn btn-primary">Create Cull</button>
+      </div>
+    </div>
+  }
+}

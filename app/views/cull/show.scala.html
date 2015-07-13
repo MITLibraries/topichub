@@ -1,0 +1,22 @@
+@************************************************************************
+ * Page to display a publisher content cull with control to start a     *
+ * cull with override parameters                                        *
+ * Copyright (c) 2015 MIT Libraries                                     *
+ ************************************************************************@
+@(cull: Cull, startForm: Form[Int])(implicit request: play.api.mvc.RequestHeader, messages: Messages)
+@import helper._
+@layout.main("Cull - TopicHub") {
+  <h2>Hidden</h2>
+  <div class="jumbotron">
+    <h3>~ Cull ~</h3>
+    <h2>@cull.name for <a href="@routes.Application.editPublisher(cull.publisher.get.id)">@cull.publisher.get.name</a></h2>
+    <h3>Policy: @cull.policy</h3>
+    <p>First date: @HubUtils.fmtDate(cull.start)</p>
+    <p>Last Date: @HubUtils.fmtDate(cull.updated)</p>
+    @form(routes.Application.startCull(cull.id)) {
+      @inputText(startForm("span"))
+      <input type="submit" value="Start">
+    }
+    @*<a rel="tooltip" title="start new cull" href="@routes.Application.startCull(cull.id, 1)" class="btn btn-primary btn-large pull-right">Start &raquo;</a>*@
+  </div>
+}

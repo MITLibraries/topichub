@@ -93,6 +93,12 @@ case class Topic(id: Int, scheme_id: Int, tag: String, name: String,
       SQL("select * from subscription where topic_id = {id}").on('id -> id).as(Subscription.subscrip *)
     }
   }
+
+  def pickCount = {
+    DB.withConnection { implicit c =>
+      SQL("select count(*) from topic_pick where topic_id = {id}").on('id -> id).as(scalar[Long].single)
+    }
+  }
 }
 
 object Topic {
@@ -152,6 +158,13 @@ object Topic {
     DB.withConnection { implicit c =>
       SQL("select topic.* from scheme, topic where scheme.id = topic.scheme_id and scheme.tag = {schemeTag} and topic.tag = {topicTag}")
       .on('schemeTag -> schemeTag, 'topicTag -> topicTag).as(topic.singleOpt)
+    }
+  }
+
+  def delete(id: Int) {
+    DB.withConnection { implicit c =>
+      SQL("delete from item_topic where topic_id = {id}").on('id -> id).executeUpdate()
+      SQL("delete from topic where id = {id}").on('id -> id).executeUpdate()
     }
   }
 

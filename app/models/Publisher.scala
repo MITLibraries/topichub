@@ -53,6 +53,12 @@ case class Publisher(id: Int,  // DB key
       SQL("select count(*) from harvest where publisher_id = {id}").on('id -> id).as(scalar[Long].single)
     }
   }
+
+  def cullCount = {
+    DB.withConnection { implicit c =>
+      SQL("select count(*) from cull where publisher_id = {id}").on('id -> id).as(scalar[Long].single)
+    }
+  }
 }
 
 object Publisher {

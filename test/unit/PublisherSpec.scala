@@ -4,12 +4,7 @@ import org.specs2.matcher.MatchResult
 import java.util.Date
 import play.api.test._
 import play.api.test.Helpers._
-import models.Collection
-import models.ContentType
-import models.Harvest
-import models.ResourceMap
-import models.Publisher
-import models.User
+import models.{Collection, ContentType, Cull, Harvest, Publisher, ResourceMap, User}
 
 class PublisherSpec extends Specification {
 
@@ -206,6 +201,26 @@ class PublisherSpec extends Specification {
         val p2 = Publisher.make(u.id, "pubtag2", "pubname", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
         Harvest.create(p2.id, "name3", "protocol", "http://www.example.com", "http://example.org", 1, new Date)
         p.harvestCount must equalTo(2)
+      }
+    }
+
+    "#cullCount" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val u = User.make("bob", "bob@example.com", "pwd", "role1")
+        Publisher.all.size must equalTo(0)
+        val p = Publisher.make(u.id, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
+
+        // adding harvests for a publisher increases the publisher harvest count
+        p.cullCount must equalTo(0)
+        Cull.create(p.id, "name", "soft", None, 1, new Date)
+        p.cullCount must equalTo(1)
+        Cull.create(p.id, "name2", "soft", None, 1, new Date)
+        p.cullCount must equalTo(2)
+
+        // a harvest added to a different publisher does not increase the publisher harvest count
+        val p2 = Publisher.make(u.id, "pubtag2", "pubname", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
+        Cull.create(p2.id, "name3", "soft", None, 1, new Date)
+        p.cullCount must equalTo(2)
       }
     }
   }

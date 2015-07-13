@@ -3,17 +3,9 @@ import java.util.Date
 
 import play.api.test._
 import play.api.test.Helpers._
-import models.Collection
-import models.ContentType
-import models.Item
-import models.Publisher
-import models.ResourceMap
-import models.Scheme
-import models.Subscriber
-import models.Subscription
-import models.Topic
-import models.User
-import models.Validator
+import models.{Agent, Collection, ContentType, Item, Publisher, ResourceMap, Scheme}
+import models.{Subscriber, Subscription, Topic, TopicPick, User, Validator}
+
 import java.util.Date
 
 class TopicSpec extends Specification {
@@ -109,6 +101,19 @@ class TopicSpec extends Specification {
         val t2 = Topic.make(s.id, "topictag2", "name")
         Topic.forSchemeAndTag("schemetag1", "topictag1") must equalTo(Some(t1))
         Topic.forSchemeAndTag("schemetag1", "topictag2") must equalTo(Some(t2))
+      }
+    }
+
+    "#delete" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        Topic.all must haveSize(0)
+        val s = Scheme.make("schemetag1", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        val t1 = Topic.make(s.id, "topictag1", "name")
+        val t2 = Topic.make(s.id, "topictag2", "name")
+        Topic.all must haveSize(2)
+
+        Topic.delete(1)
+        Topic.all must haveSize(1)
       }
     }
 
@@ -391,6 +396,38 @@ class TopicSpec extends Specification {
         t2_subs.contains(subscr3) must equalTo(true)
 
         t3.subscriptions.size must equalTo(0)
+      }
+    }
+
+    "#pickCount" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val u = User.make("bob", "bob@example.com", "pwd", "role1")
+        val sub = Subscriber.make(u.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        val sub2 = Subscriber.make(u.id, "Sub Name2", "cat", "contact", Some("link"), Some("logo"))
+        val agt = Agent.make("conveyor", "Conveyor Agent", "Internal", "", "", None)
+
+        Topic.all must haveSize(0)
+        val s = Scheme.make("schemetag1", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        val s2 = Scheme.make("schemetag2", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        val t1 = Topic.make(s.id, "topictag1", "name")
+        val t2 = Topic.make(s.id, "topictag2", "name2")
+        val t3 = Topic.make(s2.id, "topictag3", "name3")
+
+        t1.pickCount must equalTo(0)
+        t2.pickCount must equalTo(0)
+        t3.pickCount must equalTo(0)
+
+        // add pick to t1, count increases but does not affect t2 or t3
+        val pick1 = TopicPick.make(sub.id, t1.id, agt.id)
+        t1.pickCount must equalTo(1)
+        t2.pickCount must equalTo(0)
+        t3.pickCount must equalTo(0)
+
+        val pick2 = TopicPick.make(sub.id, t2.id, agt.id)
+        val pick3 = TopicPick.make(sub2.id, t2.id, agt.id)
+        t1.pickCount must equalTo(1)
+        t2.pickCount must equalTo(2)
+        t3.pickCount must equalTo(0)
       }
     }
   }

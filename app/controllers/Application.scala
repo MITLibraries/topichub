@@ -35,6 +35,7 @@ case class HubContext(user: Option[User])
 object Application extends Controller with Security {
 
   val harvester = Akka.system.actorOf(Props[workers.HarvestWorker], name="harvester")
+  val reaper = Akka.system.actorOf(Props[workers.ReaperWorker], name="reaper")
   val indexer = Akka.system.actorOf(Props[workers.IndexWorker], name="indexer")
   val conveyor = Akka.system.actorOf(Props[workers.ConveyorWorker], name="conveyor")
 
@@ -328,6 +329,110 @@ object Application extends Controller with Security {
       }
     }
     ).getOrElse(NotFound(views.html.static.trouble("No such harvest: " + id)))
+  }
+
+  val cullForm = Form(
+    mapping(
+      "id" -> ignored(0),
+      "publisher_id" -> ignored(1),
+      "name" -> nonEmptyText,
+      "policy" -> default(nonEmptyText, "soft"),
+      "notify_url" -> optional(text),
+      "freq" -> default(number, 1),
+      "start" -> date,
+      "updated" -> ignored(new Date)
+    )(Cull.apply)(Cull.unapply)
+  )
+
+  val startCullForm = Form(
+    single {
+      "span" -> number
+    }
+  )
+
+  def cull(id: Int) = isAuthenticated { identity =>
+    implicit request =>
+    Cull.findById(id).map( cull =>
+      ownsPublisher(identity, cull.publisher.get,
+        Ok(views.html.cull.show(cull, startCullForm)))
+    ).getOrElse(NotFound(views.html.static.trouble("No such cull: " + id)))
+  }
+
+  def startCull(id: Int) = isAuthenticated { identity =>
+    implicit request =>
+    Cull.findById(id).map( cull =>
+      if (cull.publisher.get.userId == identity.id) {
+        startCullForm.bindFromRequest.fold(
+          errors => BadRequest(views.html.cull.show(cull, errors)),
+          value =>  {
+             val cl = cull.copy(freq = value)
+             reaper ! cl
+             // optimistically update - so UI will show last harvest date
+             cl.complete
+             Redirect(routes.Application.cull(id))
+          }
+        )} else {
+          Unauthorized(views.html.static.trouble("You are not authorized"))
+        }
+    ).getOrElse(NotFound(views.html.static.trouble("No such cull: " + id)))
+  }
+
+  def startAllCulls(key: String) = Action { implicit request =>
+    val authorized_key = Play.configuration.getString("auth.harvest.key").get
+    if (key == authorized_key) {
+      Cull.all.map{ cull =>
+        reaper ! cull
+        cull.complete }
+      Ok("kicked off all culls")
+    } else {
+      Unauthorized(views.html.static.trouble("You are not authorized"))
+    }
+  }
+
+  def expungeKnownItem(cid: Int, oid: String, policy: String) =
+    isAuthenticated { identity => implicit request =>
+    Collection.findById(cid).map ( coll => {
+      if (coll.publisher.userId == identity.id) {
+        reaper ! (oid, policy)
+        Ok("expunged: " + oid)
+      } else {
+        Unauthorized(views.html.static.trouble("You are not authorized"))
+      }
+    }).getOrElse(NotFound(views.html.static.trouble("No such collection: " + cid)))
+  }
+
+  def newCull(id: Int) = isAuthenticated { identity =>
+    implicit request =>
+    Publisher.findById(id).map( pub =>
+      ownsPublisher(identity, pub, Ok(views.html.cull.create(pub, cullForm)))
+    ).getOrElse(NotFound(views.html.static.trouble("No such publisher: " + id)))
+  }
+
+  def createCull(id: Int) = isAuthenticated { identity => implicit request =>
+    val pub = Publisher.findById(id).get
+    ownsPublisher(identity, pub,
+      cullForm.bindFromRequest.fold(
+        errors => BadRequest(views.html.cull.create(pub, errors)),
+        value => {
+          Cull.make(id, value.name, value.policy, value.notifyUrl,
+                   value.freq, value.start)
+          Redirect(routes.Application.publisher(id))
+        }
+      )
+    )
+  }
+
+  def deleteCull(id: Int) = isAuthenticated { identity =>
+    implicit request =>
+    Cull.findById(id).map( cull => {
+      if (cull.publisher.get.userId == identity.id) {
+        Cull.delete(id)
+        Redirect(routes.Application.publisher(cull.publisher.get.id))
+      } else {
+        Unauthorized(views.html.static.trouble("You are not authorized"))
+      }
+    }
+    ).getOrElse(NotFound(views.html.static.trouble("No such cull: " + id)))
   }
 
   def collections = Action { implicit request =>

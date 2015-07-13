@@ -32,6 +32,12 @@ case class Collection(id: Int,
                       updated: Date,
                       deposits: Int,
                       active: Boolean) {
+  def publisher = {
+    DB.withConnection { implicit c =>
+      SQL("select * from publisher where id = {publisher_id}")
+      .on('publisher_id -> publisherId).as(Publisher.pub.single)
+    }
+  }
 
   def recordDeposit {
     val newDep = deposits + 1
