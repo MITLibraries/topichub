@@ -2,14 +2,9 @@ import org.specs2.mutable._
 
 import play.api.test._
 import play.api.test.Helpers._
-import models.Item
-import models.Collection
-import models.Publisher
-import models.User
-import models.ContentType
-import models.ResourceMap
-import models.Scheme
-import models.Topic
+import models.{Collection, ContentType, Hold, Item, Publisher}
+import models.{ResourceMap, Scheme, Subscriber, Subscription, Topic, User}
+
 import java.util.Date
 
 class ItemSpec extends Specification {
@@ -157,6 +152,20 @@ class ItemSpec extends Specification {
       }
     }
 
+    "#inPublisherRange" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val now = System.currentTimeMillis
+        val oldDate = new Date(now - 100000)
+        User.create("bob", "bob@example.com", "pass", "roley")
+        ContentType.create("tag", "label", "desc", Some("logo"))
+        ResourceMap.create("tag", "desc", Some("swordurl"))
+        Publisher.create(1, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
+        Collection.create(1, 1, 1, "coll", "desc", "open")
+        Item.create(1, 1, "loc", "scoap3:asdf:123")
+        Item.inPublisherRange(1, oldDate, new Date).size must equalTo(1)
+      }
+    }
+
     "#createdAfterCount" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val now = System.currentTimeMillis
@@ -220,6 +229,38 @@ class ItemSpec extends Specification {
 
         val filename_error = item.get.filename("http://bob.popcorn")
         filename_error must equalTo("filename_error")
+      }
+    }
+
+    "#collection" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        User.create("bob", "bob@example.com", "pass", "roley")
+        ContentType.create("tag", "label", "desc", Some("logo"))
+        ResourceMap.create("tag", "desc", Some("swordurl"))
+        Publisher.create(1, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
+        val c = Collection.make(1, 1, 1, "coll", "desc", "open")
+        val item = Item.make(1, 1, "loc", "scoap3:asdf:123")
+
+        item.collection must equalTo(c)
+      }
+    }
+
+    "#holds" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        User.create("bob", "bob@example.com", "pass", "roley")
+        ContentType.create("tag", "label", "desc", Some("logo"))
+        ResourceMap.create("tag", "desc", Some("swordurl"))
+        Publisher.create(1, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
+
+        val scheme = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        val topic = Topic.make(scheme.id, "tag", "abstract")
+        val sub = Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        val coll = Collection.make(1, 1, 1, "coll", "desc", "open")
+        val item = Item.make(coll.id, 1, "loc", "scoap3:asdf:123")
+        val s = Subscription.make(sub.id, topic.id, "deliver", sub.created, sub.created)
+        val h1 = Hold.make(sub.id, s.id, item.id)
+
+        item.holds must equalTo(1)
       }
     }
 

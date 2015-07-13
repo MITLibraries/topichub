@@ -15,6 +15,7 @@
      <p>@HubUtils.pluralize(pub.itemCount, "article") deposited</p>
      <p><a class="btn btn-primary btn-large" href="@routes.Application.newCollection(pub.id)">New Collection</a></p>
      <p><a class="btn btn-primary btn-large pull-right" href="@routes.Application.newHarvest(pub.id)">Establish Harvest</a></p>
+     <p><a class="btn btn-primary btn-large pull-right" href="@routes.Application.newCull(pub.id)">Establish Cull</a></p>
   </div>
   <h3>Collections</h3>
   @if(pub.collectionCount > 0) {
@@ -39,5 +40,16 @@
   } else {
     <p>None defined</p>
   }
-
+  <h3>Culls</h3>
+  @if(pub.cullCount > 0) {
+    <dl>
+      @Cull.findByPublisher(pub.id).map { cull =>
+        <dt><a href="@routes.Application.cull(cull.id)">@cull.name</a>
+            <a href="@routes.Application.deleteCull(cull.id)">remove</a></dt>
+        <dd>Started: @HubUtils.fmtDate(cull.start). Latest: @HubUtils.fmtDate(cull.updated)</dd>
+      }
+    </dl>
+  } else {
+    <p>None defined</p>
+  }
 }

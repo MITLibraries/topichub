@@ -1,0 +1,10 @@
+@*****************************************************************************
+ * Email template used to notify subscribers of removed items                *
+ * Copyright (c) 2015 MIT Libraries                                          *
+ *****************************************************************************@
+@(item: Item)
+
+The following item is no longer available from Scoap3Hub:
+
+Title: @item.metadataValue("title")
+Authors: @item.metadataValues("author").mkString(";")

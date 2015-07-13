@@ -2,14 +2,8 @@ import org.specs2.mutable._
 
 import play.api.test._
 import play.api.test.Helpers._
-import models.Item
-import models.Collection
-import models.Publisher
-import models.User
-import models.ContentType
-import models.ResourceMap
-import models.Scheme
-import models.Topic
+import models.{Collection, ContentType, Cull, Item, Publisher, ResourceMap, Scheme, Topic, User}
+
 import java.util.Date
 
 class CollectionSpec extends Specification {
@@ -163,6 +157,25 @@ class CollectionSpec extends Specification {
         c1.recordDeposit
         // necessary to reload to check updated value
         Collection.findById(c1.id).get.deposits must equalTo(1)
+      }
+    }
+
+    "#publisher" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        User.create("bob", "bob@example.com", "pass", "roley")
+        ContentType.create("tag", "label", "desc", Some("logo"))
+        ResourceMap.create("tag", "desc", Some("swordurl"))
+        Publisher.create(1, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
+        Publisher.create(1, "pubtag2", "pubname2", "pubdesc2", "pubcat2", "pubstatus2", Some(""), Some(""))
+
+        Collection.findByPublisher(1).size must equalTo(0)
+        Collection.findByPublisher(2).size must equalTo(0)
+
+        val c1 = Collection.make(1, 1, 1, "coll1", "desc", "open")
+        val c2 = Collection.make(2, 1, 1, "coll2", "desc", "open")
+
+        c1.publisher must equalTo(Publisher.findById(1).get)
+        c2.publisher must equalTo(Publisher.findById(2).get)
       }
     }
 

@@ -63,21 +63,12 @@ object Indexer {
                    "schemeTag" -> toJson(topic.scheme.tag),
                    "tag" -> toJson(topic.tag),
                    "name" -> toJson(topic.name))
-    val jdata = stringify(toJson(data))
     val elastic_url = indexSvc.concat("topic/").concat(topic.id.toString)
-    // debug
-    // println("Topic index: " + jdata)
+    indexDocument(elastic_url, stringify(toJson(data)))
+  }
 
-    if (indexSvc.contains("bonsai.io")) {
-      // println("DEBUG: use basic auth for WS elasticsearch call")
-      WS.url(elastic_url)
-        .withAuth(extractCredentials("username", indexSvc),
-                  extractCredentials("password", indexSvc),
-                  WSAuthScheme.BASIC).put(jdata)
-    } else {
-      // println("DEBUG: no auth for WS elasticsearch call")
-      WS.url(elastic_url).put(jdata)
-    }
+  def deindex(topic: Topic) = {
+    deleteDocument(indexSvc.concat("topic/").concat(topic.id.toString))
   }
 
   def index(item: Item) = {
@@ -90,19 +81,38 @@ object Indexer {
     // also add all topics
     dataMap += "topicSchemeTag" -> toJson(item.topics.map(_.scheme.tag))
     dataMap += "topicTag" -> toJson(item.topics.map(_.tag))
-    val jdata = stringify(toJson(dataMap))
+    indexDocument(elastic_url, stringify(toJson(dataMap)))
     // println("Item index: " + dataMap)
     // println(indexSvc + "item/" + item.id)
+  }
 
+  def deindex(item: Item) = {
+    deleteDocument(indexSvc.concat("item/").concat(item.id.toString))
+  }
+
+  private def indexDocument(url: String, jdata: String) = {
     if (indexSvc.contains("bonsai.io")) {
       // println("DEBUG: use basic auth for WS elasticsearch call")
-      WS.url(elastic_url)
+      WS.url(url)
         .withAuth(extractCredentials("username", indexSvc),
                   extractCredentials("password", indexSvc),
                   WSAuthScheme.BASIC).put(jdata)
     } else {
       // println("DEBUG: no auth for WS elasticsearch call")
-      WS.url(elastic_url).put(jdata)
+      WS.url(url).put(jdata)
+    }
+  }
+
+  private def deleteDocument(url: String) = {
+    if (indexSvc.contains("bonsai.io")) {
+      // println("DEBUG: use basic auth for WS elasticsearch call")
+      WS.url(url)
+        .withAuth(extractCredentials("username", indexSvc),
+                  extractCredentials("password", indexSvc),
+                  WSAuthScheme.BASIC).delete
+    } else {
+      // println("DEBUG: no auth for WS elasticsearch call")
+      WS.url(url).delete
     }
   }
 
