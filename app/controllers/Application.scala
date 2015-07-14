@@ -1239,11 +1239,17 @@ object Application extends Controller with Security {
   }
 
   def resolveHold(id: Int, accept: Boolean) = isAuthenticated { identity => implicit request =>
+    val message = if(accept) {
+                    "This item has been queued for delivery."
+                  } else {
+                    "Item has been removed from your delivery queue." }
+    val message_type = if(accept) { "success" } else { "info" }
     Hold.findById(id).map( hold => {
       val sub = Subscriber.findById(hold.subscriberId).get
       if (sub.userList().contains(identity)) {
         conveyor ! (hold, accept)
         Redirect(routes.Application.holdBrowse(sub.id, 0))
+          .flashing(message_type -> message)
       } else {
         Unauthorized(views.html.static.trouble("You are not authorized"))
       }

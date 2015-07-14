@@ -19,29 +19,29 @@
       @if(item.hasMetadata("accessUrl")) {
         <a rel="tooltip" title="see article in new browser window" href="@item.metadataValue("accessUrl")" target="_blank" class="btn btn-primary btn-large">View &raquo;</a>
       }
-      @if(sub.isDefined) {
-        @if(sub.get.holdOn(item.id).isDefined) {
-          <span><a rel="tooltip" title="Fulfill subscription for this item" href="@routes.Application.resolveHold(sub.get.holdOn(item.id).get.id, true)" class="btn btn-primary btn-large pull-right">Deliver &raquo;</a></span>
-          <span><a rel="tooltip" title="Forget this item" href="@routes.Application.resolveHold(sub.get.holdOn(item.id).get.id, false)" class="btn btn-primary btn-large pull-right">Forget &raquo;</a></span>
-        }
-      }
 
-      <div class="pull-right">
+      <div class="pull-left">
         @if(Application.currentUserHasRole("analyst")) {
-          <a rel="tooltip" title="view METS.xml" href="@routes.ItemController.itemMets(item.id)" class="btn btn-primary">View METS &raquo;</a>
+          <a rel="tooltip" title="view METS.xml" href="@routes.ItemController.itemMets(item.id)" class="btn btn-default">View METS <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></a>
 
-          <a rel="tooltip" title="download whole package to desktop" href="@routes.ItemController.itemPackage(item.id)" class="btn btn-primary">Download &raquo;</a>
+          <a rel="tooltip" title="download whole package to desktop" href="@routes.ItemController.itemPackage(item.id)" class="btn btn-default">Download <span class="glyphicon glyphicon-download" aria-hidden="true"></a>
         }
-        @if(sub.isDefined) {
+      </div>
+      <div class="pull-right">
+        @if(sub.isDefined && sub.get.holdOn(item.id).isEmpty) {
           @if(sub.get.channels.size > 0) {
             <a rel="tooltip" title="start a SWORD deposit of package to my repository"
                href="@routes.ItemController.itemDeposit(item.id)"
                class="btn btn-primary">Deposit &raquo;</a>
           } else {
             <a rel="tooltip" title="a channel is required to determine where to deposit a package"
-               href="@routes.Application.newChannel(sub.get.id)" class="btn btn-primary btn-alert">
+               href="@routes.Application.newChannel(sub.get.id)" class="btn btn-alert">
                Create a Channel to enable Deposits</a>
           }
+        }
+        @if(sub.isDefined && sub.get.holdOn(item.id).isDefined) {
+          <a rel="tooltip" title="Fulfill subscription for this item" href="@routes.Application.resolveHold(sub.get.holdOn(item.id).get.id, true)" class="btn btn-success btn-large">Deliver <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span></a>
+          <a rel="tooltip" title="Forget this item" href="@routes.Application.resolveHold(sub.get.holdOn(item.id).get.id, false)" class="btn btn-danger btn-large">Forget <span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span></a>
         }
       </div>
     </p>
