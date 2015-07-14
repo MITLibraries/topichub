@@ -2,9 +2,7 @@ import org.specs2.mutable._
 
 import play.api.test._
 import play.api.test.Helpers._
-import models.Scheme
-import models.Topic
-import models.Validator
+import models.{ContentType, Collection, Item, Publisher, ResourceMap, Scheme, Topic, User, Validator}
 import java.util.Date
 
 class SchemeSpec extends Specification {
@@ -108,6 +106,26 @@ class SchemeSpec extends Specification {
         Topic.create(2, "tag2", "meta")
         Scheme.findById(1).get.topicCount must equalTo(2)
         Scheme.findById(2).get.topicCount must equalTo(1)
+      }
+    }
+
+    "#itemCount" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        Scheme.all must haveSize(0)
+        Scheme.create("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        Scheme.create("tag2", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        Scheme.findById(1).get.itemCount must equalTo(0)
+        Scheme.findById(2).get.itemCount must equalTo(0)
+        User.create("bob1", "bob@example.com", "pwd", "role1")
+        val pub = Publisher.make(1, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
+        val ct = ContentType.make("cttag", "ctlabel", "ctdesc", Some(""))
+        val rmap = ResourceMap.make("rmaptag", "rmapdesc", Some(""))
+        var col = Collection.make(pub.id, ct.id, rmap.id, "coll", "desc", "open")
+        val item = Item.make(col.id, ct.id, "location", "scoap:abc:123")
+        val topic = Topic.make(1, "tag", "meta")
+        item.addTopic(topic)
+        Scheme.findById(1).get.itemCount must equalTo(1)
+        Scheme.findById(2).get.itemCount must equalTo(0)
       }
     }
 
