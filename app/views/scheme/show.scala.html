@@ -6,40 +6,72 @@
  *****************************************************************************@
 @(scheme: Scheme, sub: Option[Subscriber])(implicit request: play.api.mvc.RequestHeader)
 @layout.main("Scheme - TopicHub") {
-  <div class="jumbotron">
-    <h3>~ Scheme ~</h3>
-    <h2>@scheme.tag</h2>
-    @if(scheme.link.isEmpty || scheme.link.get == "none") {
-      <p>@scheme.description</p>
-    } else {
-      <p><a href="@scheme.link" target="_blank">@scheme.description</a></p>
-    }
-    <p>@HubUtils.pluralize(scheme.topicCount, "topic")
-    @if(scheme.topicCount > 0) {
-      <a href="@routes.Application.topicBrowse(scheme.id)">Browse</a></p>
-    } else {
-      </p>
-    }
-    @if(scheme.validator.isDefined) {
-      <p>Check Topic: <form action="@routes.Application.topicValidate(scheme.id)" method="POST">
-        <input type="text" name="topic">
-        <input type="submit" value="Check">
-      </p>
-    }
-    @if(sub.isDefined) {
-      <p><a href="@routes.Application.interestBrowse("scheme", scheme.tag)">Browse current interests</a></p>
-      <p>New interest: <form action="@routes.Application.addSubscriberInterest(sub.get.id, scheme.tag)" method="POST">
-        <input type="text" name="interest">
-        <label for="exact">Exact</label>
-        <input type="radio" id="exact" name="template" value="false" checked="checked">
-        <label for="fuzzy">Fuzzy</label>
-        <input type="radio" id="fuzzy" name="template" value="true">
-        <input type="submit" value="Add">
-      </p>
-    }
+<div class="container=fluid">
+  <div class="row-fluid">
+    <div class="jumbotron col-md-9">
+      <h3>~ Scheme ~</h3>
+      <h2>@scheme.tag</h2>
+      @if(scheme.link.isEmpty || scheme.link.get == "none") {
+        <p>@scheme.description</p>
+      } else {
+        <p><a href="@scheme.link" target="_blank">@scheme.description</a></p>
+      }
+      <p>@HubUtils.pluralize(scheme.topicCount, "topic")
+      @if(scheme.topicCount > 0) {
+        <a href="@routes.Application.topicBrowse(scheme.id)">Browse</a></p>
+      } else {
+        </p>
+      }
+      @if(scheme.validator.isDefined) {
+        <p>Check Topic: <form action="@routes.Application.topicValidate(scheme.id)" method="POST">
+          <input type="text" name="topic">
+          <input type="submit" value="Check">
+        </p>
+      }
+      @if(sub.isDefined) {
+        <p><a href="@routes.Application.interestBrowse("scheme", scheme.tag)">Browse current interests</a></p>
+        <p>New interest: <form action="@routes.Application.addSubscriberInterest(sub.get.id, scheme.tag)" method="POST">
+          <input type="text" name="interest">
+          <label for="exact">Exact</label>
+          <input type="radio" id="exact" name="template" value="false" checked="checked">
+          <label for="fuzzy">Fuzzy</label>
+          <input type="radio" id="fuzzy" name="template" value="true">
+          <input type="submit" value="Add">
+        </p>
+      }
 
-    @if(Application.currentUserHasRole("analyst")) {
-      <a rel="tooltip" title="manage scheme" href="@routes.Application.editScheme(scheme.id)" class="btn btn-primary btn-large pull-right">Manage &raquo;</a>
-    }
+      @if(Application.currentUserHasRole("analyst")) {
+        <a rel="tooltip" title="manage scheme" href="@routes.Application.editScheme(scheme.id)" class="btn btn-primary btn-large pull-right">Manage &raquo;</a>
+      }
+    </div>
+    <div id="piechart" class="col-md-3"></div>
   </div>
+</div>
 }
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript">
+
+  // Load the Visualization API and the piechart package.
+  google.load('visualization', '1.1', {'packages':['corechart']});
+  // Set a callback to run when the Google Visualization API is loaded.
+  google.setOnLoadCallback(drawChart);
+
+  function drawChart() {
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'Coverage Type');
+    data.addColumn('number', 'Item Count');
+    data.addRows([
+      @for(i <- HubUtils.hubItemCoverage(scheme.itemCount)) {
+        ['@i._1', @i._2],
+      }
+    ]);
+
+    var options = {
+      title: '@scheme.tag Item Coverage',
+      width: 380,
+      height: 260 };
+
+    var chart = new google.visualization.PieChart(document.getElementById('piechart'));
+    chart.draw(data, options);
+  }
+</script>

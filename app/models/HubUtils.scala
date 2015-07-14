@@ -74,4 +74,10 @@ object HubUtils {
       indexPassword
     }
   }
+
+  def hubItemCoverage(covered: Long): List[(String, Long)] = {
+    val allItems = Item.createdAfterCount(new Date(0L))
+    val uncovered = allItems - covered
+    List(("Covered", covered), ("Uncovered", uncovered))
+  }
 }

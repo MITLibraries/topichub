@@ -30,6 +30,18 @@ case class Scheme(id: Int, tag: String, gentype: String, category: String, descr
     }
   }
 
+  def itemCount = {
+    DB.withConnection { implicit c =>
+      SQL(
+        """
+          select count(distinct item_topic.item_id) from item_topic, topic
+          where item_topic.topic_id = topic.id
+          and topic.scheme_id = {scheme_id}
+        """
+      ).on('scheme_id -> id).as(scalar[Long].single)
+    }
+  }
+
   def validator: Option[Validator] = {
     DB.withConnection { implicit c =>
       SQL("select * from validator where scheme_id = {id}").on('id -> id).as(Validator.validator.singleOpt)
