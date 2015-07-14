@@ -75,7 +75,8 @@ object ItemController extends Controller with Security {
 
     Item.findById(id).map( item => {
       Application.conveyor ! (item, sub.get)
-      Ok("That may have worked.")
+      Redirect(routes.ItemController.item(id))
+        .flashing("success" -> "The item has been queued for delivery.")
     }
     ).getOrElse(NotFound(views.html.static.trouble("No such item: " + id)))
   }
