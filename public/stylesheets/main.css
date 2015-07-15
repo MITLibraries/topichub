@@ -20,3 +20,8 @@ a.list-group-item:hover {
   font-weight: bold;
   text-decoration: underline;
 }
+
+.validtarget {
+  background-color: lightblue;
+  border: solid thin red;
+}

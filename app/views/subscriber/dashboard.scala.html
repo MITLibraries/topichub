@@ -149,6 +149,8 @@
       event.dataTransfer.setData('text/x-dbid', event.target.id);
       var effect = startsWith(event.target.id, "scheme") ? 'move' : 'copy';
       event.dataTransfer.effectAllowed = effect;
+      $("#noplan").addClass("validtarget");
+      $("[id^=plan-]").addClass("validtarget");
     } else {
       event.preventDefault();
     }
@@ -157,6 +159,8 @@
   function handleDrop(event, target) {
     var srcId = event.dataTransfer.getData('text/x-dbid');
     var source = document.getElementById(srcId);
+    $("#noplan").removeClass("validtarget");
+    $("[id^=plan-]").removeClass("validtarget");
     if (startsWith(srcId, "scheme")) {
       var schemeId = source.id.substring(7); // strip off the "scheme-" from id string
       // ignore any drop operation onto the parent of the source (i.e. circular drop)
