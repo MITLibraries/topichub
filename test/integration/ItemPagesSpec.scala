@@ -51,8 +51,8 @@ class ItemPagesSpec extends Specification {
         item_factory(1)
         browser.goTo("http://localhost:" + port + "/item/1")
         assertThat(browser.title()).isEqualTo("Item - TopicHub")
-        browser.pageSource must not contain("View METS »")
-        browser.pageSource must not contain("Download »")
+        browser.pageSource must not contain("View METS")
+        browser.pageSource must not contain("Download")
         browser.pageSource must not contain("Deposit »")
         browser.pageSource must not contain("Create a Channel to enable Deposits")
       }
@@ -108,8 +108,8 @@ class ItemPagesSpec extends Specification {
         item_factory(1)
         browser.goTo("http://localhost:" + port + "/item/1")
         assertThat(browser.title()).isEqualTo("Item - TopicHub")
-        browser.pageSource must not contain("View METS »")
-        browser.pageSource must not contain("Download »")
+        browser.pageSource must not contain("View METS")
+        browser.pageSource must not contain("Download")
         browser.pageSource must not contain("Deposit »")
         browser.pageSource must not contain("Create a Channel to enable Deposits")
       }
@@ -127,8 +127,8 @@ class ItemPagesSpec extends Specification {
         browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/item/1")
         assertThat(browser.title()).isEqualTo("Item - TopicHub")
-        browser.pageSource must not contain("View METS »")
-        browser.pageSource must not contain("Download »")
+        browser.pageSource must not contain("View METS")
+        browser.pageSource must not contain("Download")
         browser.pageSource must not contain("Deposit »")
         browser.pageSource must contain("Create a Channel to enable Deposits")
       }
@@ -145,8 +145,8 @@ class ItemPagesSpec extends Specification {
         browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/item/1")
         assertThat(browser.title()).isEqualTo("Item - TopicHub")
-        browser.pageSource must not contain("View METS »")
-        browser.pageSource must not contain("Download »")
+        browser.pageSource must not contain("View METS")
+        browser.pageSource must not contain("Download")
         browser.pageSource must contain("Deposit »")
         browser.pageSource must not contain("Create a Channel to enable Deposits")
       }
@@ -184,8 +184,8 @@ class ItemPagesSpec extends Specification {
         browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/item/1")
         assertThat(browser.title()).isEqualTo("Item - TopicHub")
-        browser.pageSource must contain("View METS »")
-        browser.pageSource must contain("Download »")
+        browser.pageSource must contain("View METS")
+        browser.pageSource must contain("Download")
         browser.pageSource must not contain("Deposit »")
         browser.pageSource must not contain("Create a Channel to enable Deposits")
       }
