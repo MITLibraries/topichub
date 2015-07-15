@@ -11,6 +11,8 @@ import scala.concurrent.Await
 import akka.actor.Props
 
 import java.util.Date
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 import play.api._
 import play.api.data._
@@ -273,10 +275,16 @@ object Application extends Controller with Security {
 
   def startAllHarvests(key: String) = Action { implicit request =>
     val authorized_key = Play.configuration.getString("auth.harvest.key").get
+    val yesterday = Instant.now.truncatedTo(ChronoUnit.DAYS).minus(1, ChronoUnit.DAYS)
     if (key == authorized_key) {
       Harvest.all.map{ h =>
-        harvester ! h
-        h.complete }
+        if(h.updated.before(Date.from(yesterday))) {
+          harvester ! h
+          h.complete
+        } else {
+          println("A harvest tried to start that had an invalid date.")
+        }
+      }
       Ok("kicked off all harvests")
     } else {
       Unauthorized(views.html.static.trouble("You are not authorized"))
