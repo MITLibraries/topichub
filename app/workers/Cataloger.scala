@@ -42,6 +42,8 @@ class Cataloger(resmap: ResourceMap, content: StoredContent) {
   var infoCache = Map[String, Seq[String]]()
   // count of added topics
   var addedTopics = 0
+  // newly created topics
+  var newTopics: List[Topic] = List()
 
   def topics(scheme: Scheme, item: Item) = {
     // where in the item's resource map is data for this scheme? Skip if unmapped
@@ -142,6 +144,7 @@ class Cataloger(resmap: ResourceMap, content: StoredContent) {
     Topic.create(scheme.id, tag, title)
     val topic = Topic.forSchemeAndTag(scheme.tag, tag).get
     Indexer.index(topic)
+    newTopics :+ topic
     topic
   }
 
@@ -306,6 +309,8 @@ object Cataloger {
     // finally, are there any subscriptions to fulfill?
     Conveyor.newItem(item)
     //item.changeState("cataloged")
+    // let Conveyor know about any new topics also
+    cataloger.newTopics.foreach(t => Conveyor.newTopic(t))
   }
 
   def testExpression(expr: String, exprType: String, source: String) = {
