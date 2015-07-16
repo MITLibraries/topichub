@@ -144,7 +144,7 @@ class Cataloger(resmap: ResourceMap, content: StoredContent) {
     Topic.create(scheme.id, tag, title)
     val topic = Topic.forSchemeAndTag(scheme.tag, tag).get
     Indexer.index(topic)
-    newTopics :+ topic
+    newTopics = newTopics :+ topic
     topic
   }
 
