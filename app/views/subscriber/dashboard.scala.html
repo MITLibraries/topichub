@@ -75,7 +75,7 @@
       <h4>Subscriptions by Plan</h4>
       <div class="row">
         <div class="col-md-3">
-          <ul class="list-group" id="noplan" ondragenter="return false" ondragover="return false" ondragstart="handleDragStart(event)" ondrop="handleDrop(event, this)">
+          <ul class="list-group" id="noplan" ondragenter="return false" ondragover="return false" ondragstart="handleDragStart(event)" ondrop="handleDrop(event, this)" ondragend="handleDragEnd(event)">
           <h5>Unassigned Schemes</h5>
           <h5>[No destination]</h5>
           @for(s <- sub.unplannedSchemes) {
@@ -89,7 +89,7 @@
         </div>
         @for(plan <- sub.plans) {
           <div class="col-md-3">
-            <ul class="list-group" id="plan-@plan.id" ondragenter="return false" ondragover="return false" ondragstart="handleDragStart(event)" ondrop="handleDrop(event, this)">
+            <ul class="list-group" id="plan-@plan.id" ondragenter="return false" ondragover="return false" ondragstart="handleDragStart(event)" ondrop="handleDrop(event, this)" ondragend="handleDragEnd(event)">
             <h5>@plan.name <span class="glyphicon glyphicon-@plan.icon" aria-hidden="true"></span></h5>
             <h5 id="chanplan-@plan.id">@plan.channel.get.description</h5>
             @for(s <- plan.schemes) {
@@ -154,6 +154,11 @@
     } else {
       event.preventDefault();
     }
+  }
+
+  function handleDragEnd(event) {
+    $("#noplan").removeClass("validtarget");
+    $("[id^=plan-]").removeClass("validtarget");
   }
 
   function handleDrop(event, target) {
