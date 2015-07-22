@@ -6,7 +6,6 @@ import play.api.test.Helpers._
 import org.fest.assertions.Assertions.assertThat
 import play.api.Application
 import play.api.Play
-import play.api.Play.current
 import models.{ Collection, ContentType, Harvest, Publisher, ResourceMap, User, Subscriber }
 
 /**
@@ -28,7 +27,7 @@ class HarvestPagesSpec extends Specification {
         val pub = Publisher.make(pub_user.id, "pubtag", "pubname", "pubdesc", "pubcat",
                                  "pubstatus", Some("http://www.example.com"), Some(""))
         browser.goTo("http://localhost:" + port + "/publisher/" + pub.id + "/createH")
-        browser.pageSource must contain("Log in with your MIT ID")
+        browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
         assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
       }
 
@@ -52,7 +51,7 @@ class HarvestPagesSpec extends Specification {
         val harvest = Harvest.make(pub.id, "name", "protocol", "http://www.example.com",
                                    "http://example.org", 1, new Date)
         browser.goTo("http://localhost:" + port + "/harvest/" + harvest.id)
-        browser.pageSource must contain("Log in with your MIT ID")
+        browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
         assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
       }
 
@@ -66,7 +65,7 @@ class HarvestPagesSpec extends Specification {
                                    "http://example.org", 1, new Date)
         browser.goTo("http://localhost:" + port + "/harvest/" + harvest.id + "/start?span=1")
         Harvest.findById(harvest.id).get.updated must equalTo(harvest.updated)
-        browser.pageSource must contain("Log in with your MIT ID")
+        browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
         assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
       }
 
@@ -80,7 +79,7 @@ class HarvestPagesSpec extends Specification {
                                    "http://example.org", 1, new Date)
         browser.goTo("http://localhost:" + port + "/harvest/" + harvest.id + "/delete")
         Harvest.findById(harvest.id).get must equalTo(harvest)
-        browser.pageSource must contain("Log in with your MIT ID")
+        browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
         assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
       }
 
@@ -97,7 +96,7 @@ class HarvestPagesSpec extends Specification {
         var collection = Collection.make(pub.id, ct.id, rm.id, "coll", "desc", "open")
         browser.goTo("http://localhost:" + port + "/knip/" + collection.id + "/" + harvest.id +
                      "/scoap:asdf:fdsa")
-        browser.pageSource must contain("Log in with your MIT ID")
+        browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
         assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
       }
     }

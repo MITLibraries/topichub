@@ -1,7 +1,7 @@
 import org.specs2.mutable._
 import org.specs2.runner._
 import org.junit.runner._
-
+import play.api.Play
 import play.api.test._
 import play.api.test.Helpers._
 import play.api.libs.json._
@@ -36,7 +36,7 @@ class ApplicationSpec extends Specification {
       val action = route(FakeRequest(GET, "/login")).get
       status(action) must equalTo(OK)
       contentType(action) must beSome.which(_ == "text/html")
-      contentAsString(action) must contain ("Log in with your MIT ID")
+      contentAsString(action) must contain (Play.configuration.getString("auth.login_text").get)
     }
 
     "display login screen when a non-logged in user asks for an analyst page" in new WithApplication(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
@@ -56,7 +56,7 @@ class ApplicationSpec extends Specification {
       println("user created ---" + user + "------")
       val action = route(FakeRequest(GET, "/workbench").withSession(("connected", user.identity))).get
       redirectLocation(action) must beNone
-      contentAsString(action) must not contain ("Log in with your MIT ID")
+      contentAsString(action) must not contain (Play.configuration.getString("auth.login_text").get)
     }
   }
 }

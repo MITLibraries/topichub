@@ -17,14 +17,15 @@ object AuthenticationController extends Controller {
   def login = Action { implicit request =>
     val oauth2 = new OAuth2(Play.current)
     val callbackUrl = services.routes.OAuth2.callback(None, None).absoluteURL()
-    val scope = "openid email profile"   // this is used auth the ticket to provide info we need later
+    val scope = "openid%20email%20profile"   // this is used auth the ticket to provide info we need later
     val state = UUID.randomUUID().toString  // random confirmation string
     val redirectUrl = oauth2.getAuthorizationUrl(callbackUrl, scope, state)
+    val loginText = Play.configuration.getString("auth.login_text").get
     // todo: withSession used like this actually logs the user out
     // which sort of makes sense actually. However, what may make
     // sense would be to redirect the user if they are logged in
     // so we never hit this line that logs them out again.
-    Ok(views.html.login.index("", redirectUrl)).
+    Ok(views.html.login.index(loginText, redirectUrl)).
       withSession("oauth-state" -> state)
   }
 

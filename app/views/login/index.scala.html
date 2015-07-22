@@ -1,7 +1,8 @@
-@(message: String, externalAuthUrl: String)(implicit request: play.api.mvc.RequestHeader)
+@(loginText: String, externalAuthUrl: String)(implicit request: play.api.mvc.RequestHeader)
 
 @layout.main("Login to SCOAP3 - TopicHub") {
   <h2>Not Yet Authenticated</h2>
-  <h3>@message</h3>
-  <a id="openid" href="/_external-oauth?requestUri=@helper.urlEncode(externalAuthUrl)"><em><b>Log in with your MIT ID!</b></em></a>
+  <a id="openid" class="btn btn-primary" href="/_external-oauth?requestUri=@helper.urlEncode(externalAuthUrl)">
+    @loginText
+  </a>
 }
