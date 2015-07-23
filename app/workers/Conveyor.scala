@@ -89,12 +89,24 @@ object Conveyor {
       }
     }
 
-    def subscribe(action: String) = mints.foreach( i =>
-      Subscription.create(i.subscriberId, topic.id, action, sub.created, new Date))
+    def subscribe(action: String) = {
+      mints.foreach( i =>
+        if(sub.subscribesTo(topic.id)) {
+          println("Conveyor: Subscriber already subscribes to Topic, not re-subscribing.")
+        } else {
+          println("Conveyor: Added new Subscription.")
+          Subscription.create(i.subscriberId, topic.id, action, sub.created, new Date)
+        })
+    }
 
     def review() = {
       mints.foreach( t =>
-        TopicPick.create(t.subscriberId, topic.id, conveyorAgent.id))
+        if(TopicPick.picked(topic.id, t.subscriberId)) {
+          println("Conveyor: TopicPick detected duplicate so did nothing.")
+        } else {
+          println("Conveyor: Added new TopicPick.")
+          TopicPick.create(t.subscriberId, topic.id, conveyorAgent.id)
+        })
     }
   }
 
