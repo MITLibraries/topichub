@@ -1192,33 +1192,42 @@ object Application extends Controller with Security {
     ).getOrElse(NotFound(views.html.static.trouble("No such subscriber plan: " + id)))
   }
 
-  def addSubscriberInterest(id: Int, schemeTag: String) = Action { implicit request =>
-    Subscriber.findById(id).map( sub =>
+  def addSubscriberInterest(schemeTag: String) = isAuthenticated {
+      identity => implicit request =>
+    Subscriber.findById(currentSubscriberId).map( sub =>
       Scheme.findByTag(schemeTag).map( scheme => {
         val intValue = request.body.asFormUrlEncoded.get.get("interest").get.head
         val template = request.body.asFormUrlEncoded.get.get("template").get.head
         conveyor ! sub.addInterest(scheme, intValue, template.equals("true"))
         Redirect(routes.Application.interestBrowse("scheme", scheme.tag))
       }).getOrElse(NotFound(views.html.static.trouble("No such scheme tag: " + schemeTag)))
-      ).getOrElse(NotFound(views.html.static.trouble("No such subscriber: " + id)))
+      ).getOrElse(NotFound(views.html.static.trouble("No such subscriber: " + currentSubscriberId)))
   }
 
-  def removeSubscriberInterest(sid: Int, iid: Int) = Action { implicit request =>
-    Subscriber.findById(sid).map( sub =>
-      Interest.findById(iid).map( interest => {
-        sub.removeInterest(interest.scheme, interest.intValue)
+  def removeSubscriberInterest(iid: Int) = isAuthenticated {
+      identity => implicit request =>
+    Interest.findById(iid).map( interest => {
+      if (interest.subscriber.userList().contains(identity)) {
+        Interest.delete(interest.id)
         Redirect(routes.Application.interestBrowse("scheme", interest.schemeTag))
-      }).getOrElse(NotFound(views.html.static.trouble("No such interest: " + iid)))
-    ).getOrElse(NotFound(views.html.static.trouble("No such subscriber: " + sid)))
+      } else {
+        Unauthorized(views.html.static.trouble("You are not authorized"))
+      }
+    }).getOrElse(NotFound(views.html.static.trouble("No such interest: " + iid)))
   }
 
-  def interestBrowse(filter: String, value: String, page: Int) = Action { implicit request =>
+  def interestBrowse(filter: String, value: String, page: Int) = isAuthenticated {
+      identity => implicit request =>
     val subId = currentSubscriberId
-    filter match {
-      case "scheme" => Ok(views.html.interest.browse(subId, Interest.inScheme(subId, value, page), filter, value, page, Interest.schemeCount(subId, value)))
-      case "plan" => Ok(views.html.interest.browse(subId, Interest.inPlan(subId, value.toInt, page), filter, value, page, Interest.planCount(subId, value.toInt)))
-      case "match" => Ok(views.html.interest.browse(subId, Interest.inMatch(subId, value, page), filter, value, page, Interest.matchCount(subId, value)))
-      case _ => NotFound(views.html.static.trouble("No such filter: " + filter))
+    if (subId == 0) {
+      NotFound(views.html.static.trouble("You must have a Subscriber defined for that operation."))
+    } else {
+      filter match {
+        case "scheme" => Ok(views.html.interest.browse(subId, Interest.inScheme(subId, value, page), filter, value, page, Interest.schemeCount(subId, value)))
+        case "plan" => Ok(views.html.interest.browse(subId, Interest.inPlan(subId, value.toInt, page), filter, value, page, Interest.planCount(subId, value.toInt)))
+        case "match" => Ok(views.html.interest.browse(subId, Interest.inMatch(subId, value, page), filter, value, page, Interest.matchCount(subId, value)))
+        case _ => NotFound(views.html.static.trouble("No such filter: " + filter))
+      }
     }
   }
 

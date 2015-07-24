@@ -141,8 +141,8 @@ GET     /myaccount                  controllers.Application.userDashboard
 
 # Subscriber Interest pages
 GET     /interests/browse           controllers.Application.interestBrowse(filter: String, value: String, page: Int ?= 0)
-POST    /interests/:sid             controllers.Application.addSubscriberInterest(sid: Int, scheme: String)
-GET     /interests/:sid/remove/:iid  controllers.Application.removeSubscriberInterest(sid: Int, iid: Int)
+POST    /interests                  controllers.Application.addSubscriberInterest(scheme: String)
+GET     /interests/remove/:iid  controllers.Application.removeSubscriberInterest(iid: Int)
 
 # Channel Pages
 GET     /channel/:id                controllers.Application.channel(id: Int)

@@ -7,9 +7,13 @@
 @layout.main("Interest Browse - TopicHub") {
   <div class="page-header">
     <h2>Browse Interests by @filter</h2>
-    @if("scheme" == filter && Subscriber.findById(id).get.plannedFor(Scheme.findByTag(value).get.id)) {
-      <h3>@value</h3>
-      <h3>Plan: @Subscriber.findById(id).get.planFor(Scheme.findByTag(value).get.id).get.name</h3>
+    @if("scheme" == filter) {
+      @if(Scheme.findByTag(value) && Subscriber.findById(id).get.plannedFor(Scheme.findByTag(value).get.id)) {
+        <h3>@value</h3>
+        <h3>Plan: @Subscriber.findById(id).get.planFor(Scheme.findByTag(value).get.id).get.name</h3>
+      } else {
+        No match for supplied scheme: @value
+      }
     }
     @if("plan" == filter) {
       <h3>@Plan.findById(value.toInt).get.name <span class="glyphicon glyphicon-@Plan.findById(value.toInt).get.icon" aria-hidden="true"></span></h3>
@@ -23,7 +27,7 @@
   </div>
   <ul>
     @interests.map { inter =>
-      <li>@inter.intValue <a rel="tooltip" class="btn btn-primary btn-xs" title="remove this interest" href="@routes.Application.removeSubscriberInterest(id, inter.id)">Remove &raquo;</a></li>
+      <li>@inter.intValue <a rel="tooltip" id="remove-@inter.id" class="btn btn-primary btn-xs" title="remove this interest" href="@routes.Application.removeSubscriberInterest(inter.id)">Remove &raquo;</a></li>
     }
   </ul>
   @tags.pagination(page, 10, total, routes.Application.interestBrowse(filter, value).toString, interests.length)
