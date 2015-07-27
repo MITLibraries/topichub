@@ -441,7 +441,7 @@ class SubscriberSpec extends Specification {
         Scheme.create("tag2", "topic", "cat", "desc", Some("link"), Some("logo"))
         Scheme.create("tag3", "gentype", "cat", "desc", Some("link"), Some("logo"))
         val s = Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
-        s.holdCount must equalTo(0)
+        s.holdCount() must equalTo(0)
         Topic.create(1, "tag", "name")
         val subscr = Subscription.make(s.id, 1, "review", new Date(0), new Date(1000000000))
         ContentType.create("tag", "label", "desc", Some("logo"))
@@ -452,10 +452,37 @@ class SubscriberSpec extends Specification {
         val i2 = Item.make(1, 1, "loc", "scoap3:asdf:456")
 
         Hold.create(s.id, subscr.id, i.id)
-        s.holdCount must equalTo(1)
+        s.holdCount() must equalTo(1)
 
         Hold.create(s.id, subscr.id, i2.id)
-        s.holdCount must equalTo(2)
+        s.holdCount() must equalTo(2)
+      }
+    }
+
+    "#holdCount can exclude and item" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        Subscriber.all must haveSize(0)
+        User.create("bob", "bob@example.com", "pwd", "role1")
+        Scheme.create("tag", "topic", "cat", "desc", Some("link"), Some("logo"))
+        Scheme.create("tag2", "topic", "cat", "desc", Some("link"), Some("logo"))
+        Scheme.create("tag3", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        val s = Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        s.holdCount() must equalTo(0)
+        Topic.create(1, "tag", "name")
+        val subscr = Subscription.make(s.id, 1, "review", new Date(0), new Date(1000000000))
+        ContentType.create("tag", "label", "desc", Some("logo"))
+        ResourceMap.create("tag", "desc", Some("swordurl"))
+        Publisher.create(1, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
+        Collection.create(1, 1, 1, "coll", "desc", "open")
+        val i = Item.make(1, 1, "loc", "scoap3:asdf:123")
+        val i2 = Item.make(1, 1, "loc", "scoap3:asdf:456")
+
+        Hold.create(s.id, subscr.id, i.id)
+        s.holdCount() must equalTo(1)
+
+        Hold.create(s.id, subscr.id, i2.id)
+        s.holdCount() must equalTo(2)
+        s.holdCount(i2.id) must equalTo(1)
       }
     }
 
@@ -467,7 +494,7 @@ class SubscriberSpec extends Specification {
         Scheme.create("tag2", "topic", "cat", "desc", Some("link"), Some("logo"))
         Scheme.create("tag3", "gentype", "cat", "desc", Some("link"), Some("logo"))
         val s = Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
-        s.holdCount must equalTo(0)
+        s.holdCount() must equalTo(0)
         Topic.create(1, "tag", "name")
         val subscr = Subscription.make(s.id, 1, "review", new Date(0), new Date(1000000000))
         ContentType.create("tag", "label", "desc", Some("logo"))
@@ -478,12 +505,12 @@ class SubscriberSpec extends Specification {
         val i2 = Item.make(1, 1, "loc", "scoap3:asdf:456")
 
         val h1 = Hold.make(s.id, subscr.id, i.id)
-        s.holdCount must equalTo(1)
+        s.holdCount() must equalTo(1)
         s.holdOn(i.id) must equalTo(Some(h1))
         s.holdOn(i2.id) must equalTo(None)
 
         val h2 = Hold.make(s.id, subscr.id, i2.id)
-        s.holdCount must equalTo(2)
+        s.holdCount() must equalTo(2)
         s.holdOn(i.id) must equalTo(Some(h1))
         s.holdOn(i2.id) must equalTo(Some(h2))
       }
@@ -497,7 +524,7 @@ class SubscriberSpec extends Specification {
         Scheme.create("tag2", "topic", "cat", "desc", Some("link"), Some("logo"))
         Scheme.create("tag3", "gentype", "cat", "desc", Some("link"), Some("logo"))
         val s = Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
-        s.holdCount must equalTo(0)
+        s.holdCount() must equalTo(0)
         Topic.create(1, "tag", "name")
         val subscr = Subscription.make(s.id, 1, "review", new Date(0), new Date(1000000000))
         ContentType.create("tag", "label", "desc", Some("logo"))
@@ -533,8 +560,32 @@ class SubscriberSpec extends Specification {
         Hold.create(s.id, subscr.id, i10.id)
         Hold.create(s.id, subscr.id, i11.id)
 
-        s.holds(0).size must equalTo(10)
-        s.holds(1).size must equalTo(1)
+        s.holds(0, 0).size must equalTo(10)
+        s.holds(1, 0).size must equalTo(1)
+      }
+    }
+
+    "#holds can exclude an item" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        Subscriber.all must haveSize(0)
+        User.create("bob", "bob@example.com", "pwd", "role1")
+        Scheme.create("tag", "topic", "cat", "desc", Some("link"), Some("logo"))
+        val s = Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        s.holdCount() must equalTo(0)
+        Topic.create(1, "tag", "name")
+        val subscr = Subscription.make(s.id, 1, "review", new Date(0), new Date(1000000000))
+        ContentType.create("tag", "label", "desc", Some("logo"))
+        ResourceMap.create("tag", "desc", Some("swordurl"))
+        Publisher.create(1, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
+        Collection.create(1, 1, 1, "coll", "desc", "open")
+        val i = Item.make(1, 1, "loc", "scoap3:asdf:123")
+        val i2 = Item.make(1, 1, "loc", "scoap3:asdf:456")
+
+        val h1 = Hold.make(s.id, subscr.id, i.id)
+        val h2 = Hold.make(s.id, subscr.id, i2.id)
+
+        s.holds(0, 0).size must equalTo(2)
+        s.holds(0, i2.id).size must equalTo(1)
       }
     }
 
@@ -565,7 +616,7 @@ class SubscriberSpec extends Specification {
         Scheme.create("tag2", "topic", "cat", "desc", Some("link"), Some("logo"))
         Scheme.create("tag3", "gentype", "cat", "desc", Some("link"), Some("logo"))
         val s = Subscriber.make(1, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
-        s.holdCount must equalTo(0)
+        s.holdCount() must equalTo(0)
         val top = Topic.make(1, "tag", "name")
         val top2 = Topic.make(1, "tag2", "name")
         val agent = Agent.make("tag", "label", "description", "code", "params", Some("icon"))

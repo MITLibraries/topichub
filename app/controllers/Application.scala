@@ -1239,10 +1239,10 @@ object Application extends Controller with Security {
     }
   }
 
-  def holdBrowse(id: Int, page: Int) = isAuthenticated { identity => implicit request =>
+  def holdBrowse(id: Int, page: Int, exclude: Int) = isAuthenticated { identity => implicit request =>
     Subscriber.findById(id).map( sub =>
       subscriberMember(identity, sub,
-                    Ok(views.html.hold.browse(sub.id, sub.holds(page), page, sub.holdCount)))
+                    Ok(views.html.hold.browse(sub.id, sub.holds(page, exclude), page, sub.holdCount(exclude))))
     ).getOrElse(NotFound(views.html.static.trouble("No such subscriber: " + id)))
   }
 
@@ -1256,7 +1256,7 @@ object Application extends Controller with Security {
       val sub = Subscriber.findById(hold.subscriberId).get
       if (sub.userList().contains(identity)) {
         conveyor ! (hold, accept)
-        Redirect(routes.Application.holdBrowse(sub.id, 0))
+        Redirect(routes.Application.holdBrowse(sub.id, 0, hold.itemId))
           .flashing(message_type -> message)
       } else {
         Unauthorized(views.html.static.trouble("You are not authorized"))

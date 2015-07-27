@@ -45,7 +45,7 @@
                   <a id="nav_sub_dashboard" href="@routes.Application.subscriberDashboard">
                     Dashboard
                       <span class="badge">@{
-                      val count = Subscriber.findById(currentSubId).get.holdCount
+                      val count = Subscriber.findById(currentSubId).get.holdCount()
                       if (count > 0) count else ""
                       }</span>
                   </a>
