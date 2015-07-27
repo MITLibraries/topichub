@@ -1,21 +1,22 @@
 @*****************************************************************************
- * Entry page for subscriber browsing. Includes a link to forms              *
- * for new subscriber account creation                                       *
- * Copyright (c) 2015 MIT Libraries                                          *
- *****************************************************************************@
+* Entry page for subscriber browsing. Includes a link to forms              *
+* for new subscriber account creation                                       *
+* Copyright (c) 2015 MIT Libraries                                          *
+*****************************************************************************@
 @()(implicit request: play.api.mvc.RequestHeader)
 @layout.main("Subscribers -  TopicHub") {
   <div class="container-fluid">
-  	<div class="row">
+    <div class="row-fluid">
       <div class="col-md-4">
-      	<div class="well-lg sidebar-nav">
-      		<ul class="navbar-nav nav-list">
-      			<li class="nav-header">Categories</li>
-      		  @for(cat <- Subscriber.categories) {
-         	    <li><a href="@routes.Application.subscriberBrowse("category", cat)">@cat</a> (@HubUtils.pluralize(Subscriber.categoryCount(cat), "subscriber"))</li>
-       			}
-      		</ul>
-      	</div>
+        <div class="list-group">
+          <h3>Categories</h3>
+          @for(cat <- Subscriber.categories) {
+            <a href="@routes.Application.subscriberBrowse("category", cat)"
+               class="list-group-item">@cat
+              <span class="badge">@Subscriber.categoryCount(cat)</span>
+            </a>
+          }
+        </div>
       </div>
       <div class="col-md-8">
         <div class="jumbotron">
