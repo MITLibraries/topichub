@@ -175,6 +175,7 @@ GET     /search/results             controllers.Search.results(q: String, target
 
 # Administrative services
 GET     /reindex/:dtype              controllers.Application.reindex(dtype: String)
+GET     /reindexjob/:dtype/:key      controllers.Application.reindexJob(dtype: String, key: String)
 GET     /workbench                   controllers.Application.workbench
 GET     /purge                       controllers.Application.purge
 GET     /sandbox                     controllers.Application.sandbox
