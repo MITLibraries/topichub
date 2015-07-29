@@ -28,7 +28,6 @@ class SubscriberPagesSpec extends Specification {
                                   Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/subscribers")
         assertThat(browser.title()).isEqualTo("Subscribers - TopicHub")
-        browser.pageSource must contain("(One subscriber)")
         browser.pageSource must contain("Sign Up »")
       }
 
