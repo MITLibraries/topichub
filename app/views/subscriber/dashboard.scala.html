@@ -18,7 +18,7 @@
       <h4>Review</h4>
       <ul class="list-group">
         <li class="list-group-item">
-          <span class="badge">@Subscriber.findById(currentSubId).get.holdCount</span>
+          <span class="badge">@Subscriber.findById(currentSubId).get.holdCount()</span>
           <a href="@routes.Application.holdBrowse(currentSubId)">Items to review:</a>
         </li>
         <li class="list-group-item">

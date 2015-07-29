@@ -153,9 +153,13 @@ case class Subscriber(id: Int,  // DB key
     interestWithValue(scheme.tag, intValue).map(i => Interest.delete(i.id))
   }
 
-  def holdCount = {
+  def holdCount(exclude: Int=0) = {
     DB.withConnection { implicit c =>
-      SQL("select count(*) from hold where subscriber_id = {id}").on('id -> id).as(scalar[Long].single)
+      SQL("""
+            select count(*) from hold
+            where subscriber_id = {id}
+            and item_id != {exclude}
+          """).on('id -> id, 'exclude -> exclude).as(scalar[Long].single)
     }
   }
 
@@ -166,16 +170,17 @@ case class Subscriber(id: Int,  // DB key
     }
   }
 
-  def holds(page: Int) = {
+  def holds(page: Int, exclude: Int=0) = {
     val offset = page * 10
     DB.withConnection { implicit c =>
       SQL(
         """
           select * from hold where subscriber_id = {sub_id}
+          and item_id != {exclude}
           order by created desc
           limit 10 offset {offset}
         """
-      ).on('sub_id -> id, 'offset -> offset).as(Hold.hold *)
+      ).on('sub_id -> id, 'offset -> offset, 'exclude -> exclude).as(Hold.hold *)
     }
   }
 

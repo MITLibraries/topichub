@@ -162,7 +162,7 @@ POST    /plan/:id/channel           controllers.Application.setPlanChannel(id: I
 GET     /subscriptions/browse       controllers.Application.subscriptionBrowse(filter: String, value: Int, page: Int ?= 0)
 
 # Review (holds) pages
-GET     /holds/browse               controllers.Application.holdBrowse(id: Int, page: Int ?= 0)
+GET     /holds/browse               controllers.Application.holdBrowse(id: Int, page: Int ?= 0, exclude: Int ?= 0)
 GET     /hold/:id/resolve           controllers.Application.resolveHold(id: Int, accept: Boolean)
 
 # Topic Pick pages
