@@ -1354,6 +1354,18 @@ object Application extends Controller with Security {
     Ok("Reindexing " + dtype + "s")
   }
 
+  def reindexJob(dtype: String, key: String) = Action { implicit request =>
+    val authorized_key = Play.configuration.getString("auth.harvest.key").get
+    if (key == authorized_key) {
+      indexer ! dtype
+      println("DEBUG: Reindex Job for " + dtype + " started")
+      Ok("Reindexing " + dtype + "s: started")
+    } else {
+      println("DEBUG: A reindex tried to start without a valid key.")
+      Unauthorized("Reindexing " + dtype + "s: not allowed")
+    }
+  }
+
   val sandboxForm = Form(
     tuple(
       "expression" -> nonEmptyText,
