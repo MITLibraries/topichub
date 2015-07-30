@@ -30,13 +30,13 @@
       }
       @if(sub.isDefined) {
         <p><a href="@routes.Application.interestBrowse("scheme", scheme.tag)">Browse current interests</a></p>
-        <p>New interest: <form action="@routes.Application.addSubscriberInterest(sub.get.id, scheme.tag)" method="POST">
-          <input type="text" name="interest">
+        <p>New interest: <form action="@routes.Application.addSubscriberInterest(scheme.tag)" method="POST">
+          <input id="interest" type="text" name="interest">
           <label for="exact">Exact</label>
           <input type="radio" id="exact" name="template" value="false" checked="checked">
           <label for="fuzzy">Fuzzy</label>
           <input type="radio" id="fuzzy" name="template" value="true">
-          <input type="submit" value="Add">
+          <input id="submit" type="submit" value="Add">
         </p>
       }
 
