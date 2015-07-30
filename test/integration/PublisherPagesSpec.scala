@@ -6,7 +6,6 @@ import play.api.test.Helpers._
 import org.fest.assertions.Assertions.assertThat
 import play.api.Application
 import play.api.Play
-import play.api.Play.current
 import models.{ Publisher, User, Subscriber }
 
 /**
@@ -91,7 +90,7 @@ class PublisherPagesSpec extends Specification {
           val pub = Publisher.make(pub_user.id, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some("http://www.example.com"), Some(""))
           browser.goTo("http://localhost:" + port + "/publisher/" + pub.id)
           assertThat(browser.title()).isEqualTo("Publisher - TopicHub")
-          browser.pageSource must not contain("Log in with your MIT ID")
+          browser.pageSource must not contain("""<a id="openid" """)
           browser.pageSource must not contain("/publisher/1/edit")
         }
 
@@ -113,7 +112,7 @@ class PublisherPagesSpec extends Specification {
       "redirect to login if not signed in" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         browser.goTo("http://localhost:" + port + "/publishers")
         browser.$("a[href*='/publishers/create']").click()
-        browser.pageSource must contain("Log in with your MIT ID")
+        browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
         assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
       }
 
@@ -144,7 +143,7 @@ class PublisherPagesSpec extends Specification {
         val pub_user = User.make("pub", "pub@example.com", "some roles", "another_identity")
         val pub = Publisher.make(pub_user.id, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some("http://www.example.com"), Some(""))
         browser.goTo("http://localhost:" + port + "/publisher/1/edit")
-        browser.pageSource must contain("Log in with your MIT ID")
+        browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
         assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
       }
 

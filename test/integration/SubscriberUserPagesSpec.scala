@@ -4,6 +4,7 @@ import org.junit.runner._
 import org.specs2.mock._
 import java.util.Date
 
+import play.api.Play
 import play.api.test._
 import play.api.test.Helpers._
 import org.fest.assertions.Assertions.assertThat
@@ -24,7 +25,7 @@ class SubscriberUserPagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
       browser.goTo("http://localhost:" + port + "/subscribers/create")
       assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
-      browser.pageSource must contain("Log in with your MIT ID")
+      browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
     }
 
     "displays a link to join when there are Subscribers" in new WithBrowser(
@@ -53,7 +54,7 @@ class SubscriberUserPagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
       browser.goTo("http://localhost:" + port + "/subscribers/join")
       assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
-      browser.pageSource must contain("Log in with your MIT ID")
+      browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
     }
 
     "allows User to request to join Subscriber when unjoined Subscribers exist" in new WithBrowser(
@@ -103,7 +104,7 @@ class SubscriberUserPagesSpec extends Specification {
 
       browser.goTo("http://localhost:" + port + "/subscriber/1/users")
       assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
-      browser.pageSource must contain("Log in with your MIT ID")
+      browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
     }
 
     "deny access for users not in the Subscriber group" in new WithBrowser(

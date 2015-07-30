@@ -6,7 +6,6 @@ import play.api.test.Helpers._
 import org.fest.assertions.Assertions.assertThat
 import play.api.Application
 import play.api.Play
-import play.api.Play.current
 import models.{ Collection, ContentType, Cull, Publisher, ResourceMap, User, Subscriber }
 
 /**
@@ -28,7 +27,7 @@ class CullPagesSpec extends Specification {
         val pub = Publisher.make(pub_user.id, "pubtag", "pubname", "pubdesc", "pubcat",
                                  "pubstatus", Some("http://www.example.com"), Some(""))
         browser.goTo("http://localhost:" + port + "/publisher/" + pub.id + "/createC")
-        browser.pageSource must contain("Log in with your MIT ID")
+        browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
         assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
       }
 
@@ -51,7 +50,7 @@ class CullPagesSpec extends Specification {
                                  "pubstatus", Some("http://www.example.com"), Some(""))
         val cull = Cull.make(pub.id, "name", "soft", None, 1, new Date)
         browser.goTo("http://localhost:" + port + "/cull/" + cull.id)
-        browser.pageSource must contain("Log in with your MIT ID")
+        browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
         assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
       }
 
@@ -64,7 +63,7 @@ class CullPagesSpec extends Specification {
         val cull = Cull.make(pub.id, "name", "soft", None, 1, new Date)
         browser.goTo("http://localhost:" + port + "/cull/" + cull.id + "/start?span=1")
         Cull.findById(cull.id).get.updated must equalTo(cull.updated)
-        browser.pageSource must contain("Log in with your MIT ID")
+        browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
         assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
       }
 
@@ -77,7 +76,7 @@ class CullPagesSpec extends Specification {
         val cull = Cull.make(pub.id, "name", "soft", None, 1, new Date)
         browser.goTo("http://localhost:" + port + "/cull/" + cull.id + "/delete")
         Cull.findById(cull.id).get must equalTo(cull)
-        browser.pageSource must contain("Log in with your MIT ID")
+        browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
         assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
       }
 
@@ -93,7 +92,7 @@ class CullPagesSpec extends Specification {
         var collection = Collection.make(pub.id, ct.id, rm.id, "coll", "desc", "open")
         browser.goTo("http://localhost:" + port + "/knix/" + collection.id +
                      "/scoap:asdf:fdsa")
-        browser.pageSource must contain("Log in with your MIT ID")
+        browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
         assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
       }
     }

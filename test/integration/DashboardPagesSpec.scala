@@ -3,6 +3,7 @@ import org.specs2.runner._
 import org.junit.runner._
 import java.util.Date
 
+import play.api.Play
 import play.api.test._
 import play.api.test.Helpers._
 import org.fest.assertions.Assertions.assertThat
@@ -20,7 +21,7 @@ class DashboardPagesSpec extends Specification {
   "The Subscriber Dashboard" should {
     "prompts for login when not signed in" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
       browser.goTo("http://localhost:" + port + "/dashboard")
-      browser.pageSource must contain("Log in with your MIT ID")
+      browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
       assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
     }
 
