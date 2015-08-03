@@ -117,6 +117,32 @@ class TopicSpec extends Specification {
       }
     }
 
+    "#createdAfter" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val now = new Date
+        Topic.all must haveSize(0)
+        Topic.createdAfter(now, 1) must haveSize(0)
+        val s = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        Topic.create(s.id, "tag", "name")
+        Topic.all must haveSize(1)
+        Topic.createdAfter(now, 1) must haveSize(1)
+        Topic.createdAfter(new Date, 1) must haveSize(0)
+      }
+    }
+
+    "#createdAfterCount" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val now = new Date
+        Topic.all must haveSize(0)
+        Topic.createdAfterCount(now) must equalTo(0)
+        val s = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        Topic.create(s.id, "tag", "name")
+        Topic.all must haveSize(1)
+        Topic.createdAfterCount(now) must equalTo(1)
+        Topic.createdAfterCount(new Date) must equalTo(0)
+      }
+    }
+
     "#deleteUnlinkedBefore with no linked items" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         Topic.all must haveSize(0)

@@ -168,6 +168,25 @@ object Topic {
     }
   }
 
+  def createdAfter(earliest: Date, max: Int): List[Topic] = {
+    DB.withConnection { implicit c =>
+      SQL(
+        """
+          select * from topic
+          where created > {earliest}
+          order by created
+          limit {max}
+        """
+      ).on('earliest -> earliest, 'max -> max).as(topic *)
+    }
+  }
+
+  def createdAfterCount(date: Date) = {
+    DB.withConnection { implicit c =>
+      SQL("select count(*) from topic where created > {created}").on('created -> date).as(scalar[Long].single)
+    }
+  }
+
   def deleteUnlinkedBefore(date: Date) {
     DB.withConnection { implicit c =>
       SQL(

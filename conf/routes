@@ -173,6 +173,10 @@ GET     /pick/:id/resolve           controllers.Application.resolvePick(id: Int,
 GET     /search                     controllers.Search.index
 GET     /search/results             controllers.Search.results(q: String, target: String ?="topic", page: Int ?=0, perpage: Int ?=25)
 
+# OAI-PMH services
+GET     /oai                        controllers.OAIPMH.provide
+POST    /oai                        controllers.OAIPMH.provide
+
 # Administrative services
 GET     /reindex/:dtype              controllers.Application.reindex(dtype: String)
 GET     /reindexjob/:dtype/:key      controllers.Application.reindexJob(dtype: String, key: String)

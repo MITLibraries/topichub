@@ -9,7 +9,7 @@
   <p>The service embraces open content interoperability standards wherever possible, specifically:</p>
   <ul>
   	<li>Content transfers from publishers to the hub and from the hub to subscribers utilize the <a href="http://swordapp.org">SWORD</a> (v1.3) protocol.</li>
-    <li>Metadata for content residing on the hub is exposed on an <a href="http://www.openarchives.org">Open Archives Initiative</a> (version 2.0) OAI-PMH data provider endpoint @* <a href="@routes.OAI.provide?verb=Identify">here</a> *@</li>
+    <li>Metadata for content residing on the hub is exposed on an <a href="http://www.openarchives.org">Open Archives Initiative</a> (version 2.0) OAI-PMH data provider <a href="@routes.OAIPMH.provide?verb=Identify">endpoint</a></li>
     <li>Content residing on the hub may be harvested using the <a href="http://www.niso.org/workrooms/resourcesync/">NISO/OAI ResourceSync</a> (draft) protocols.</li>
     <li>In application web pages, metadata is expressed using the <a href="http://schema.org">Schema.org</a> vocabulary.</li>
     <li>Topics identified by the hub are syndicated as <a href="http://www.atomenabled.org">Atom</a> feeds containing items.</li>

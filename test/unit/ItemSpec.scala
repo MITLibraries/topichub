@@ -47,6 +47,19 @@ class ItemSpec extends Specification {
       }
     }
 
+    "#findOldest" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        User.create("bob", "bob@example.com", "pass", "roley")
+        ContentType.create("tag", "label", "desc", Some("logo"))
+        ResourceMap.create("tag", "desc", Some("swordurl"))
+        Publisher.create(1, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
+        Collection.create(1, 1, 1, "coll", "desc", "open")
+        Item.findOldest must equalTo(None)
+        val item = Item.make(1, 1, "loc", "scoap3:asdf:123")
+        Item.findOldest must equalTo(Some(item))
+      }
+    }
+
     "#all" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val u = User.make("bob", "bob@example.com", "pass", "roley")
@@ -208,6 +221,39 @@ class ItemSpec extends Specification {
         Collection.create(1, 1, 1, "coll", "desc", "open")
         Item.create(1, 1, "loc", "scoap3:asdf:123")
         Item.inPublisherRange(1, oldDate, new Date).size must equalTo(1)
+      }
+    }
+
+    "#inTopicRange" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val now = System.currentTimeMillis
+        val oldDate = new Date(now - 100000)
+        User.create("bob", "bob@example.com", "pass", "roley")
+        ContentType.create("tag", "label", "desc", Some("logo"))
+        ResourceMap.create("tag", "desc", Some("swordurl"))
+        Publisher.create(1, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
+        Collection.create(1, 1, 1, "coll", "desc", "open")
+        val item = Item.make(1, 1, "loc", "scoap3:asdf:123")
+        val s = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        val t1 = Topic.make(s.id, "tag", "name")
+        Item.inTopicRange(t1.id, oldDate, new Date, 10).size must equalTo(0)
+        item.addTopic(t1)
+        Item.inTopicRange(t1.id, oldDate, new Date, 10).size must equalTo(1)
+      }
+    }
+
+    "#inRange" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val now = System.currentTimeMillis
+        val oldDate = new Date(now - 100000)
+        User.create("bob", "bob@example.com", "pass", "roley")
+        ContentType.create("tag", "label", "desc", Some("logo"))
+        ResourceMap.create("tag", "desc", Some("swordurl"))
+        Publisher.create(1, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some(""), Some(""))
+        Collection.create(1, 1, 1, "coll", "desc", "open")
+        Item.inRange(oldDate, new Date, 10).size must equalTo(0)
+        Item.create(1, 1, "loc", "scoap3:asdf:123")
+        Item.inRange(oldDate, new Date, 10).size must equalTo(1)
       }
     }
 
