@@ -182,7 +182,7 @@ object Conveyor {
     val action = if (accept) "deliver" else "discard"
     val trans = Transfer.make(hold.subscriberId, hold.subscriptionId, hold.itemId, action)
     if (accept) {
-      transfer(hold.item, trans)
+      transfer(hold.item, hold.subscription, trans)
     }
     // clean up hold in any case
     hold.resolve(accept)
@@ -212,7 +212,7 @@ object Conveyor {
         ! Hold.held(item.id, sub.subscriberId)) {
       // create a new transfer or hold, or notify subscriber
       sub.action match {
-        case "deliver" => transfer(item, sub)
+        case "deliver" => transfer(item, sub, Transfer.make(sub.subscriberId, sub.id, item.id, sub.action))
         case "review" => Hold.make(sub.subscriberId, sub.id, item.id)
         case "notify" => notify(item, sub)
         case _ => println("Unknown action: " + sub.action)
@@ -220,24 +220,18 @@ object Conveyor {
     }
   }
 
-  private def transfer(item: Item, sub: Subscription) = {
-    val trans = Transfer.make(sub.subscriberId, sub.id, item.id, sub.action)
-    doTransfer(item, sub.subscriber, trans)
+  private def transfer(item: Item, sub: Subscription, trans: Transfer) = {
+    val subscr = sub.subscriber
+    // NB: provisional definition of 'default' plan = first one created for subscriber
+    val plan = subscr.planFor(sub.topic.scheme_id).getOrElse(subscr.plans.sortBy(_.created).head)
+    doTransfer(item, plan.channel.get, trans)
   }
 
-  private def transfer(item: Item, trans: Transfer) = {
-    Subscriber.findById(trans.subscriberId).map { subscr =>
-      doTransfer(item, subscr, trans)
-    }
-  }
-
-  private def doTransfer(item: Item, subscr: Subscriber, trans: Transfer) = {
-    // should fail if no channel - TODO
-    subscr.channels.headOption.map { chan =>
-      chan.protocol match {
-        case "sword" => swordTransfer(item, chan, trans)
-        case _ => println("Don't know how to transfer via: " + chan.protocol)
-      }
+  private def doTransfer(item: Item, chan: Channel, trans: Transfer) = {
+    chan.protocol match {
+      case "sword" => swordTransfer(item, chan, trans)
+      case "drain" => chan.recordTransfer  // essentially No-Op
+      case _ => println("Don't know how to transfer via: " + chan.protocol)
     }
   }
 
