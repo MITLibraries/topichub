@@ -893,10 +893,17 @@ object Application extends Controller with Security {
       value => {
         val sub = Subscriber.make(identity.id, value.name, value.category,
                                   value.contact, value.link, value.logo)
-        Redirect(routes.Application.editSubscriber(sub.id)).
-                  withSession("connected" -> identity.identity,
-                  "subscriber" -> sub.id.toString).flashing(
-                  "success" -> "Session Created")
+        // onboard subscriber by creating a 'review' starter plan, attaching all
+        // schemes to it, with a 'drain' (null) channel, since hub has no real
+        // delivery information yet, but wants to allow subscriber to operate
+        val drain = Channel.make(sub.id, "drain", "none", "No destination", sub.name, "none", "http://example.com")
+        val plan = Plan.make(sub.id, drain.id, "Review", "Queue everything for review",
+                            "inbox", "review", "review", "review", "review")
+        Scheme.withGentype("topic").filter(_.tag != "meta").foreach(plan.addScheme(_))
+        Redirect(routes.Application.subscriberDashboard).
+                 withSession("connected" -> identity.identity,
+                 "subscriber" -> sub.id.toString).flashing(
+                 "success" -> "Session Created")
       }
     )
   }
@@ -1040,8 +1047,20 @@ object Application extends Controller with Security {
       channelForm.bindFromRequest.fold (
         errors => BadRequest(views.html.channel.create(sid, errors)),
         value => {
+          val sub = Subscriber.findById(sid).get
+          val oldChans = sub.channels
           val chan = Channel.make(sid, value.protocol, value.mode, value.description, value.userId, value.password, value.channelUrl)
-          Redirect(routes.Application.subscriber(sid))
+          // continue subscriber onboarding process if this is the first channel
+          // subscriber created: hub now knows enough to deliver content,
+          // so create a 'deliver' starter plan, set both the review and deliver
+          // plans to this new channel, and ditch the drain channel
+          if (oldChans.size == 1 && oldChans.head.protocol == "drain") {
+            Plan.create(sub.id, chan.id, "Deliver", "Send everything directly",
+                        "thumbs-up", "deliver", "review", "review", "review")
+            sub.plans.foreach(_.setChannel(chan))
+            Channel.delete(oldChans.head.id)
+          }
+          Redirect(routes.Application.subscriberDashboard)
         }
       )
     )
