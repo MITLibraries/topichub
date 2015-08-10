@@ -173,7 +173,7 @@ class ChannelPagesSpec extends Specification {
         browser.$("#password").text("pwd")
         browser.$("#channelUrl").text("http://example.com")
         browser.$("#submit").click
-        assertThat(browser.title()).isEqualTo("Subscriber - TopicHub")
+        assertThat(browser.title()).isEqualTo("Subscriber Dashboard - TopicHub")
         val ch = Channel.findByUrl("http://example.com")
         ch must not equalTo(None)
         ch.get.description must equalTo("This is where I want stuff to go")
