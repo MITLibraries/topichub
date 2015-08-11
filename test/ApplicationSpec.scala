@@ -29,7 +29,7 @@ class ApplicationSpec extends Specification {
 
       status(home) must equalTo(OK)
       contentType(home) must beSome.which(_ == "text/html")
-      contentAsString(home) must contain ("Welcome to SCOAP")
+      contentAsString(home) must contain ("Add a description in conf/brand.conf")
     }
 
     "display a login screen" in new WithApplication(FakeApplication(additionalConfiguration = inMemoryDatabase())) {

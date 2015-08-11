@@ -113,7 +113,7 @@ class PublisherPagesSpec extends Specification {
         browser.goTo("http://localhost:" + port + "/publishers")
         browser.$("a[href*='/publishers/create']").click()
         browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       "display create publisher form if signed in" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
@@ -144,7 +144,7 @@ class PublisherPagesSpec extends Specification {
         val pub = Publisher.make(pub_user.id, "pubtag", "pubname", "pubdesc", "pubcat", "pubstatus", Some("http://www.example.com"), Some(""))
         browser.goTo("http://localhost:" + port + "/publisher/1/edit")
         browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       "redirects to trouble if user does not own publisher" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {

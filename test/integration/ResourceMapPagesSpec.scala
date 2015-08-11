@@ -24,7 +24,7 @@ class ResourceMapPagesSpec extends Specification {
       "accessing index page redirects to login" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         browser.goTo("http://localhost:" + port + "/resmaps")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // GET /resmap/:id
@@ -32,14 +32,14 @@ class ResourceMapPagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val rm = ResourceMap.make("rm_tag", "rm_desc", Some("http://www.example.com"))
         browser.goTo("http://localhost:" + port + "/resmap/" + rm.id)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // GET /resmaps/create
       "accessing new form page redirects to login" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         browser.goTo("http://localhost:" + port + "/resmaps/create")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // POST /resmaps
@@ -73,7 +73,7 @@ class ResourceMapPagesSpec extends Specification {
         rm.mappingsForScheme(s).size must equalTo(1)
         browser.goTo("http://localhost:" + port + "/resmap/" + rm.id + "/scheme?sid=" +
                      s.id +"&source=source")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
         rm.mappingsForScheme(s).size must equalTo(1)
       }
     }

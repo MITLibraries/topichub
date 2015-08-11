@@ -24,7 +24,7 @@ class SysAdminPagesSpec extends Specification {
       "as an unauthenticated User redirects to login" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         browser.goTo("http://localhost:" + port + "/reindex/topic")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       "as an analyst redirects to Error" in new WithBrowser(
@@ -52,7 +52,7 @@ class SysAdminPagesSpec extends Specification {
       "as an unauthenticated User redirects to login" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         browser.goTo("http://localhost:" + port + "/workbench")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       "as an analyst displays workbench" in new WithBrowser(
@@ -80,7 +80,7 @@ class SysAdminPagesSpec extends Specification {
       "as an unauthenticated User redirects to login" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         browser.goTo("http://localhost:" + port + "/purge")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       "as an analyst redirects to Error" in new WithBrowser(
@@ -108,7 +108,7 @@ class SysAdminPagesSpec extends Specification {
       "as an unauthenticated User redirects to login" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         browser.goTo("http://localhost:" + port + "/sandbox")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       "as an analyst displays form" in new WithBrowser(
@@ -164,7 +164,7 @@ class SysAdminPagesSpec extends Specification {
       "as an unauthenticated User redirects to login" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         browser.goTo("http://localhost:" + port + "/model/create")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       "as an analyst redirects to error" in new WithBrowser(

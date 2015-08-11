@@ -54,7 +54,7 @@ class CollectionPagesSpec extends Specification {
         val pub = Publisher.make(pub_user.id, "pubtag", "pubname", "pubdesc", "pubcat",
                                  "pubstatus", Some("http://www.example.com"), Some(""))
         browser.goTo("http://localhost:" + port + "/publisher/" + pub.id + "/create")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
     }
 

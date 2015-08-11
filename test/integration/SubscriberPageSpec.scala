@@ -46,7 +46,7 @@ class SubscriberPagesSpec extends Specification {
       "accessing new form redirects to login" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         browser.goTo("http://localhost:" + port + "/subscribers/create")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // POST /subscribers
@@ -63,7 +63,7 @@ class SubscriberPagesSpec extends Specification {
         val sub = Subscriber.make(sub_user.id, "Sub Name", "cat", "contact",
                                   Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/subscriber/" + sub.id + "/edit")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // GET /subscriber/:id

@@ -28,7 +28,7 @@ class CullPagesSpec extends Specification {
                                  "pubstatus", Some("http://www.example.com"), Some(""))
         browser.goTo("http://localhost:" + port + "/publisher/" + pub.id + "/createC")
         browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // POST /cull/:id (publisher ID)
@@ -51,7 +51,7 @@ class CullPagesSpec extends Specification {
         val cull = Cull.make(pub.id, "name", "soft", None, 1, new Date)
         browser.goTo("http://localhost:" + port + "/cull/" + cull.id)
         browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // GET /cull/:id/start
@@ -64,7 +64,7 @@ class CullPagesSpec extends Specification {
         browser.goTo("http://localhost:" + port + "/cull/" + cull.id + "/start?span=1")
         Cull.findById(cull.id).get.updated must equalTo(cull.updated)
         browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       //GET /cull/:id/delete
@@ -77,7 +77,7 @@ class CullPagesSpec extends Specification {
         browser.goTo("http://localhost:" + port + "/cull/" + cull.id + "/delete")
         Cull.findById(cull.id).get must equalTo(cull)
         browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // GET /knix/:cid/:oid
@@ -93,7 +93,7 @@ class CullPagesSpec extends Specification {
         browser.goTo("http://localhost:" + port + "/knix/" + collection.id +
                      "/scoap:asdf:fdsa")
         browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
     }
 

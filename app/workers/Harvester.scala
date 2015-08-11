@@ -90,7 +90,7 @@ class Harvester {
       val sysadminEmails = User.allByRole("sysadmin").map(x => x.email).mkString(",")
       val msg = views.txt.email.unhandled_collections(harvest, collections).body
       Logger.warn(msg)
-      Emailer.notify(sysadminEmails, "SCOAP3Hub: An unhandled collection was detected", msg)
+      Emailer.notify(sysadminEmails, s"${HubUtils.siteName}: An unhandled collection was detected", msg)
     }
 
     def handleOaiError(errorText: String, errorCode: String) = {
@@ -131,7 +131,7 @@ class Harvester {
       val sysadminEmails = User.allByRole("sysadmin").map(x => x.email).mkString(",")
       val msg = views.txt.email.abort_harvest(harvest, exception).body
       Logger.error(msg)
-      Emailer.notify(sysadminEmails, "SCOAP3Hub: An error occurred starting a Harvest", msg)
+      Emailer.notify(sysadminEmails, s"${HubUtils.siteName} An error occurred starting a Harvest", msg)
     }
 
     // OAI-PMH date filters are inclusive on both ends (from and until),

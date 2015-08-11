@@ -1,10 +1,9 @@
 @*****************************************************************************
-* Front page for SCOAP3-bound topichub, also providing entry point for       *
-* topic browsing                                                             *
+* Front page for topichub, also providing entry point for topic browsing     *
 * Copyright (c) 2015 MIT Libraries                                           *
 *****************************************************************************@
 @(schemes: List[Scheme])(implicit request: play.api.mvc.RequestHeader)
-@layout.main("SCOAP3 -  TopicHub") {
+@layout.main(s"${HubUtils.siteName}") {
   <div class="container-fluid">
     <div class="row-fluid">
       <div class="col-md-4">
@@ -25,11 +24,7 @@
       </div>
       <div class="col-md-8">
         <div class="jumbotron">
-          <h2>Welcome to SCOAP<sup>3</sup> TopicHub!</h2>
-          <p>SCOAP<sup>3</sup> (Sponsoring Consortium for Open Access Publishing in Particle Physics) is a <a href="http://cern.ch">CERN</a>-managed service to deliver High-Energy Physics articles as open access. Visit them <a href="http://repo.scoap3.org">here</a>.</p>
-          <p>The hub analyzes each article in the SCOAP<sup>3</sup> repository to extract <em>topics</em>. A topic is an identifier or term belonging to a standard vocabulary or name-space, known as its <em>scheme</em>.
-             Relative to this scheme, the topic identifies, describes, characterizes or classifies the article. Topics help organize articles into groups that are of interest to subscribers:
-             all articles in a particular journal, everything written by a certain author, etc. Find the topics (or articles) you want by <a href="@routes.Search.index">searching</a>, or explore topics within a scheme by clicking on one of the scheme browse links at the left.</p>
+          @Html(HubUtils.siteDescription)
         </div>
       </div>
     </div>

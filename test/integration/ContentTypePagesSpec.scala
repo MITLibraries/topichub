@@ -24,7 +24,7 @@ class ContentTypePagesSpec extends Specification {
       "accessing index redirects to login" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         browser.goTo("http://localhost:" + port + "/ctypes")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // GET /ctype/:id
@@ -32,14 +32,14 @@ class ContentTypePagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val ct = ContentType.make("tag", "label", "desc", Some("logo"))
         browser.goTo("http://localhost:" + port + "/ctype/" + ct.id)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // GET /ctypes/create
       "accessing content type create form redirects to login" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         browser.goTo("http://localhost:" + port + "/ctypes/create")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // POST /ctypes
@@ -68,7 +68,7 @@ class ContentTypePagesSpec extends Specification {
         ct.schemes("relation") must haveSize(1)
         browser.goTo("http://localhost:" + port + "/ctype/" + ct.id +
                      "/scheme?relation=relation&sid=" + s.id)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
         ct.schemes("relation") must haveSize(1)
       }
     }

@@ -29,7 +29,7 @@ class PlanPagesSpec extends Specification {
                           "review", "subscribe", "review")
 
         browser.goTo("http://localhost:" + port + "/plan/" + p.id)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // GET /plans/:sid/create
@@ -39,7 +39,7 @@ class PlanPagesSpec extends Specification {
         val sub = Subscriber.make(sub_user.id, "Sub Name", "cat", "contact",
                                   Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/plans/" + sub.id + "/create")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // POST /plans/:sid
@@ -96,7 +96,7 @@ class PlanPagesSpec extends Specification {
         p.addScheme(scheme)
         p.schemes.size must equalTo(1)
         browser.goTo("http://localhost:" + port + "/plan/" + p.id + "/remove/" + scheme.id)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
         p.schemes.size must equalTo(1)
       }
     }

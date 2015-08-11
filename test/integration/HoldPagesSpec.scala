@@ -34,7 +34,7 @@ class HoldPagesSpec extends Specification {
         val item = Item.make(col.id, ct.id, "location", "scoap:abc:123")
         Hold.create(sub.id, subscr.id, item.id)
         browser.goTo("http://localhost:" + port + "/holds/browse?id=" + sub.id)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // GET /hold/:id/resolve?accept=Boolean
@@ -54,7 +54,7 @@ class HoldPagesSpec extends Specification {
         var h = Hold.make(sub.id, subscr.id, item.id)
         Hold.held(item.id, sub.id) must equalTo(true)
         browser.goTo("http://localhost:" + port + "/hold/" + h.id + "/resolve?accept=false")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
         Hold.held(item.id, sub.id) must equalTo(true)
         pending("see https://github.com/MITLibraries/scoap3hub/issues/170")
       }

@@ -80,4 +80,21 @@ object HubUtils {
     val uncovered = allItems - covered
     List(("Covered", covered), ("Uncovered", uncovered))
   }
+
+  def siteName = {
+    current.configuration.getString("brand.name").getOrElse("TopicHub")
+  }
+
+  def replyEmail = {
+    current.configuration.getString("brand.reply_email").getOrElse("noreply@example.com")
+  }
+
+  def baseUrl = {
+    current.configuration.getString("brand.site_url").getOrElse("http://example.com")
+  }
+
+  def siteDescription = {
+    current.configuration.getString("brand.site_description").getOrElse(
+      "Add a description in conf/brand.conf or by setting the SITE_DESCRIPTION Environement Variable")
+  }
 }

@@ -24,7 +24,7 @@ class SubscriberUserPagesSpec extends Specification {
     "prompt for login when not signed in" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
       browser.goTo("http://localhost:" + port + "/subscribers/create")
-      assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+      assertThat(browser.title()).isEqualTo("Login to TopicHub")
       browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
     }
 
@@ -53,7 +53,7 @@ class SubscriberUserPagesSpec extends Specification {
     "prompt for login when not signed in" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
       browser.goTo("http://localhost:" + port + "/subscribers/join")
-      assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+      assertThat(browser.title()).isEqualTo("Login to TopicHub")
       browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
     }
 
@@ -103,7 +103,7 @@ class SubscriberUserPagesSpec extends Specification {
       val sub = make_subscriber(sub_user.id)
 
       browser.goTo("http://localhost:" + port + "/subscriber/1/users")
-      assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+      assertThat(browser.title()).isEqualTo("Login to TopicHub")
       browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
     }
 

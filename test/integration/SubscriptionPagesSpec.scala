@@ -27,7 +27,7 @@ class SubscriptionPagesSpec extends Specification {
         val t = Topic.make(scheme.id, "tag0", "name0")
         Subscription.create(sub.id, t.id, "deliver", sub.created, sub.created)
         browser.goTo("http://localhost:" + port + "/subscriptions/browse?filter=scheme&value=" + scheme.id)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
     }
 

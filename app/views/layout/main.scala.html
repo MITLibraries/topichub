@@ -1,5 +1,5 @@
 @*****************************************************************************
- * Main HTML template for SCOAP3 TopicHub pages. Included by all pages       *
+ * Main HTML template for TopicHub pages. Included by all pages              *
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
 @(title: String)(content: Html)(implicit request: play.api.mvc.RequestHeader)
@@ -36,7 +36,7 @@
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="@routes.Application.index">SCOAP<sup>3</sup> TopicHub</a>
+            <a class="navbar-brand" href="@routes.Application.index">@HubUtils.siteName</a>
           </div>
           <div class="navbar-collapse collapse" id="th-navbar-collapse">
             <ul class="nav navbar-nav">

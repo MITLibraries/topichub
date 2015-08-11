@@ -26,7 +26,7 @@ class ChannelPagesSpec extends Specification {
         val ch = Channel.make(sub.id, "protocol", "mode", "description", "userid",
                               "password", "http://example.com")
         browser.goTo("http://localhost:" + port + "/channel/" + ch.id)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // GET /channels/:sid/create
@@ -36,7 +36,7 @@ class ChannelPagesSpec extends Specification {
         val sub = Subscriber.make(sub_user.id, "Sub Name", "cat", "contact",
                                   Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/channels/" + sub.id + "/create")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // POST /subscriber/:sid/channels
