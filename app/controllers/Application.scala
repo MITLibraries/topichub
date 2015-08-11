@@ -282,7 +282,7 @@ object Application extends Controller with Security {
           harvester ! h
           h.complete
         } else {
-          println("A harvest tried to start that had an invalid date.")
+          Logger.info("A harvest tried to start that had an invalid date.")
         }
       }
       Ok("kicked off all harvests")
@@ -1386,10 +1386,10 @@ object Application extends Controller with Security {
     val authorized_key = Play.configuration.getString("auth.harvest.key").get
     if (key == authorized_key) {
       indexer ! dtype
-      println("DEBUG: Reindex Job for " + dtype + " started")
+      Logger.info("Reindex Job for " + dtype + " started")
       Ok("Reindexing " + dtype + "s: started")
     } else {
-      println("DEBUG: A reindex tried to start without a valid key.")
+      Logger.warn("A reindex tried to start without a valid key.")
       Unauthorized("Reindexing " + dtype + "s: not allowed")
     }
   }

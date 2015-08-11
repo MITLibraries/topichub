@@ -12,7 +12,7 @@ import java.net.URL
 import java.util.zip.{ZipEntry, ZipOutputStream}
 
 import akka.actor.Actor
-
+import play.api._
 import play.api.Play.current
 import play.api.libs.ws._
 
@@ -32,7 +32,7 @@ import models.{Item, PackageMap}
 class PackageWorker extends Actor {
   def receive = {
     case item: Item => Packager.packageItem(item)
-    case _ => println("Unknown package command")
+    case _ => Logger.error("Unhandled Case in PackageWorker#receive")
   }
 }
 

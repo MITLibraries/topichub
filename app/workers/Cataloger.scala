@@ -18,7 +18,7 @@ import java.util.Date
 import javax.xml.parsers.SAXParser
 
 import org.xml.sax.InputSource
-
+import play.api._
 import scales.xml.jaxen._
 import scales.xml._
 import scales.utils._
@@ -31,7 +31,7 @@ import models.{Collection, ContentType, Finder, Item, ResourceMap, Scheme, Topic
 class CatalogWorker extends Actor {
   def receive = {
     case item: Item => Cataloger.catalog(item)
-    case _ => println("bar")
+    case _ => Logger.error("Unhandled case in CatalogWorker#receive")
   }
 }
 
@@ -51,7 +51,7 @@ class Cataloger(resmap: ResourceMap, content: StoredContent) {
       val (idHits, lblHits) = findValues(Finder.forSchemeAndFormat(scheme.id, format), source)
       // add cardinality checking here
       var idx = 0
-      // println("IDHits size: " + idHits.size)
+      Logger.debug("IDHits size: " + idHits.size)
       for (id <- idHits) {
         // check for and utilize existing topics
         val topic = Topic.forSchemeAndTag(scheme.tag, id).getOrElse(createTopic(scheme, id, lblHits(idx)))
@@ -70,13 +70,13 @@ class Cataloger(resmap: ResourceMap, content: StoredContent) {
     var lblHits: Seq[String] = null
     if (doc != null) {
       // do Id & label
-      // println("in process about to evaluate: " + finder.idKey)
+      Logger.debug("in process about to evaluate: " + finder.idKey)
       var keyParts = finder.idKey.split(" ")
       // new way
-      // println("keyParts0: " + keyParts(0))
+      Logger.debug("keyParts0: " + keyParts(0))
       val xp = new ScalesXPath(keyParts(0)).withNameConversion(ScalesXPath.localOnly)
       val hits = xp.evaluate(top(doc))
-      // println("Post eval num hits: " + hits.size)
+      Logger.debug("Post eval num hits: " + hits.size)
       if (hits.size > 0) {
         if (keyParts.length == 2) {
           val regX = keyParts(1).r
@@ -103,17 +103,15 @@ class Cataloger(resmap: ResourceMap, content: StoredContent) {
         idHits = List()
       }
     }
-    // also stow in infoCache
-    //idHits.foreach(println)
-    //infoCache += ("id" -> idHits)
+
     if (idHits.size > 0) {
       val idl = finder.idLabel
       // if idl is an XPath, evaluate it
       if (idl != null && idl.length > 0 && idl.indexOf("/") >= 0) {
-        // println("in process about to evaluate label: " + idl)
+        Logger.debug("in process about to evaluate label: " + idl)
         lblHits = xpathFind(idl, doc)
       } else if (idl != null && idl.length > 0) {
-        // println("process filtered value; " + filteredValue(idl, 0))
+        Logger.debug("process filtered value; " + filteredValue(idl, 0))
         var lblList = List[String]()
         var count = 0
         for (a <- idHits) {
@@ -200,7 +198,7 @@ class Cataloger(resmap: ResourceMap, content: StoredContent) {
     // is value cached?
     var value = infoCache.get(token) match {
       case Some(x) =>
-      // println("In filter token: " + token + " index: " + index + " size: " + x.size)
+      Logger.debug("In filter token: " + token + " index: " + index + " size: " + x.size)
       x(index)
       case _ => null
     }
@@ -221,7 +219,7 @@ class Cataloger(resmap: ResourceMap, content: StoredContent) {
             value = idHits(index)
             var valList: List[String] = List()
             for (idHit <- idHits) {
-              println("idHit: " + idHit)
+              Logger.info("idHit: " + idHit)
               valList = idHit :: valList
             }
             infoCache += (token -> valList.reverse)
@@ -235,7 +233,7 @@ class Cataloger(resmap: ResourceMap, content: StoredContent) {
 
   def docToParse(name: String) = {
     val fname = filteredValue(name, 0)
-    // println("doc2p: fname: " + fname)
+    Logger.debug("doc2p: fname: " + fname)
     // check doc cache first
     docCache.get(fname) match {
       case Some(x) => x
@@ -271,37 +269,37 @@ object Cataloger {
     val cataloger = new Cataloger(resmap, Store.content(item))
     val ctype = ContentType.findById(item.ctypeId).get
     var errorDetected = false
-    println(s"Cataloging Item: ${item.objKey}")
+    Logger.info(s"Cataloging Item: ${item.objKey}")
 
     try {
       // start with metadata schemes
       ctype.schemes("meta").foreach( sch => {
-        // println("Found scheme:" + sch.tag)
+        Logger.debug("Found scheme:" + sch.tag)
         cataloger.metadata(sch, item) }
       )
       // next topic schemes
       ctype.schemes("topic").foreach( cataloger.topics(_, item) )
     } catch {
-      case e: Exception => println(e); errorDetected = true
+      case e: Exception => Logger.info(e.toString); errorDetected = true
     }
 
     // now assign to meta-topics as appropriate
     if (errorDetected == true) {
-      println("An error occurred cataloging this item.")
+      Logger.error("An error occurred cataloging this item.")
     } else if (cataloger.addedTopics == 0) {
       // assign to 'null' meta-topic
       item.addTopic(Topic.forSchemeAndTag("meta", "null") match {
         case Some(x) => x
         case _ => makeTopic("meta", "null", "Items lacking any topic");
       })
-      println("No topics")
+      Logger.info("No topics")
     } else {
       // assign to the catch-all meta-topic as well
       item.addTopic(Topic.forSchemeAndTag("meta", "any") match {
         case Some(x) => x
         case _ => makeTopic("meta", "any", "Items with some topics");
       })
-      println("Found some topics")
+      Logger.info("Found some topics")
     }
     // next indexing schemes (which will have already been found as metadata)
     // must follow topic extraction, since items' topics are indexed

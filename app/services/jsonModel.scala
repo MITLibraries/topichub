@@ -145,16 +145,16 @@ object contentModelJson {
   def buildContentModel(model: JsValue) = {
     val formats = (model \ "cformats").get
     procJsArray(formats, 0, cformatFromContentModel)
-    println("finished formats")
+    Logger.info("finished formats")
     val schemes = (model \ "schemes").get
     procJsArray(schemes, 0, schemeFromContentModel)
-    println("finished schemes")
+    Logger.info("finished schemes")
     val ctypes = (model \ "ctypes").get
     procJsArray(ctypes, 0, ctypeFromContentModel)
-    println("finished ctypes")
+    Logger.info("finished ctypes")
     val resmaps = (model \ "resmaps").get
     procJsArray(resmaps, 0, resmapFromContentModel)
-    println("finished resmaps")
+    Logger.info("finished resmaps")
   }
 
   def cformatFromContentModel(jss: JsValue) {
@@ -168,7 +168,7 @@ object contentModelJson {
   }
 
   def schemeFromContentModel(jss: JsValue) {
-    //println(Json.stringify(jss))
+    Logger.debug(Json.stringify(jss))
     val tag = forName(jss, "tag")
     // only create if not already defined
     if (Scheme.findByTag(tag).isEmpty) {
@@ -302,7 +302,7 @@ object publisherModelJson {
   def buildPublisherModel(model: JsValue) = {
     val pubs = (model \ "publishers").get
     procJsArray(pubs, 0, pubFromPublisherModel)
-    println("finished publishers")
+    Logger.info("finished publishers")
   }
 
   def pubFromPublisherModel(jss: JsValue) {
@@ -322,7 +322,7 @@ object publisherModelJson {
   }
 
   def collFromPublisherModel(pid: Int)(jss: JsValue) {
-    //println(Json.stringify(jss))
+    Logger.debug(Json.stringify(jss))
     val tag = forName(jss, "tag")
     // only create if not already defined && dependencies found
     if (Collection.findByTag(tag).isEmpty) {
@@ -426,7 +426,7 @@ object subscriberModelJson {
   def buildSubscriberModel(model: JsValue) = {
     val subs = (model \ "subscribers").get
     procJsArray(subs, 0, subFromSubscriberModel)
-    println("finished subscribers")
+    Logger.info("finished subscribers")
   }
 
   def subFromSubscriberModel(jss: JsValue) {

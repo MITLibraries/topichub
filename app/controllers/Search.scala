@@ -22,13 +22,13 @@ object Search extends Controller {
     val offset = (page) * perpage
     val elastic_url = indexSvc +  target + "/_search?q=" + encQuery + "&from=" + offset + "&size=" + perpage
     val req = if (indexSvc.contains("bonsai.io")) {
-      println("DEBUG: use basic auth for WS elasticsearch call")
+      Logger.debug("use basic auth for WS elasticsearch call")
       WS.url(elastic_url)
         .withAuth(extractCredentials("username", indexSvc),
                   extractCredentials("password", indexSvc),
                   WSAuthScheme.BASIC)
     } else {
-      println("DEBUG: no auth for WS elasticsearch call")
+      Logger.debug("no auth for WS elasticsearch call")
       WS.url(elastic_url)
     }
 
