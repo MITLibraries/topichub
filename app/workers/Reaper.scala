@@ -7,7 +7,7 @@ package workers
 import java.util.Date
 
 import akka.actor.{Actor, Props}
-
+import play.api._
 import models.{Collection, Cull, HubUtils, Item, Topic}
 import services.Emailer
 
@@ -21,7 +21,7 @@ class ReaperWorker extends Actor {
   def receive = {
     case c: Cull => Reaper.cull(c)
     case (oid: String, policy: String) => Reaper.expungeItem(oid, policy)
-    case _ => println("Unknown message")
+    case _ => Logger.error("Unhandled Case in ReaperWorker#receive")
   }
 }
 
@@ -44,7 +44,7 @@ object Reaper {
   def allow(item: Item, policy: String): Boolean = {
     policy match {
       case "soft" => itemQuiet(item) && topicsQuiet(item)
-      case _ => println("Unknown policy"); false
+      case _ => Logger.error("Unknown policy"); false
     }
   }
 

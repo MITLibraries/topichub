@@ -34,7 +34,7 @@ class ConveyorWorker extends Actor {
     case (item: Item, subscr: Subscriber) => Conveyor.transferItem(item, subscr)
     case (hold: Hold, accept: Boolean) => Conveyor.resolveHold(hold, accept)
     case (pick: TopicPick, accept: Boolean) => Conveyor.resolvePick(pick, accept)
-    case _ => println("I'm lost")
+    case _ => Logger.error("Unhandle Case in ConveryWorker#receive")
   }
 }
 
@@ -67,7 +67,7 @@ object Conveyor {
       plan.interest match {
         case "subscribe" => subscribe(plan.fulfill)
         case "review" => review()
-        case _ => println("Don't go there")
+        case _ => Logger.error("Unhandled Case in Conveyor#proccessInterests")
       }
     }
 
@@ -85,16 +85,16 @@ object Conveyor {
       plan.template match {
         case "subscribe" => subscribe(plan.fulfill)
         case "review" => review()
-        case _ => println("Don't go there")
+        case _ => Logger.error("Unhandled Case in Conveyor#processTemplates")
       }
     }
 
     def subscribe(action: String) = {
       mints.foreach( i =>
         if(sub.subscribesTo(topic.id)) {
-          println("Conveyor: Subscriber already subscribes to Topic, not re-subscribing.")
+          Logger.info("Conveyor: Subscriber already subscribes to Topic, not re-subscribing.")
         } else {
-          println("Conveyor: Added new Subscription.")
+          Logger.info("Conveyor: Added new Subscription.")
           Subscription.create(i.subscriberId, topic.id, action, sub.created, new Date)
         })
     }
@@ -102,9 +102,9 @@ object Conveyor {
     def review() = {
       mints.foreach( t =>
         if(TopicPick.picked(topic.id, t.subscriberId)) {
-          println("Conveyor: TopicPick detected duplicate so did nothing.")
+          Logger.info("Conveyor: TopicPick detected duplicate so did nothing.")
         } else {
-          println("Conveyor: Added new TopicPick.")
+          Logger.info("Conveyor: Added new TopicPick.")
           TopicPick.create(t.subscriberId, topic.id, conveyorAgent.id)
         })
     }
@@ -131,7 +131,7 @@ object Conveyor {
     if (plan.isDefined) {
       plan.get.interest match {
         case "review" => reviewInterest(interest, plan.get)
-        case _ => println("Don't go there")
+        case _ => Logger.error("Unhandled Case in Conveyor#newInterest")
       }
     }
   }
@@ -215,7 +215,7 @@ object Conveyor {
         case "deliver" => transfer(item, sub, Transfer.make(sub.subscriberId, sub.id, item.id, sub.action))
         case "review" => Hold.make(sub.subscriberId, sub.id, item.id)
         case "notify" => notify(item, sub)
-        case _ => println("Unknown action: " + sub.action)
+        case _ => Logger.error("Unknown action: " + sub.action)
       }
     }
   }
@@ -231,7 +231,7 @@ object Conveyor {
     chan.protocol match {
       case "sword" => swordTransfer(item, chan, trans)
       case "drain" => chan.recordTransfer  // essentially No-Op
-      case _ => println("Don't know how to transfer via: " + chan.protocol)
+      case _ => Logger.error("Don't know how to transfer via: " + chan.protocol)
     }
   }
 
@@ -240,7 +240,7 @@ object Conveyor {
       .withHeaders(CONTENT_TYPE -> "application/zip",
                   "X-packaging" -> "http://purl.org/net/sword-types/METSDSpaceSIP")
       .withAuth(channel.userId, channel.password, WSAuthScheme.BASIC)
-    println("About to deposit: " + req)
+    Logger.info("About to deposit: " + req)
     val resp = req.post(Packager.packageItemAsFile(item))
 
     resp onComplete {
@@ -249,24 +249,24 @@ object Conveyor {
     }
 
     def failedSwordTransferAttempt(t: String) = {
-      println("An error occurred attempting to submit a Sword package")
+      Logger.error("An error occurred attempting to submit a Sword package")
       val sysadminEmails = User.allByRole("sysadmin").map(x => x.email).mkString(",")
       val msg = views.txt.email.sword_transfer_failure(item, channel, trans, t).body
       sendSwordFailureEmail(sysadminEmails, msg)
     }
 
     def sendSwordFailureEmail(addresses: String, msg: String) = {
-      println(msg)
+      Logger.info(msg)
       Emailer.notify(addresses, "SCOAP3Hub: failure of sword delivery detected", msg)
       Transfer.delete(trans.id)
     }
 
     def readSwordResponse(response: play.api.libs.ws.WSResponse) = {
       if (response.status == 201) {
-        println("Successful Transfer of " + item.objKey)
+        Logger.info("Successful Transfer of " + item.objKey)
         channel.recordTransfer
       } else {
-        println("The SWORD server did not accept the transfer. Response was " + response.toString)
+        Logger.warn("The SWORD server did not accept the transfer. Response was " + response.toString)
         // email admin details
         val sysadminEmails = User.allByRole("sysadmin").map(x => x.email).mkString(",")
         val msg = views.txt.email.sword_transfer_failure(item, channel, trans, response.toString).body

@@ -7,7 +7,7 @@ package workers
 import java.io.ByteArrayInputStream
 
 import akka.actor.Actor
-
+import play.api._
 import play.api.Play.current
 import play.api.libs.concurrent.Akka
 import play.api.libs.ws._
@@ -33,7 +33,7 @@ class HarvestWorker extends Actor {
   def receive = {
     case h: Harvest => new Harvester().harvest(h)
     case (oid: String, c: Collection, h: Harvest, force: Boolean) => new Harvester().pullItem(oid, c, h, force)
-    case _ => println("Unknown")
+    case _ => Logger.error("Unhandled Case in HarvestWorker#receive")
   }
 }
 
@@ -43,7 +43,7 @@ class Harvester {
     // based on protocol, set up harvest
     harvest.protocol.toLowerCase match {
       case "oai-pmh" => oaiHarvest(harvest)
-      case _ => println("Unknown protocol")
+      case _ => Logger.error("Unhandled Case in Harvester#harvest")
     }
   }
 
@@ -89,13 +89,13 @@ class Harvester {
     def notifyUnhandledCollections(collections: List[String]) = {
       val sysadminEmails = User.allByRole("sysadmin").map(x => x.email).mkString(",")
       val msg = views.txt.email.unhandled_collections(harvest, collections).body
-      println(msg)
+      Logger.warn(msg)
       Emailer.notify(sysadminEmails, "SCOAP3Hub: An unhandled collection was detected", msg)
     }
 
     def handleOaiError(errorText: String, errorCode: String) = {
       if(errorCode.contains("noRecordsMatch")) {
-        println("DEBUG: No records matched, but don't abort the Harvest because that's just fine.")
+        Logger.info("No records matched, but don't abort the Harvest because that's just fine.")
       } else {
         // Any other errorCode aborts which will generate an email to sysadmins with error details
         abortHarvest(errorCode + " " + errorText)
@@ -103,7 +103,7 @@ class Harvester {
     }
 
     def processItem(objId: Option[String], collectionKey: Option[String]) = {
-      println("Got OID:" + objId.getOrElse("Unknown") + " in coll: " + collectionKey.getOrElse("Unknown"))
+      Logger.info("Got OID:" + objId.getOrElse("Unknown") + " in coll: " + collectionKey.getOrElse("Unknown"))
       // look up collection, and process if known & item not already created
       val collOpt = Collection.findByTag(collectionKey.get)
       if (collOpt.isDefined && Item.findByKey(objId.get).isEmpty) {
@@ -116,12 +116,12 @@ class Harvester {
         coll.recordDeposit
         Harvester.cataloger ! item
       } else if (collOpt.isDefined) {
-        println("DEBUG: collection is defined but Item is already cataloged")
+        Logger.info("Collection is defined but Item is already cataloged")
       } else if (Collection.findByTag(collectionKey.get, false).isDefined) {
-        println(s"DEBUG: Collection is ignored: ${collectionKey.get}")
+        Logger.info(s"Collection is ignored: ${collectionKey.get}")
       } else {
         // keep track so we can send an email so someone knows a new collection was found
-        println(s"DEBUG: Collection is not handled: ${collectionKey.get}")
+        Logger.info(s"Collection is not handled: ${collectionKey.get}")
         unhandledCollections += collectionKey.get
       }
     }
@@ -130,7 +130,7 @@ class Harvester {
       Harvest.findById(harvest.id).get.rollback
       val sysadminEmails = User.allByRole("sysadmin").map(x => x.email).mkString(",")
       val msg = views.txt.email.abort_harvest(harvest, exception).body
-      println(msg)
+      Logger.error(msg)
       Emailer.notify(sysadminEmails, "SCOAP3Hub: An error occurred starting a Harvest", msg)
     }
 
@@ -148,8 +148,8 @@ class Harvester {
     // val url = "http://www.google.com"
     // To test xml with no OAI
     // val url = "http://api.npr.org/query?id=1029&apiKey=MDE5MDcxMDkzMDE0MzA5MjI3NDgxNDRkMA001"
-    // debug
-    println("About to call: " + url)
+
+    Logger.info("About to call: " + url)
 
     val request = WS.url(url).get().map { response =>
       response.status match {

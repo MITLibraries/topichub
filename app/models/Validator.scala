@@ -41,7 +41,7 @@ case class Validator(id: Int, scheme_id: Int, description: String, userId: Strin
     // compose the service call
     val svcCall = interpolate(serviceUrl.replaceAll("\\{topic\\}", topicId), true)
     val req = WS.url(svcCall)
-    //println("svcCall: " + svcCall)
+    Logger.debug("svcCall: " + svcCall)
     // need to define general abstraction - now just key off scheme tag
     if ("issn".equals(scheme.tag)) {
       req.get.map { resp => issnParse(resp.json) }
