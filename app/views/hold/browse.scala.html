@@ -4,7 +4,7 @@
 *****************************************************************************@
 @(id: Int, holds: List[Hold], page: Int, total: Long)(implicit request: play.api.mvc.RequestHeader)
 @reason(topic: Topic) = {
-  <p>[@topic.scheme.tag:<a href="@routes.Application.topic(topic.id)">@topic.tag</a>]</p>
+  <p class="hold_topic">@topic.scheme.tag: <a href="@routes.Application.topic(topic.id)">@topic.tag</a></p>
 }
 @layout.main("Holds Browse - TopicHub") {
   <div class="page-header">
