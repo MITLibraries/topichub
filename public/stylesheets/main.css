@@ -25,3 +25,7 @@ a.list-group-item:hover {
   background-color: lightblue;
   border: solid thin red;
 }
+
+.hold_topic, .hold_topic a {
+  color: gray;
+}
