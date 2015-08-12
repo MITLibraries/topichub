@@ -3,6 +3,9 @@
 * Copyright (c) 2015 MIT Libraries                                           *
 *****************************************************************************@
 @(id: Int, holds: List[Hold], page: Int, total: Long)(implicit request: play.api.mvc.RequestHeader)
+@reason(topic: Topic) = {
+  <p>[@topic.scheme.tag:<a href="@routes.Application.topic(topic.id)">@topic.tag</a>]</p>
+}
 @layout.main("Holds Browse - TopicHub") {
   <div class="page-header">
     <h2>Review Holds</h2>
@@ -10,7 +13,9 @@
   </div>
   <ul>
     @holds.map { hold =>
-      <li><a href="@routes.ItemController.item(hold.itemId)">@Html(hold.item.metadataValue("title"))</a></li>
+      <li><a href="@routes.ItemController.item(hold.itemId)">@Html(hold.item.metadataValue("title"))</a>
+        @reason(hold.subscription.topic)
+      </li>
     }
   </ul>
   @tags.pagination(page, 10, total, routes.Application.holdBrowse(id).toString, holds.length)
