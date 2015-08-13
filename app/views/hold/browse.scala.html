@@ -13,7 +13,14 @@
   </div>
   <ul>
     @holds.map { hold =>
-      <li><a href="@routes.ItemController.item(hold.itemId)">@Html(hold.item.metadataValue("title"))</a>
+      <li>
+        <a rel="tooltip" title="Fulfill subscription for this item"
+          href="@routes.Application.resolveHold(hold.id, true)" class="btn btn-success btn-xs">
+          <span class="glyphicon glyphicon-thumbs-up" aria-hidden="true"></span></a>
+        <a rel="tooltip" title="Forget this item"
+          href="@routes.Application.resolveHold(hold.id, false)" class="btn btn-danger btn-xs">
+          <span class="glyphicon glyphicon-thumbs-down" aria-hidden="true"></span></a>
+        <a href="@routes.ItemController.item(hold.itemId)">@Html(hold.item.metadataValue("title"))</a>
         @reason(hold.subscription.topic)
       </li>
     }
