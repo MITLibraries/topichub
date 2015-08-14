@@ -25,6 +25,7 @@ case class TopicPick(id: Int,  // DB key
                      subscriberId: Int,   // DB key of subscriber
                      topicId: Int,   // DB key of selected topic
                      agentId: Int, // DB key of agent that created it
+                     basis: String, // Agent-specific justification, code, etc
                      created: Date,  // when pick created
                      resolved: Date) {    // when pick resolved
 
@@ -46,9 +47,9 @@ object TopicPick {
 
   val pick = {
     get[Int]("id") ~ get[Int]("subscriber_id") ~ get[Int]("topic_id") ~ get[Int]("agent_id") ~
-    get[Date]("created") ~ get[Date]("resolved") map {
-      case id ~ subscriberId ~ topicId ~ agentId ~ created ~ resolved =>
-        TopicPick(id, subscriberId, topicId, agentId, created, resolved)
+    get[String]("basis") ~ get[Date]("created") ~ get[Date]("resolved") map {
+      case id ~ subscriberId ~ topicId ~ agentId ~ basis ~ created ~ resolved =>
+        TopicPick(id, subscriberId, topicId, agentId, basis, created, resolved)
     }
   }
 
@@ -65,14 +66,14 @@ object TopicPick {
      }
    }
 
-  def create(subscriberId: Int, topicId: Int, agentId: Int) = {
+  def create(subscriberId: Int, topicId: Int, agentId: Int, basis: String) = {
     DB.withConnection { implicit c =>
-      SQL("insert into topic_pick (subscriber_id, topic_id, agent_id, created, resolved) values ({subscriber_id}, {topic_id}, {agent_id}, {created}, {resolved})")
-      .on('subscriber_id -> subscriberId, 'topic_id -> topicId, 'agent_id -> agentId, 'created -> new Date, 'resolved -> new Date).executeInsert()
+      SQL("insert into topic_pick (subscriber_id, topic_id, agent_id, basis, created, resolved) values ({subscriber_id}, {topic_id}, {agent_id}, {basis}, {created}, {resolved})")
+      .on('subscriber_id -> subscriberId, 'topic_id -> topicId, 'agent_id -> agentId, 'basis -> basis, 'created -> new Date, 'resolved -> new Date).executeInsert()
     }
   }
 
-  def make(subscriberId: Int, topicId: Int, agentId: Int) = {
-    findById(create(subscriberId, topicId, agentId).get.toInt).get
+  def make(subscriberId: Int, topicId: Int, agentId: Int, basis: String) = {
+    findById(create(subscriberId, topicId, agentId, basis).get.toInt).get
   }
 }

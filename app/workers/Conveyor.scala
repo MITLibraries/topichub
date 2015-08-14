@@ -75,7 +75,7 @@ object Conveyor {
       Subscription.create(i.subscriberId, topic.id, action, sub.created, new Date))
 
     def review() = mints.foreach( i =>
-      TopicPick.create(i.subscriberId, topic.id, conveyorAgent.id))
+      TopicPick.create(i.subscriberId, topic.id, conveyorAgent.id, "imatch:" + i.id))
   }
 
   private def processTemplates(subscriberId: Int, topic: Topic, tints: List[Interest]) = {
@@ -105,7 +105,7 @@ object Conveyor {
           Logger.info("Conveyor: TopicPick detected duplicate so did nothing.")
         } else {
           Logger.info("Conveyor: Added new TopicPick.")
-          TopicPick.create(t.subscriberId, topic.id, conveyorAgent.id)
+          TopicPick.create(t.subscriberId, topic.id, conveyorAgent.id, "tmatch:" + t.id)
         })
     }
   }
@@ -144,7 +144,7 @@ object Conveyor {
       var mPage = Topic.withScheme(scheme.id, idx)
       while (! mPage.isEmpty) {
         mPage.filter(_.tag.contains(interest.intValue)).foreach { topic =>
-          TopicPick.create(interest.subscriberId, topic.id, conveyorAgent.id)
+          TopicPick.create(interest.subscriberId, topic.id, conveyorAgent.id, "tmatch:" + interest.id)
         }
         idx += 1
         mPage = Topic.withScheme(scheme.id, idx)
@@ -154,7 +154,7 @@ object Conveyor {
       val topic = Topic.forSchemeAndTag(interest.schemeTag, interest.intValue)
       if (topic.isDefined) {
         // add to topic picks for review
-        TopicPick.create(interest.subscriberId, topic.get.id, conveyorAgent.id)
+        TopicPick.create(interest.subscriberId, topic.get.id, conveyorAgent.id, "imatch:" + interest.id)
       }
     }
   }
