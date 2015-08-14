@@ -1,8 +1,25 @@
 @*****************************************************************************
 * Entry page for topic pick browsing (Review)                                *
 * Copyright (c) 2015 MIT Libraries                                           *
+* NB: Basis display logic supports only interest matching - other agents and *
+* processes will require additional handling logic                           *
 *****************************************************************************@
 @(id: Int, picks: List[TopicPick], page: Int, total: Long)(implicit request: play.api.mvc.RequestHeader)
+@pickTopic(topic: Topic) = {
+  <a href="@routes.Application.topic(topic.id)">@topic.tag</a> @HubUtils.toLabel(topic.name)
+}
+@showInterest(matchType: String, interest: Interest) = {
+  @matchType <a href="@routes.Application.scheme(interest.scheme.id)">@interest.schemeTag</a>: @interest.intValue
+}
+@basis(basisParts: Array[String]) = {
+  <p class="pick_basis">Matched
+  @{basisParts(0) match {
+    case "imatch" => showInterest("interest", Interest.findById(basisParts(1).toInt).get)
+    case "tmatch" => showInterest("template", Interest.findById(basisParts(1).toInt).get)
+    case _ => "Unknown"
+  }}
+  </p>
+}
 @layout.main("Topic Picks Browse - TopicHub") {
   <div class="page-header">
     <h2>Review Topic Picks</h2>
@@ -10,7 +27,7 @@
   </div>
   <ul>
     @picks.map { pick =>
-      <li><a href="@routes.Application.topic(pick.topicId)">@pick.topic.tag</a> @pick.topic.name</li>
+      <li>@pickTopic(pick.topic) @basis(pick.basis.split(":"))</li>
     }
   </ul>
   @tags.pagination(page, 10, total, routes.Application.pickBrowse(id).toString, picks.length)

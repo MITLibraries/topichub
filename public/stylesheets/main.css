@@ -33,3 +33,7 @@ a.list-group-item:hover {
 .hold_topic a.btn {
   color: white;
 }
+
+.pick_basis, .pick_basis a {
+  color: gray;
+}
