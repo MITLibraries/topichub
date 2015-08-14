@@ -19,7 +19,7 @@ class TopicPickSpec extends Specification {
         val top = Topic.make(1, "tag", "name")
         val agent = Agent.make("tag", "label", "description", "code", "params", Some("icon"))
         TopicPick.picked(top.id, s.id) must equalTo(false)
-        val p = TopicPick.make(s.id, top.id, agent.id)
+        val p = TopicPick.make(s.id, top.id, agent.id, "imatch:1")
         TopicPick.picked(top.id, s.id) must equalTo(true)
       }
     }
@@ -32,7 +32,7 @@ class TopicPickSpec extends Specification {
         val top = Topic.make(1, "tag", "name")
         val agent = Agent.make("tag", "label", "description", "code", "params", Some("icon"))
         TopicPick.picked(top.id, s.id) must equalTo(false)
-        val p = TopicPick.make(s.id, top.id, agent.id)
+        val p = TopicPick.make(s.id, top.id, agent.id, "imatch:1")
         TopicPick.findById(1).get must equalTo(p)
       }
     }
@@ -45,7 +45,7 @@ class TopicPickSpec extends Specification {
         val top = Topic.make(1, "tag", "name")
         val agent = Agent.make("tag", "label", "description", "code", "params", Some("icon"))
         TopicPick.picked(top.id, s.id) must equalTo(false)
-        TopicPick.create(s.id, top.id, agent.id)
+        TopicPick.create(s.id, top.id, agent.id, "imatch:1")
         TopicPick.picked(top.id, s.id) must equalTo(true)
       }
     }
@@ -58,7 +58,7 @@ class TopicPickSpec extends Specification {
         val top = Topic.make(1, "tag", "name")
         val agent = Agent.make("tag", "label", "description", "code", "params", Some("icon"))
         TopicPick.picked(top.id, s.id) must equalTo(false)
-        val p = TopicPick.make(s.id, top.id, agent.id)
+        val p = TopicPick.make(s.id, top.id, agent.id, "imatch:1")
         TopicPick.picked(top.id, s.id) must equalTo(true)
       }
     }
@@ -70,7 +70,7 @@ class TopicPickSpec extends Specification {
         Scheme.create("tag1", "gentype", "cat", "desc", Some("link"), Some("logo"))
         val top = Topic.make(1, "tag", "name")
         val agent = Agent.make("tag", "label", "description", "code", "params", Some("icon"))
-        val p = TopicPick.make(s.id, top.id, agent.id)
+        val p = TopicPick.make(s.id, top.id, agent.id, "imatch:1")
         p.topic must equalTo(top)
       }
     }
@@ -82,12 +82,12 @@ class TopicPickSpec extends Specification {
         Scheme.create("tag1", "gentype", "cat", "desc", Some("link"), Some("logo"))
         val top = Topic.make(1, "tag", "name")
         val agent = Agent.make("tag", "label", "description", "code", "params", Some("icon"))
-        val p = TopicPick.make(s.id, top.id, agent.id)
+        val p = TopicPick.make(s.id, top.id, agent.id, "imatch:1")
         TopicPick.picked(top.id, s.id) must equalTo(true)
         p.resolve(true)
         TopicPick.picked(top.id, s.id) must equalTo(false)
 
-        val p2 = TopicPick.make(s.id, top.id, agent.id)
+        val p2 = TopicPick.make(s.id, top.id, agent.id, "imatch:1")
         TopicPick.picked(top.id, s.id) must equalTo(true)
         p2.resolve(false)
         TopicPick.picked(top.id, s.id) must equalTo(false)

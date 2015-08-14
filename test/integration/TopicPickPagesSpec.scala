@@ -7,7 +7,7 @@ import org.fest.assertions.Assertions.assertThat
 import play.api.Application
 import play.api.Play
 import play.api.Play.current
-import models.{ Agent, Collection, ContentType, Hold, Item, Publisher, ResourceMap,
+import models.{ Agent, Collection, ContentType, Hold, Interest, Item, Publisher, ResourceMap,
                 Scheme, User, Subscriber, Subscription, Topic, TopicPick }
 
 /**
@@ -27,7 +27,8 @@ class TopicPickPagesSpec extends Specification {
         val scheme = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         val t = Topic.make(scheme.id, "tag0", "name0")
         val a = Agent.make("tag", "label", "description", "code", "params", Some("icon"))
-        TopicPick.create(sub.id, t.id, a.id)
+        val i = Interest.make(sub.id, scheme.tag, "foovalue", false)
+        TopicPick.create(sub.id, t.id, a.id, "imatch:" + i.id)
         browser.goTo("http://localhost:" + port + "/picks/browse?id=" + sub.id)
         assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
       }
@@ -41,7 +42,8 @@ class TopicPickPagesSpec extends Specification {
         val scheme = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         val t = Topic.make(scheme.id, "tag0", "name0")
         val a = Agent.make("tag", "label", "description", "code", "params", Some("icon"))
-        val tp = TopicPick.make(sub.id, t.id, a.id)
+        val i = Interest.make(sub.id, scheme.tag, "foovalue", false)
+        val tp = TopicPick.make(sub.id, t.id, a.id, "imatch:" + i.id)
         sub.pickCount must equalTo(1)
         browser.goTo("http://localhost:" + port + "/pick/" + tp.id + "/resolve?accept=true")
         assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
@@ -64,7 +66,8 @@ class TopicPickPagesSpec extends Specification {
         val scheme = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         val t = Topic.make(scheme.id, "tag0", "name0")
         val a = Agent.make("tag", "label", "description", "code", "params", Some("icon"))
-        TopicPick.create(sub.id, t.id, a.id)
+        val i = Interest.make(sub.id, scheme.tag, "foovalue", false)
+        val tp = TopicPick.make(sub.id, t.id, a.id, "imatch:" + i.id)
         browser.goTo("http://localhost:" + port + "/login")
         browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/picks/browse?id=" + sub.id)
@@ -85,7 +88,8 @@ class TopicPickPagesSpec extends Specification {
         val scheme = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         val t = Topic.make(scheme.id, "tag0", "name0")
         val a = Agent.make("tag", "label", "description", "code", "params", Some("icon"))
-        val tp = TopicPick.make(sub.id, t.id, a.id)
+        val i = Interest.make(sub.id, scheme.tag, "foovalue", false)
+        val tp = TopicPick.make(sub.id, t.id, a.id, "imatch:" + i.id)
         sub.pickCount must equalTo(1)
         browser.goTo("http://localhost:" + port + "/login")
         browser.$("#openid").click
@@ -108,7 +112,8 @@ class TopicPickPagesSpec extends Specification {
         val scheme = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         val t = Topic.make(scheme.id, "tag0", "name0")
         val a = Agent.make("tag", "label", "description", "code", "params", Some("icon"))
-        TopicPick.create(sub.id, t.id, a.id)
+        val i = Interest.make(sub.id, scheme.tag, "foovalue", false)
+        val tp = TopicPick.make(sub.id, t.id, a.id, "imatch:" + i.id)
         browser.goTo("http://localhost:" + port + "/login")
         browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/picks/browse?id=" + sub.id)
@@ -125,7 +130,8 @@ class TopicPickPagesSpec extends Specification {
         val scheme = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         val t = Topic.make(scheme.id, "tag0", "name0")
         val a = Agent.make("tag", "label", "description", "code", "params", Some("icon"))
-        val tp = TopicPick.make(sub.id, t.id, a.id)
+        val i = Interest.make(sub.id, scheme.tag, "foovalue", false)
+        val tp = TopicPick.make(sub.id, t.id, a.id, "imatch:" + i.id)
         sub.pickCount must equalTo(1)
         browser.goTo("http://localhost:" + port + "/login")
         browser.$("#openid").click
@@ -144,7 +150,8 @@ class TopicPickPagesSpec extends Specification {
         val scheme = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         val t = Topic.make(scheme.id, "tag0", "name0")
         val a = Agent.make("tag", "label", "description", "code", "params", Some("icon"))
-        val tp = TopicPick.make(sub.id, t.id, a.id)
+        val i = Interest.make(sub.id, scheme.tag, "foovalue", false)
+        val tp = TopicPick.make(sub.id, t.id, a.id, "imatch:" + i.id)
         sub.pickCount must equalTo(1)
         browser.goTo("http://localhost:" + port + "/login")
         browser.$("#openid").click
