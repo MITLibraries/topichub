@@ -418,13 +418,13 @@ class TopicSpec extends Specification {
         t3.pickCount must equalTo(0)
 
         // add pick to t1, count increases but does not affect t2 or t3
-        val pick1 = TopicPick.make(sub.id, t1.id, agt.id)
+        val pick1 = TopicPick.make(sub.id, t1.id, agt.id, "imatch:1")
         t1.pickCount must equalTo(1)
         t2.pickCount must equalTo(0)
         t3.pickCount must equalTo(0)
 
-        val pick2 = TopicPick.make(sub.id, t2.id, agt.id)
-        val pick3 = TopicPick.make(sub2.id, t2.id, agt.id)
+        val pick2 = TopicPick.make(sub.id, t2.id, agt.id, "imatch:2")
+        val pick3 = TopicPick.make(sub2.id, t2.id, agt.id, "imatch:3")
         t1.pickCount must equalTo(1)
         t2.pickCount must equalTo(2)
         t3.pickCount must equalTo(0)

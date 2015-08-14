@@ -145,7 +145,7 @@ class TopicPagesSpec extends Specification {
         val s = Scheme.findByTag("tag").get
         plan.addScheme(s)
         val agent = Agent.make("tag", "label", "description", "code", "params", Some("icon"))
-        TopicPick.make(sub.id, 1, agent.id)
+        TopicPick.make(sub.id, 1, agent.id, "imatch:1")
         browser.goTo("http://localhost:" + port + "/login")
         browser.$("#openid").click
         browser.goTo("http://localhost:" + port + "/topic/1")
