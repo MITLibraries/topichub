@@ -29,3 +29,7 @@ a.list-group-item:hover {
 .hold_topic, .hold_topic a {
   color: gray;
 }
+
+.hold_topic a.btn {
+  color: white;
+}
