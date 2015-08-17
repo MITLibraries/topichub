@@ -66,6 +66,15 @@
           <a href="@routes.Application.newChannel(sub.id)">Add a new destination</a>
         </li>
       </ul>
+
+      <h4>Interests by Scheme</h4>
+      @for(s <- Scheme.withGentype("topic").filter(_.tag != "meta").sortWith(_.tag.toLowerCase < _.tag.toLowerCase)) {
+        <li class="list-group-item" id="interest_scheme-@s.id">
+          <span class="badge">@sub.interestCountIn(s.tag)</span>
+          <a href="@routes.Application.interestBrowse("scheme", s.tag)">@s.tag</a>
+          <a href="@routes.Application.scheme(s.id)"><span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span></a>
+        </li>
+      }
     </div>
 
     <div class="col-md-9">
