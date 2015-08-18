@@ -16,8 +16,8 @@ class StaticPagesSpec extends Specification {
   "home" should {
     "displays welcome message" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
       browser.goTo("http://localhost:" + port)
-      browser.pageSource must contain("Welcome to SCOAP")
-      assertThat(browser.title()).isEqualTo("SCOAP3 - TopicHub")
+      browser.pageSource must contain("Add a description in conf/brand.conf")
+      assertThat(browser.title()).isEqualTo("TopicHub")
     }
 
     "displays Schemes with counts" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
@@ -37,7 +37,7 @@ class StaticPagesSpec extends Specification {
 
     "link to github" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
       browser.goTo("http://localhost:" + port + "/about")
-      browser.pageSource must contain("https://github.com/MITLibraries/scoap3hub")
+      browser.pageSource must contain("https://github.com/MITLibraries/topichub")
     }
   }
 

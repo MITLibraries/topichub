@@ -23,8 +23,8 @@ class WorkbenchPagesSpec extends Specification {
   "Application" should {
     "work from within a browser" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
       browser.goTo("http://localhost:" + port)
-      browser.pageSource must contain("Welcome to SCOAP")
-      assertThat(browser.title()).isEqualTo("SCOAP3 - TopicHub")
+      browser.pageSource must contain("Add a description in conf/brand.conf")
+      assertThat(browser.title()).isEqualTo("TopicHub")
     }
 
     "top navigation should allow Workbench access to analyst" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
@@ -32,7 +32,7 @@ class WorkbenchPagesSpec extends Specification {
       browser.goTo("http://localhost:" + port + "/login")
       browser.$("#openid").click
       browser.goTo("http://localhost:" + port)
-      browser.$(".navbar-header a").getTexts().get(0) must equalTo("SCOAP3 TopicHub")
+      browser.$(".navbar-header a").getTexts().get(0) must equalTo("TopicHub")
       browser.$("body > nav > div > div.navbar-header > button").click();
       browser.$("a[href*='workbench']").click();
       assertThat(browser.title()).isEqualTo("Workbench - TopicHub")
@@ -49,7 +49,7 @@ class WorkbenchPagesSpec extends Specification {
 
     "deny Workbench access to not logged in user" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
       browser.goTo("http://localhost:" + port + "/workbench")
-      assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+      assertThat(browser.title()).isEqualTo("Login to TopicHub")
     }
   }
 

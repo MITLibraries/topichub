@@ -30,7 +30,7 @@ class TopicPickPagesSpec extends Specification {
         val i = Interest.make(sub.id, scheme.tag, "foovalue", false)
         TopicPick.create(sub.id, t.id, a.id, "imatch:" + i.id)
         browser.goTo("http://localhost:" + port + "/picks/browse?id=" + sub.id)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // GET /pick/:id/resolve?accept=Boolean
@@ -46,7 +46,7 @@ class TopicPickPagesSpec extends Specification {
         val tp = TopicPick.make(sub.id, t.id, a.id, "imatch:" + i.id)
         sub.pickCount must equalTo(1)
         browser.goTo("http://localhost:" + port + "/pick/" + tp.id + "/resolve?accept=true")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
         sub.pickCount must equalTo(1)
       }
     }

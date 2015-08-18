@@ -28,7 +28,7 @@ class HarvestPagesSpec extends Specification {
                                  "pubstatus", Some("http://www.example.com"), Some(""))
         browser.goTo("http://localhost:" + port + "/publisher/" + pub.id + "/createH")
         browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // POST /harvest/:id (publisher ID)
@@ -52,7 +52,7 @@ class HarvestPagesSpec extends Specification {
                                    "http://example.org", 1, new Date)
         browser.goTo("http://localhost:" + port + "/harvest/" + harvest.id)
         browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // GET /harvest/:id/start
@@ -66,7 +66,7 @@ class HarvestPagesSpec extends Specification {
         browser.goTo("http://localhost:" + port + "/harvest/" + harvest.id + "/start?span=1")
         Harvest.findById(harvest.id).get.updated must equalTo(harvest.updated)
         browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       //GET /harvest/:id/delete
@@ -80,7 +80,7 @@ class HarvestPagesSpec extends Specification {
         browser.goTo("http://localhost:" + port + "/harvest/" + harvest.id + "/delete")
         Harvest.findById(harvest.id).get must equalTo(harvest)
         browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // GET /knip/:cid/:hid/:oid
@@ -97,7 +97,7 @@ class HarvestPagesSpec extends Specification {
         browser.goTo("http://localhost:" + port + "/knip/" + collection.id + "/" + harvest.id +
                      "/scoap:asdf:fdsa")
         browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
     }
 

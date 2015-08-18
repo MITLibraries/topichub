@@ -24,14 +24,14 @@ class AuthenticationPageSpec extends Specification with Mockito {
     "display a login screen" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
       browser.goTo("http://localhost:" + port + "/login")
       browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
-      assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+      assertThat(browser.title()).isEqualTo("Login to TopicHub")
     }
 
     "Analyst protected pages" should {
       "prompt for login when not signed in" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         browser.goTo("http://localhost:" + port + "/workbench")
         browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       "deny access when signed in without analyst role" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
@@ -66,7 +66,7 @@ class AuthenticationPageSpec extends Specification with Mockito {
       "prompt for login when not signed in" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         browser.goTo("http://localhost:" + port + "/dashboard")
         browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       "create user if authentication passes and no local user exists" in new WithBrowser(

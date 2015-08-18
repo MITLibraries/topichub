@@ -6,5 +6,5 @@
 
 Your request to join Subscriber Group: @subscriber.name has been @resolution.
 
-You may visit SCOAP3Hub at:
+You may visit @HubUtils.siteName at:
 @routes.Application.index.absoluteURL()

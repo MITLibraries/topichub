@@ -9,6 +9,7 @@ import java.net.URLEncoder._
 import play.api._
 import play.api.libs.ws._
 import play.api.Play.current
+import models.HubUtils
 
 /** Service for email delivery
   * TODO: refactor for real plug-in modularity, this contains
@@ -29,20 +30,25 @@ trait EmailService {
   val adminEmail = Play.configuration.getString("hub.admin.email").get
 
   def notify(to: String, subject: String, msg: String) {
-    val props = Map("to" -> munge(to), "from" -> "noreply@scoap3hub.org",
-                    "subject" -> subject, "text" -> msg)
+    val props = Map("to" -> munge(to),
+                    "from" -> HubUtils.replyEmail,
+                    "subject" -> subject,
+                    "text" -> msg)
     send(props)
   }
 
   def feedback(from: String, msg: String, reply: Boolean) = {
-    val props = Map("to" -> munge(adminEmail), "from" -> from,
-                    "subject" -> "SCOAP3Hub Feedback", "text" -> msg)
+    val props = Map("to" -> munge(adminEmail),
+                    "from" -> from,
+                    "subject" -> s"${HubUtils.siteName} Feedback",
+                    "text" -> msg)
     send(if (reply) props + ("h:Reply-To" -> from) else props)
   }
 
   def subscriberEmails(to: String, subject: String, msg: String) = {
-    val props = Map("to" -> munge(to), "from" -> "noreply@scoap3hub.org",
-                    "sender" -> "noreply@scoap3hub.org",
+    val props = Map("to" -> munge(to),
+                    "from" -> HubUtils.replyEmail,
+                    "sender" -> HubUtils.replyEmail,
                     "subject" -> subject,
                     "text" -> msg)
     send(props)

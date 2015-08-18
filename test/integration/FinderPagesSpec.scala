@@ -25,7 +25,7 @@ class FinderPagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val s = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/scheme/" + s.tag + "/finders")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // GET /scheme/:tag/create
@@ -33,7 +33,7 @@ class FinderPagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val s = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/scheme/" + s.tag + "/create")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // POST /scheme/:tag
@@ -53,7 +53,7 @@ class FinderPagesSpec extends Specification {
         val f = Finder.make(s.id, cf.id, "description", "card", "idkey", "idlabel", "author")
         Finder.findByScheme(s.id).size must equalTo(1)
         browser.goTo("http://localhost:" + port + "/scheme/" + s.tag + "/finder/" + f.id + "/delete")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
         Finder.findByScheme(s.id).size must equalTo(1)
       }
     }

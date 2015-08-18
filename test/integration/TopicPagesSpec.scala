@@ -56,7 +56,7 @@ class TopicPagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         topic_factory(1)
         browser.goTo("http://localhost:" + port + "/topic/1/subscribe")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // GET /topics/browse

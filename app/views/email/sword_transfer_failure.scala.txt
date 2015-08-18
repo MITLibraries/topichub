@@ -12,7 +12,7 @@ Channel:
 Subscriber:
 @Subscriber.findById(trans.subscriberId).get.name
 
-Link to Item: http://scoap3.topichub.org/item/@item.id
+Link to Item: @HubUtils.baseUrl/item/@item.id
 
 Exception text:
 @error

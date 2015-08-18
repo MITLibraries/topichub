@@ -4,7 +4,7 @@
  *****************************************************************************@
 @(item: Item)
 
-Now available on Scoap3Hub:
+Now available on @HubUtils.siteName:
 
 Title: @item.metadataValue("title")
 Authors: @item.metadataValues("author").mkString(";")

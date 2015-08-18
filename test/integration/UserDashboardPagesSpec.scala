@@ -21,7 +21,7 @@ class UserDashboardPagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
       browser.goTo("http://localhost:" + port + "/myaccount")
       browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
-      assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+      assertThat(browser.title()).isEqualTo("Login to TopicHub")
     }
 
     "Displays the current user's data when signed in" in new WithBrowser(

@@ -72,7 +72,7 @@ object Reaper {
     if (notifyUrl.isDefined && notifyUrl.get.startsWith("mailto:")) {
       val recip = notifyUrl.get.substring(7)
       val msg = views.txt.email.item_removed(item)
-      Emailer.notify(recip, "Item Removed from SCOAP3Hub", msg.body)
+      Emailer.notify(recip, s"Item Removed from ${HubUtils.siteName}", msg.body)
     }
     // Finally delete item itself
     Item.delete(item.id)

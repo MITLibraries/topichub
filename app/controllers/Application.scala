@@ -297,7 +297,8 @@ object Application extends Controller with Security {
       Harvest.findById(hid).map( harvest => {
         if (harvest.publisher.get.userId == identity.id) {
           harvester ! (oid, coll, harvest, force)
-          Ok(views.html.harvest.index("pulled: " + oid))
+          Redirect(routes.Application.index).flashing(
+            "success" -> s"pulled: ${oid}")
         } else {
           Unauthorized(views.html.static.trouble("You are not authorized"))
         }
@@ -926,7 +927,7 @@ object Application extends Controller with Security {
         val subscriber = Subscriber.findById(value).get
         subscriber.linkUser(identity.id)
         val adminEmails = subscriber.adminList.map {user => user.email}.mkString(",")
-        val subject = "SCOAP3Hub Request to Join Subscriber"
+        val subject = s"${HubUtils.siteName} Request to Join Subscriber"
         val msg = views.txt.email.subscriber_join_request(subscriber, identity).body
         Emailer.subscriberEmails(adminEmails, subject, msg)
         Ok(views.html.subscriber.request())
@@ -941,7 +942,7 @@ object Application extends Controller with Security {
 
   def subscriberResolveUser(id: Int, userid: Int, res: String) = isAuthenticated { identity => implicit request =>
     val sub = Subscriber.findById(id).get
-    val subject = s"SCOAP3Hub Request to Join Subscriber ${res}"
+    val subject = s"${HubUtils.siteName} Request to Join Subscriber ${res}"
     val user = User.findById(userid).get
     val msg = views.txt.email.subscriber_resolve(sub, res).body
 

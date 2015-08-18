@@ -15,7 +15,7 @@ import play.api.libs.ws._
 import play.api.mvc._
 import play.api.http.HeaderNames._
 
-import models.{Agent, Channel, Hold, Interest, Item, Plan, Scheme, Subscriber,
+import models.{Agent, Channel, Hold, HubUtils, Interest, Item, Plan, Scheme, Subscriber,
                Subscription, Topic, TopicPick, Transfer, User}
 import services.Emailer
 
@@ -34,7 +34,7 @@ class ConveyorWorker extends Actor {
     case (item: Item, subscr: Subscriber) => Conveyor.transferItem(item, subscr)
     case (hold: Hold, accept: Boolean) => Conveyor.resolveHold(hold, accept)
     case (pick: TopicPick, accept: Boolean) => Conveyor.resolvePick(pick, accept)
-    case _ => Logger.error("Unhandle Case in ConveryWorker#receive")
+    case _ => Logger.error("Unhandled Case in ConveryWorker#receive")
   }
 }
 
@@ -257,7 +257,7 @@ object Conveyor {
 
     def sendSwordFailureEmail(addresses: String, msg: String) = {
       Logger.info(msg)
-      Emailer.notify(addresses, "SCOAP3Hub: failure of sword delivery detected", msg)
+      Emailer.notify(addresses, s"${HubUtils.siteName}: failure of sword delivery detected", msg)
       Transfer.delete(trans.id)
     }
 
@@ -279,6 +279,6 @@ object Conveyor {
     val text = views.txt.email.item_notify(item)
     val topic = sub.topic
     Emailer.notify(sub.subscriber.contact,
-        "Scoap3Hub Alert - new in " + topic.tag + ":" + topic.name, text.body)
+        s"${HubUtils.siteName} Alert - new in ${topic.tag}: ${topic.name}", text.body)
   }
 }

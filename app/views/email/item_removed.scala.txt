@@ -4,7 +4,7 @@
  *****************************************************************************@
 @(item: Item)
 
-The following item is no longer available from Scoap3Hub:
+The following item is no longer available from @HubUtils.siteName:
 
 Title: @item.metadataValue("title")
 Authors: @item.metadataValues("author").mkString(";")

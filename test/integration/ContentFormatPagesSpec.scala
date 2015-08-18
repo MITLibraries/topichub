@@ -24,7 +24,7 @@ class ContentFormatPagesSpec extends Specification {
       "accessing index redirects to login" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         browser.goTo("http://localhost:" + port + "/cformats")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // GET /cformat/:id
@@ -33,14 +33,14 @@ class ContentFormatPagesSpec extends Specification {
         val cf = ContentFormat.make("cf_tag", "cf_label", "cf_desc", "http://www.example.com",
                                     "mimetype", Some("logo"))
         browser.goTo("http://localhost:" + port + "/cformat/" + cf.id)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // GET /cformats/create
       "accessing content format create form redirects to login" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         browser.goTo("http://localhost:" + port + "/cformats/create")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // POST /cformats

@@ -1,10 +1,9 @@
-SCOAP3 TopicHub
+TopicHub
 =================================
+This web application allows users to discover, subscribe to, and obtain automatic delivery of
+aggregations of article content repositories.
 
-This is a web application to allow users to discover, subscribe to,
-and obtain automatic delivery of, aggregations of article content from the SCOAP3 repository.
-
-[![Build Status](https://travis-ci.org/MITLibraries/scoap3hub.svg?branch=master)](https://travis-ci.org/MITLibraries/scoap3hub) [![Coverage Status](https://coveralls.io/repos/MITLibraries/scoap3hub/badge.svg?branch=master)](https://coveralls.io/r/MITLibraries/scoap3hub?branch=master)
+[![Build Status](https://travis-ci.org/MITLibraries/topichub.svg?branch=master)](https://travis-ci.org/MITLibraries/topichub) [![Coverage Status](https://coveralls.io/repos/MITLibraries/topichub/badge.svg?branch=master)](https://coveralls.io/r/MITLibraries/topichub?branch=master)
 
 Authentication
 =====
@@ -18,3 +17,22 @@ OAuth provider will be required. `AUTH_CALLBACK_URL` should be whatever domain y
 running this app on plus `/_oauth-callback`. You will need to configure that on your
 OAuth provider site as well. For development `http://localhost:9000/_oauth-callback`
 (or similar) should also be set with the provider.
+
+**A full list of settings and some examples can been seen in app/conf/authentication.conf.**
+
+Authorization
+=====
+Explicit roles `sysadmin` and `analyst` can manually be assigned in the `hub_user` table. All other
+roles are implicit so don't need to be defined.
+
+Branding
+=====
+Three Environment Variables control the branding experience.
+1. `SITE_NAME`: controls the overall branded sitename and defaults to "TopicHub"
+2. `SITE_DESCRIPTION`: allows for a description of the site to be configured for the home page.
+Html is allowed.
+3. `SITE_BASE_URL`: This is used in generated emails to provide links back to the site.
+Use the protocol and FQDN for your site. Defaults to "http://example.com" so if you get emails
+with that in them you'll want to check this value.
+
+**Developers should access those values using the HubUtils wrapper methods for consistency.**

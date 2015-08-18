@@ -22,7 +22,7 @@ class DashboardPagesSpec extends Specification {
     "prompts for login when not signed in" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
       browser.goTo("http://localhost:" + port + "/dashboard")
       browser.pageSource must contain(Play.configuration.getString("auth.login_text").get)
-      assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+      assertThat(browser.title()).isEqualTo("Login to TopicHub")
     }
 
     "allows access when signed in if a Subscriber is associated with the User" in new WithBrowser(app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {

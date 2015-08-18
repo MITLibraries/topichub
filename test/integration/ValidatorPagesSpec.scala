@@ -25,7 +25,7 @@ class ValidatorPagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val s = Scheme.make("s1_tag", "gentype", "cat", "s1_desc", Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/scheme/" + s.tag + "/createvalidator")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // POST /scheme/:tag/validator
@@ -46,7 +46,7 @@ class ValidatorPagesSpec extends Specification {
         Validator.findByScheme(s.id).size must equalTo(1)
         browser.goTo("http://localhost:" + port + "/scheme/" + s.tag + "/validator/" + v.id +
                      "/delete")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
         Validator.findByScheme(s.id).size must equalTo(1)
       }
     }

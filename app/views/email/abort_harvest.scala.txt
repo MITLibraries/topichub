@@ -7,7 +7,7 @@ An error occurred starting the following harvest:
 
 Harvest: @harvest.name
 Publisher: @harvest.publisher.get.name
-Link to Harvest: http://scoap3.topichub.org/harvest/@harvest.id
+Link to Harvest: @HubUtils.baseUrl/harvest/@harvest.id
 
 Exception text:
 @exception

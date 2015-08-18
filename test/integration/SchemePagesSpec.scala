@@ -50,14 +50,14 @@ class SchemePagesSpec extends Specification {
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         val s1 = Scheme.make("s1_tag", "gentype", "cat", "s1_desc", Some("link"), Some("logo"))
         browser.goTo("http://localhost:" + port + "/scheme/" + s1.id + "/edit")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // GET /schemes/create
       "accessing new scheme create form redirects to login" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         browser.goTo("http://localhost:" + port + "/schemes/create")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // POST /schemes

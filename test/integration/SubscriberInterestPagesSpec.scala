@@ -23,7 +23,7 @@ class SubscriberInterestPagesSpec extends Specification {
       "browse redirects to login" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         browser.goTo("http://localhost:" + port + "/interests/browse?filter=scheme&value=Institution")
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
       }
 
       // POST /interests
@@ -42,7 +42,7 @@ class SubscriberInterestPagesSpec extends Specification {
         val i = Interest.make(sub.id, scheme.tag, "MIT", false)
         i must equalTo(Interest.findById(1).get)
         browser.goTo("http://localhost:" + port + "/interests/remove/" + i.id)
-        assertThat(browser.title()).isEqualTo("Login to SCOAP3 - TopicHub")
+        assertThat(browser.title()).isEqualTo("Login to TopicHub")
         i must equalTo(Interest.findById(1).get)
       }
     }
