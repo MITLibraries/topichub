@@ -323,6 +323,12 @@ object Item {
     }
   }
 
+  def findOldest: Option[Item] = {
+     DB.withConnection { implicit c =>
+      SQL("select * from item order by created asc limit 1").as(item.singleOpt)
+    }
+  }
+
   def inCollection(coll_id: Int, page: Int): List[Item] = {
     val offset = page * 10
     DB.withConnection { implicit c =>
@@ -353,6 +359,36 @@ object Item {
           and item.created <= {until}
         """
       ).on('pub_id -> pubId, 'from -> from, 'until -> until).as(item *)
+    }
+  }
+
+  def inTopicRange(topicId: Int, from: Date, until: Date, max: Int): List[Item] = {
+    DB.withConnection { implicit c =>
+      SQL(
+        """
+          select item.* from item, item_topic
+          where item.created >= {from}
+          and item.created <= {until}
+          and item_topic.item_id = item.id
+          and item_topic.topic_id = {topicId}
+          order by item.created
+          limit {max}
+        """
+      ).on('from -> from, 'until -> until, 'topicId -> topicId, 'max -> max).as(item *)
+   }
+}
+
+  def inRange(from: Date, until: Date, max: Int): List[Item] = {
+    DB.withConnection { implicit c =>
+      SQL(
+        """
+          select * from item
+          where item.created >= {from}
+          and item.created <= {until}
+          order by created
+          limit {max}
+        """
+      ).on('from -> from, 'until -> until, 'max -> max).as(item *)
     }
   }
 
