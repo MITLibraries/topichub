@@ -37,6 +37,15 @@ case class Subscriber(id: Int,  // DB key
     }
   }
 
+  def interestCountIn(schemeTag: String) = {
+    DB.withConnection { implicit c =>
+      SQL("""select COUNT(*) from interest
+             where subscriber_id = {sub_id}
+             and scheme_tag = {stag}""")
+      .on('sub_id -> id, 'stag -> schemeTag).as(scalar[Long].single)
+    }
+  }
+
   def interestIn(schemeTag: String) = {
     DB.withConnection { implicit c =>
       SQL("select * from interest where subscriber_id = {sub_id} and scheme_tag = {stag}")

@@ -169,6 +169,23 @@ class SubscriberSpec extends Specification {
       }
     }
 
+    "#interestsCountIn" in {
+      running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        Subscriber.all must haveSize(0)
+        val u = User.make("bob", "bob@example.com", "pwd", "role1")
+        val s = Subscriber.make(u.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        s.interests must haveSize(0)
+        val sch1 = Scheme.make("tag", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        val sch2 = Scheme.make("tag1", "gentype", "cat", "desc", Some("link"), Some("logo"))
+        s.interestCountIn("tag") must equalTo(0)
+        s.interestCountIn("tag1") must equalTo(0)
+        s.addInterest(sch1, "MIT", true)
+        s.addInterest(sch1, "Stanford", false)
+        s.interestCountIn("tag") must equalTo(2)
+        s.interestCountIn("tag1") must equalTo(0)
+      }
+    }
+
     "#interestIn" in {
       running(FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         Subscriber.all must haveSize(0)
