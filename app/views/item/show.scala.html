@@ -4,6 +4,13 @@
  * Copyright (c) 2015 MIT Libraries                                          *
  *****************************************************************************@
 @(item: Item, sub: Option[Subscriber])(implicit request: play.api.mvc.RequestHeader)
+@filetype(u: String) = {
+  @if(u.takeRight(4) == "pdfa") {
+    PDF/A
+  } else {
+    @item.filename(u).takeRight(3).toUpperCase
+  }
+}
 @layout.main("Item - TopicHub") {
   <div itemscope itemtype="http://schema.org/@item.contentType.label" class="jumbotron">
     <h3>~ @item.contentType.tag ~</h3>
@@ -25,6 +32,11 @@
           <a rel="tooltip" title="view METS.xml" href="@routes.ItemController.itemMets(item.id)" class="btn btn-default">View METS <span class="glyphicon glyphicon-eye-open" aria-hidden="true"></a>
 
           <a rel="tooltip" title="download whole package to desktop" href="@routes.ItemController.itemPackage(item.id)" class="btn btn-default">Download <span class="glyphicon glyphicon-download" aria-hidden="true"></a>
+        }
+        @if(item.hasMetadata("accessUri")) {
+          @item.metadataValues("accessUri").map {u =>
+            <a rel="tooltip" title="download pdf" href="@u" class="btn btn-default">@filetype(u) <span class="glyphicon glyphicon-download" aria-hidden="true"></a>
+          }
         }
       </div>
       <div class="pull-right">
