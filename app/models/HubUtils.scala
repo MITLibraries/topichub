@@ -21,9 +21,14 @@ object HubUtils {
   import java.time.format.DateTimeFormatter
 
   val iso8601 = DateTimeFormatter.ISO_LOCAL_DATE
+  val longDate = DateTimeFormatter.ofPattern("MMMM d, yyyy")
 
   def fmtDate(date: Date) = {
     date.toInstant.atZone(ZoneId.systemDefault).toLocalDate.format(iso8601)
+  }
+
+  def fmtLongDate(date: Date) = {
+    date.toInstant.atZone(ZoneId.systemDefault).toLocalDate.format(longDate)
   }
 
   def fmtPreciseDateTime(date: Date) = {

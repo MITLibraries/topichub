@@ -38,12 +38,13 @@
                  date, etc. *@
         <li class="list-group-item">
           Last Harvest:
-          <span class="glyphicon glyphicon-calendar" aria-hidden="true"></span>
-          @if(Harvest.findById(1)){
-            @Harvest.findById(1).get.updated
-          } else {
-            Unknown
-          }
+          <span class="pull-right">
+            @if(Harvest.findById(1)){
+              @HubUtils.fmtLongDate(Harvest.findById(1).get.updated)
+            } else {
+              Unknown
+            }
+          </span>
         </li>
         <li class="list-group-item">
           <span class="badge">@Item.createdAfterCount(Subscriber.findById(currentSubId).get.created)</span>
