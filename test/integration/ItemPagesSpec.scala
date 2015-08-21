@@ -32,7 +32,7 @@ class ItemPagesSpec extends Specification {
     "as an unauthenticated User" should {
 
       // GET /items/browse
-      "browsing items works" in new WithBrowser(
+      "browsing items by collection works" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         item_factory(11)
         Item.all.size must equalTo(11)
@@ -43,6 +43,48 @@ class ItemPagesSpec extends Specification {
         browser.pageSource must contain("Viewing 11 - 11 of 11")
         browser.$("#prev_page").click
         browser.pageSource must contain("Viewing 1 - 10 of 11")
+      }
+
+      "browsing items by collection handles unknown collection" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        item_factory(11)
+        Item.all.size must equalTo(11)
+        browser.goTo("http://localhost:" + port + "/items/browse?filter=collection&id=2")
+        assertThat(browser.title()).isEqualTo("Error - TopicHub")
+        browser.pageSource must contain("No such collection")
+      }
+
+      "browsing items by topic works" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        item_factory(1)
+        Item.all.size must equalTo(1)
+        val s = Scheme.make("tag", "topic", "cat", "SomeScheme", Some("link"), Some("logo"))
+        val t = Topic.make(s.id, "tag", "name")
+        Item.findById(1).get.addTopic(t)
+        browser.goTo("http://localhost:" + port + "/items/browse?filter=topic&id=1")
+        assertThat(browser.title()).isEqualTo("Item Browse - TopicHub")
+        browser.pageSource must contain("Viewing all 1 records.")
+      }
+
+      "browsing handles unknown filters" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        item_factory(11)
+        Item.all.size must equalTo(11)
+        browser.goTo("http://localhost:" + port + "/items/browse?filter=asdfasdf&id=1")
+        assertThat(browser.title()).isEqualTo("Error - TopicHub")
+        browser.pageSource must contain("No such filter: asdfasdf")
+      }
+
+      "browsing handles unknown topics" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        item_factory(1)
+        Item.all.size must equalTo(1)
+        val s = Scheme.make("tag", "topic", "cat", "SomeScheme", Some("link"), Some("logo"))
+        val t = Topic.make(s.id, "tag", "name")
+        Item.findById(1).get.addTopic(t)
+        browser.goTo("http://localhost:" + port + "/items/browse?filter=topic&id=2")
+        assertThat(browser.title()).isEqualTo("Error - TopicHub")
+        browser.pageSource must contain("No such topic: 2")
       }
 
       // GET /item/:id
@@ -57,10 +99,26 @@ class ItemPagesSpec extends Specification {
         browser.pageSource must not contain("Create a Channel to enable Deposits")
       }
 
+      "accessing a non-existing item is handled" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        item_factory(1)
+        browser.goTo("http://localhost:" + port + "/item/2")
+        assertThat(browser.title()).isEqualTo("Error - TopicHub")
+        browser.pageSource must contain("No such item: 2")
+      }
+
       // GET /item/package/:id
       "generating an item package works" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         skipped("Need to consider how to actually test this.")
+      }
+
+      "generating package for unknown item is handled" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        item_factory(1)
+        browser.goTo("http://localhost:" + port + "/item/package/2")
+        assertThat(browser.title()).isEqualTo("Error - TopicHub")
+        browser.pageSource must contain("No such item: 2")
       }
 
       // GET /item/deposit/:id
@@ -78,6 +136,15 @@ class ItemPagesSpec extends Specification {
         val action = route(FakeRequest(GET, "/item/mets/1")).get
         status(action) must equalTo(OK)
         contentType(action) must beSome.which(_ == "application/xml")
+      }
+
+      // GET /item/mets/:id
+      "requesting mets with invalid item is handled" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        item_factory(1)
+        browser.goTo("http://localhost:" + port + "/item/mets/2")
+        assertThat(browser.title()).isEqualTo("Error - TopicHub")
+        browser.pageSource must contain("No such item: 2")
       }
 
       // GET /items/missingtopics
@@ -168,6 +235,20 @@ class ItemPagesSpec extends Specification {
       "depositing an item works with a channel defined" in new WithBrowser(
         app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
         skipped("Need to consider how to actually test this.")
+      }
+
+      "depositing an item handles unknown items" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        val user = User.make("user", "user@example.com", "", "https://oidc.mit.edu/current_user")
+        val sub = Subscriber.make(user.id, "Sub Name", "cat", "contact", Some("link"), Some("logo"))
+        val ch = Channel.make(sub.id, "protocol", "mode", "description", "userid",
+                              "password", "http://example.com")
+        item_factory(1)
+        browser.goTo("http://localhost:" + port + "/login")
+        browser.$("#openid").click
+        browser.goTo("http://localhost:" + port + "/item/deposit/2")
+        assertThat(browser.title()).isEqualTo("Error - TopicHub")
+        browser.pageSource must contain("No such item: 2")
       }
     }
 
