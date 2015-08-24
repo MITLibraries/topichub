@@ -146,6 +146,7 @@ GET     /interests/remove/:iid  controllers.Application.removeSubscriberInterest
 
 # Channel Pages
 GET     /channel/:id                controllers.Application.channel(id: Int)
+GET     /channel/:id/check          controllers.Application.checkChannel(id: Int)
 GET     /channels/:sid/create       controllers.Application.newChannel(sid: Int)
 POST    /subscriber/:sid/channels   controllers.Application.createChannel(sid: Int)
 
