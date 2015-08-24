@@ -1,0 +1,11 @@
+User-agent: *
+Disallow: /item
+Disallow: /item/
+Disallow: /items
+Disallow: /items/
+Disallow: /topic
+Disallow: /topic/
+Disallow: /topics
+Disallow: /topics/
+Disallow: /search
+Disallow: /search/
