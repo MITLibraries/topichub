@@ -195,5 +195,5 @@ GET     /submodel                    controllers.Application.subscriberModel
 POST    /submodel                    controllers.Application.addSubscriberModel
 
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.at(path="/public", file)
 GET     /robots.txt                 controllers.Assets.at(path="/public", file="robots.txt")
+GET     /assets/*file               controllers.Assets.at(path="/public", file)
