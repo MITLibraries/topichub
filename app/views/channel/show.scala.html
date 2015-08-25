@@ -12,6 +12,9 @@
      <p>URL: @channel.channelUrl</p>
      <p>Created: @HubUtils.fmtDate(channel.created)</p>
      <p>@HubUtils.pluralize(channel.transfers, "transfer") - most recent: @HubUtils.fmtDate(channel.updated)</p>
+     @if(channel.protocol == "sword") {
+       <a rel="tooltip" title="check destination" href="@routes.Application.checkChannel(channel.id)" class="btn btn-primary btn-large pull-right">Check Destination &raquo;</a>
+     }
   </div>
      @*<h3>Subscriptions</h3>
      <ul>

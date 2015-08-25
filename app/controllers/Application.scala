@@ -29,7 +29,7 @@ import models._
 import services.contentModelJson._
 import services.publisherModelJson._
 import services.subscriberModelJson._
-import services.Emailer
+import services.{Emailer, SwordClient}
 import workers.Cataloger
 
 case class HubContext(user: Option[User])
@@ -1036,6 +1036,14 @@ object Application extends Controller with Security {
   def channel(id: Int) = isAuthenticated { identity => implicit request =>
     Channel.findById(id).map( chan =>
       subscriberMember(identity, chan.subscriber, Ok(views.html.channel.show(chan)))
+      ).getOrElse(NotFound(views.html.static.trouble("No such subscriber destination: " + id)))
+  }
+
+  def checkChannel(id: Int) = isAuthenticated { identity => implicit request =>
+    Channel.findById(id).map( chan =>
+      subscriberMember(identity, chan.subscriber, { val msg = SwordClient.checkEndpoint(chan).split('|');
+                                     Redirect(routes.Application.channel(chan.id)).flashing(
+                                     msg(0) -> msg(1)) })
       ).getOrElse(NotFound(views.html.static.trouble("No such subscriber destination: " + id)))
   }
 
