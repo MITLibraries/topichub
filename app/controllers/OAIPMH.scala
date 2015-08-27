@@ -7,7 +7,7 @@ package controllers
 import scala.xml.{Attribute, Elem, NodeSeq, Text, Null}
 
 import java.text.SimpleDateFormat
-import java.util.Date
+import java.util.{Base64, Date}
 
 import org.joda.time.DateTimeZone
 import org.joda.time.format.ISODateTimeFormat
@@ -34,6 +34,8 @@ object OAIPMH extends Controller {
   val iso8601 = ISODateTimeFormat.dateTimeNoMillis.withZone(DateTimeZone.UTC)
   val prFormat = new SimpleDateFormat("yyyy-MM-dd")
   val tsFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+  val urlEncoder = Base64.getUrlEncoder
+  val urlDecoder = Base64.getUrlDecoder
   lazy val metaSchemeId = Scheme.findByTag("meta").map(_.id).getOrElse(0L)
   lazy val earliestDatestamp = Item.findOldest.map(_.created).getOrElse(new Date).getTime
   lazy val tagCache = Scheme.all.map(sch => sch.id -> sch.tag).toMap
@@ -148,8 +150,8 @@ object OAIPMH extends Controller {
     <ListSets>
       { for (topic <- results.filter(_.scheme_id != metaSchemeId)) yield
         <set>
-          <setSpec>{tagCache.get(topic.scheme_id).get}:{topic.tag}</setSpec>
-          <setName>{topic.name}</setName>
+          <setSpec>{tagCache.get(topic.scheme_id).get}:{toSetSpec(topic)}</setSpec>
+          <setName>{bestName(topic)}</setName>
         </set>
       } {
         if (hits.length > recLimit)
@@ -184,9 +186,9 @@ object OAIPMH extends Controller {
   private def itemHeader(item: Item) =
     <header>
       <identifier>{item.objKey}</identifier>
-      <datestamp>{item.created}</datestamp>
+      <datestamp>{iso8601.print(item.created.getTime)}</datestamp>
       { for (topic <- item.topics.filter(_.scheme_id != metaSchemeId)) yield
-        <setSpec>{tagCache.get(topic.scheme_id).get}:{topic.tag}</setSpec>
+        <setSpec>{tagCache.get(topic.scheme_id).get}:{toSetSpec(topic)}</setSpec>
       }
     </header>
 
@@ -197,7 +199,8 @@ object OAIPMH extends Controller {
     // look-ahead by 1 to see if we need to paginate results
     query.get("set").map( s => {
       val split = s.indexOf(":")
-      Topic.forSchemeAndTag(s.substring(0, split), s.substring(split + 1)).map( topic =>
+      val decoded = fromSetSpec(s.substring(split + 1))
+      Topic.forSchemeAndTag(s.substring(0, split), decoded).map( topic =>
         Item.inTopicRange(topic.id, fromToken, latest, recLimit + 1)
       ).getOrElse(throw new IllegalStateException())
     }).getOrElse(Item.inRange(fromToken, latest, recLimit + 1))
@@ -208,4 +211,7 @@ object OAIPMH extends Controller {
   private def error(code: String, msg: String = null) = <error code={code}>{msg}</error>
   private def itemCount = Item.createdAfterCount(new Date(earliestDatestamp))
   private def topicCount = Topic.createdAfterCount(new Date(earliestDatestamp))
+  private def bestName(topic: Topic) = if ("No Label".equals(topic.name)) topic.tag else topic.name
+  private def toSetSpec(topic: Topic) = urlEncoder.encodeToString(topic.tag.getBytes("UTF-8")).replace('=', '~')
+  private def fromSetSpec(setSpec: String) = new String(urlDecoder.decode(setSpec.replace('~', '=')), "UTF-8")
 }

@@ -1,6 +1,6 @@
 import org.specs2.mutable._
 import org.specs2.runner._
-import java.util.Date
+import java.util.{Base64, Date}
 
 import play.api.test._
 import play.api.test.Helpers._
@@ -14,6 +14,12 @@ import models.{ Collection, ContentType, Item, Publisher, ResourceMap, Scheme, T
  * An integration test will fire up a whole play application in a real (or headless) browser
  */
 class OaiPmhSpec extends Specification {
+
+  val urlEncoder = Base64.getUrlEncoder
+  val urlDecoder = Base64.getUrlDecoder
+
+  def toSetSpec(topic: Topic) = urlEncoder.encodeToString(topic.tag.getBytes("UTF-8")).replace('=', '~')
+  def fromSetSpec(setSpec: String) = new String(urlDecoder.decode(setSpec.replace('~', '=')), "UTF-8")
 
   def item_factory(count: Int) {
     val ct = ContentType.make("tag", "label", "desc", Some("logo"))
@@ -44,9 +50,9 @@ class OaiPmhSpec extends Specification {
       val t2 = Topic.make(s2.id, "Topic2", "Topic2 Name")
       val t3 = Topic.make(s2.id, "Topic3", "Topic3 Name")
       browser.goTo("http://localhost:" + port + "/oai?verb=ListSets")
-      browser.pageSource must contain("Scheme1:Topic1")
-      browser.pageSource must contain("Scheme2:Topic2")
-      browser.pageSource must contain("Scheme2:Topic3")
+      browser.pageSource must contain("Scheme1:" + toSetSpec(t1))
+      browser.pageSource must contain("Scheme2:" + toSetSpec(t2))
+      browser.pageSource must contain("Scheme2:" + toSetSpec(t3))
     }
 
     // GET /oai?verb=ListRecords
