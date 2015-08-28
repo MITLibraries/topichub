@@ -42,7 +42,9 @@ class OAuth2(application: Application) {
       post(data)
 
     tokenResponse.flatMap { response =>
-      (response.json \ "access_token").asOpt[String].fold(Future.failed[String](new IllegalStateException("Sod off!"))) { accessToken =>
+      (response.json \ "access_token").asOpt[String].fold(Future.failed[String](new IllegalStateException("""
+        Authenication Resulted in an Illegal State. Please quit your browser and try again.
+        If it is not resolved, please <a href="/contact">report the problem</a>."""))) { accessToken =>
         Future.successful(accessToken)
       }
     }
@@ -86,7 +88,7 @@ object OAuth2 extends Controller {
 
   def success() = Action.async { request =>
     implicit val app = Play.current
-    request.session.get("oauth-token").fold(Future.successful(Unauthorized("No way Jose"))) { authToken =>
+    request.session.get("oauth-token").fold(Future.successful(Unauthorized("Authorization Failed."))) { authToken =>
       WS.url(oauth2.auth_profile_url).
         withHeaders(HeaderNames.AUTHORIZATION -> ("Bearer " + s"$authToken")).
         get().map { response =>
