@@ -172,7 +172,8 @@ GET     /pick/:id/resolve           controllers.Application.resolvePick(id: Int,
 
 # Search pages
 GET     /search                     controllers.Search.index
-GET     /search/results             controllers.Search.results(q: String, target: String ?="topic", page: Int ?=0, perpage: Int ?=25)
+GET     /search/results             controllers.Search.results(q: String, target: String ?="topic", page: Int ?=0, perpage: Int ?=25, format: String ?="html")
+GET     /search/description/:dtype  controllers.Search.openSearchDescription(dtype: String)
 
 # OAI-PMH services
 GET     /oai                        controllers.OAIPMH.provide
