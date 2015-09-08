@@ -41,15 +41,7 @@ object Indexer {
 
   def reindex(dtype: String) = {
     // delete current index type
-    if (indexUser != "" && indexPwd != "") {
-      Logger.debug("Use basic auth for WS elasticsearch call")
-      WS.url(indexSvc + dtype).withAuth(indexUser, indexPwd, WSAuthScheme.BASIC).delete()
-      WS.url(indexSvc + dtype).withAuth(indexUser, indexPwd, WSAuthScheme.BASIC).withMethod("PUT").stream
-    } else {
-      Logger.debug("No auth for WS elasticsearch call")
-      WS.url(indexSvc + dtype).delete()
-      WS.url(indexSvc + dtype).withMethod("PUT").stream
-    }
+    deindex_all(dtype)
 
     if ("topic".equals(dtype)) {
       Topic.all.foreach(index(_))
@@ -75,6 +67,18 @@ object Indexer {
     deleteDocument(indexSvc.concat("topic/").concat(topic.id.toString))
   }
 
+  def deindex_all(dtype: String) = {
+    if (indexUser != "" && indexPwd != "") {
+      Logger.debug("Use basic auth for WS elasticsearch call")
+      WS.url(indexSvc + dtype).withAuth(indexUser, indexPwd, WSAuthScheme.BASIC).delete()
+      WS.url(indexSvc + dtype).withAuth(indexUser, indexPwd, WSAuthScheme.BASIC).withMethod("PUT").stream
+    } else {
+      Logger.debug("No auth for WS elasticsearch call")
+      WS.url(indexSvc + dtype).delete()
+      WS.url(indexSvc + dtype).withMethod("PUT").stream
+    }
+  }
+
   def index(item: Item) = {
     var dataMap = Map[String, JsValue]()
     val ctype = ContentType.findById(item.ctypeId).get
@@ -85,6 +89,7 @@ object Indexer {
     // also add all topics
     dataMap += "topicSchemeTag" -> toJson(item.topics.map(_.scheme.tag))
     dataMap += "topicTag" -> toJson(item.topics.map(_.tag))
+    Logger.debug(dataMap.toString)
     indexDocument(elastic_url, stringify(toJson(dataMap)))
     Logger.debug("Item index: " + dataMap)
     // sleep required to prevent elasticsearch service from dropping records
