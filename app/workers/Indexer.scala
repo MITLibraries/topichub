@@ -36,18 +36,19 @@ object Indexer {
   import play.api.libs.json.Json._
 
   val indexSvc = Play.configuration.getString("hub.index.url").get
+  val indexUser = Play.configuration.getString("hub.index.username").getOrElse("")
+  val indexPwd = Play.configuration.getString("hub.index.password").getOrElse("")
 
   def reindex(dtype: String) = {
     // delete current index type
-    if (indexSvc.contains("bonsai.io")) {
+    if (indexUser != "" && indexPwd != "") {
       Logger.debug("Use basic auth for WS elasticsearch call")
-      WS.url(indexSvc + dtype)
-        .withAuth(extractCredentials("username", indexSvc),
-                  extractCredentials("password", indexSvc),
-                  WSAuthScheme.BASIC).delete()
+      WS.url(indexSvc + dtype).withAuth(indexUser, indexPwd, WSAuthScheme.BASIC).delete()
+      WS.url(indexSvc + dtype).withAuth(indexUser, indexPwd, WSAuthScheme.BASIC).withMethod("PUT").stream
     } else {
       Logger.debug("No auth for WS elasticsearch call")
       WS.url(indexSvc + dtype).delete()
+      WS.url(indexSvc + dtype).withMethod("PUT").stream
     }
 
     if ("topic".equals(dtype)) {
@@ -65,6 +66,9 @@ object Indexer {
                    "name" -> toJson(topic.name))
     val elastic_url = indexSvc.concat("topic/").concat(topic.id.toString)
     indexDocument(elastic_url, stringify(toJson(data)))
+    Logger.debug("Topic index: " + data)
+    // sleep required to prevent elasticsearch service from dropping records
+    Thread sleep 100
   }
 
   def deindex(topic: Topic) = {
@@ -83,7 +87,8 @@ object Indexer {
     dataMap += "topicTag" -> toJson(item.topics.map(_.tag))
     indexDocument(elastic_url, stringify(toJson(dataMap)))
     Logger.debug("Item index: " + dataMap)
-    Logger.debug(indexSvc + "item/" + item.id)
+    // sleep required to prevent elasticsearch service from dropping records
+    Thread sleep 100
   }
 
   def deindex(item: Item) = {
@@ -91,12 +96,9 @@ object Indexer {
   }
 
   private def indexDocument(url: String, jdata: String) = {
-    if (indexSvc.contains("bonsai.io")) {
+    if (indexUser != "" && indexPwd != "") {
       Logger.debug("Use basic auth for WS elasticsearch call")
-      WS.url(url)
-        .withAuth(extractCredentials("username", indexSvc),
-                  extractCredentials("password", indexSvc),
-                  WSAuthScheme.BASIC).put(jdata)
+      WS.url(url).withAuth(indexUser, indexPwd, WSAuthScheme.BASIC).put(jdata)
     } else {
       Logger.debug("No auth for WS elasticsearch call")
       WS.url(url).put(jdata)
@@ -104,12 +106,9 @@ object Indexer {
   }
 
   private def deleteDocument(url: String) = {
-    if (indexSvc.contains("bonsai.io")) {
+    if (indexUser != "" && indexPwd != "") {
       Logger.debug("Use basic auth for WS elasticsearch call")
-      WS.url(url)
-        .withAuth(extractCredentials("username", indexSvc),
-                  extractCredentials("password", indexSvc),
-                  WSAuthScheme.BASIC).delete
+      WS.url(url).withAuth(indexUser, indexPwd, WSAuthScheme.BASIC).delete
     } else {
       Logger.debug("No auth for WS elasticsearch call")
       WS.url(url).delete
@@ -120,19 +119,4 @@ object Indexer {
     // NB: need logic here to test whether scheme is metadata or not
     scheme.tag -> toJson(item.metadataValue(scheme.tag))
   }
-
-  /*
-  def index(subscriber: Subscriber) = {
-    // minimal indexing: dbId, schemeId, topicId, and title
-    val data = Map("dbId" -> toJson(subscriber.id),
-                   "category" -> toJson(subscriber.category),
-                   "keywords" -> toJson(subscriber.keywords),
-                   "name" -> toJson(subscriber.name))
-    val jdata = stringify(toJson(data))
-    // debug
-    Logger.info("Subscriber index: " + jdata)
-    val req = WS.url(indexSvc + "subscriber/" + subscriber.id)
-    req.put(jdata)
-  }
-  */
 }

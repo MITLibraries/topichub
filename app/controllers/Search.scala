@@ -26,6 +26,8 @@ import models.{HubUtils, Item, Subscriber, Topic}
 object Search extends Controller {
 
   val indexSvc = Play.configuration.getString("hub.index.url").get
+  val indexUser = Play.configuration.getString("hub.index.username").getOrElse("")
+  val indexPwd = Play.configuration.getString("hub.index.password").getOrElse("")
   val adminEmail = Play.configuration.getString("hub.admin.email").get
   val iso8601 = ISODateTimeFormat.dateTimeNoMillis.withZone(DateTimeZone.UTC)
 
@@ -133,12 +135,9 @@ object Search extends Controller {
     val encQuery = UriEncoding.encodePathSegment(query, "UTF-8")
     val offset = (page) * perpage
     val elastic_url = indexSvc +  target + "/_search?q=" + encQuery + "&from=" + offset + "&size=" + perpage
-    if (indexSvc.contains("bonsai.io")) {
+    if (indexUser != "" && indexPwd != "") {
       Logger.debug("use basic auth for WS elasticsearch call")
-      WS.url(elastic_url)
-        .withAuth(extractCredentials("username", indexSvc),
-                  extractCredentials("password", indexSvc),
-                  WSAuthScheme.BASIC)
+      WS.url(elastic_url).withAuth(indexUser, indexPwd, WSAuthScheme.BASIC)
     } else {
       Logger.debug("no auth for WS elasticsearch call")
       WS.url(elastic_url)
