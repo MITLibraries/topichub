@@ -5,15 +5,17 @@ jdk:
  - oraclejdk8
 sudo: false
 
+services:
+  - elasticsearch
+
 cache:
   directories:
     - $HOME/.ivy2/cache
     - $HOME/.sbt/boot/
 
 env:
-  - MAILGUN_API_KEY=notarealkey DATABASE_URL=jdbc:postgresql://localhost/travis_ci_test
-addons:
-  postgresql: "9.4"
+  - MAILGUN_API_KEY=notarealkey
+
 script:
   - sbt ++$TRAVIS_SCALA_VERSION -J-XX:ReservedCodeCacheSize=256M coverage test
   # Tricks to avoid unnecessary cache updates
@@ -23,4 +25,5 @@ script:
 after_success: "sbt coveralls"
 before_script:
 before_script:
-  - psql -c 'create database travis_ci_test;' -U postgres
+  - sleep 10
+  - curl -XPUT 'http://127.0.0.1:9200/scoap3/'
