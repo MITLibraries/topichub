@@ -35,7 +35,7 @@ class SearchPagesSpec extends Specification {
       browser.pageSource must contain("Search for stuff!")
     }
 
-    "can search for items by scheme" in new WithBrowser(
+    "search for items by scheme" in new WithBrowser(
       app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
       item_factory(1)
       val i = Item.make(1, 1, "location", "abc:123")
@@ -43,7 +43,7 @@ class SearchPagesSpec extends Specification {
                            Some("link"), Some("logo"))
       val s2 = Scheme.make("scheme_2_tag", "gentype", "cat", "scheme_2 description",
                            Some("link"), Some("logo"))
-      val s3 = Scheme.make("scheme_with_no_items", "gentype", "cat", "scheme_2 description",
+      val s3 = Scheme.make("scheme_with_no_items", "gentype", "cat", "scheme_3 description",
                           Some("link"), Some("logo"))
       i.addMetadata("title", "I like popcorn")
       val t1 = Topic.make(s1.id, "tag1", "name1")
@@ -87,13 +87,13 @@ class SearchPagesSpec extends Specification {
       Thread sleep 500
     }
 
-    "can search for topics" in new WithBrowser(
+    "search for topics" in new WithBrowser(
       app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
       val s1 = Scheme.make("scheme_1_tag", "gentype", "cat", "scheme_1 description",
                            Some("link"), Some("logo"))
       val s2 = Scheme.make("scheme_2_tag", "gentype", "cat", "scheme_2 description",
                            Some("link"), Some("logo"))
-      val s3 = Scheme.make("scheme_with_no_items", "gentype", "cat", "scheme_2 description",
+      val s3 = Scheme.make("scheme_with_no_items", "gentype", "cat", "scheme_3 description",
                           Some("link"), Some("logo"))
       val t1 = Topic.make(s1.id, "Some Institution, Anytown, ST 02140", "No Label")
       val t2 = Topic.make(s2.id, "Dept. of Stuff, Some Institution, Anytown, ST 02140", "No Label")
@@ -115,6 +115,57 @@ class SearchPagesSpec extends Specification {
 
       Indexer.deindex_all("topic")
       Thread sleep 500
+    }
+
+    "return atom formatted item results"  in new WithBrowser(
+      app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+      item_factory(1)
+      val i = Item.make(1, 1, "location", "abc:123")
+      val s1 = Scheme.make("scheme_1_tag", "gentype", "cat", "scheme_1 description",
+                           Some("link"), Some("logo"))
+      val s2 = Scheme.make("scheme_2_tag", "gentype", "cat", "scheme_2 description",
+                           Some("link"), Some("logo"))
+      val s3 = Scheme.make("scheme_with_no_items", "gentype", "cat", "scheme_3 description",
+                          Some("link"), Some("logo"))
+      i.addMetadata("title", "I like popcorn")
+      val t1 = Topic.make(s1.id, "tag1", "name1")
+      val t2 = Topic.make(s2.id, "tag2", "name2")
+      i.addTopic(t1)
+      i.addTopic(t2)
+      Indexer.deindex_all("topic")
+      Thread sleep 500
+      Indexer.reindex("item")
+      Thread sleep 500
+
+      browser.goTo("http://localhost:" + port + "/search/results?q=stuff&target=item&format=atom")
+      browser.pageSource must contain("opensearch:itemsPerPage")
+      browser.pageSource must contain("opensearch:totalResults")
+      browser.pageSource must contain("""<opensearch:Query role="request" searchTerms="stuff" startPage="0"/>""")
+
+      Indexer.deindex_all("topic")
+      Thread sleep 500
+    }
+
+    "handle invalid search scope" in new WithBrowser(
+      app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+      browser.goTo("http://localhost:" + port + "/search/results?q=stuff&target=stuff")
+      browser.pageSource must contain("Reason: Only Topic or Item searching are supported.")
+    }
+
+    "provide an opensearch description" in {
+      "for Items" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        browser.goTo("http://localhost:" + port + "/search/description/item")
+        browser.pageSource must contain("/search/results?q={searchTerms}&amp;page={startPage?}&amp;perpage={count?}&amp;target=item&amp;format=html")
+        browser.pageSource must contain("/search/results?q={searchTerms}&amp;page={startPage?}&amp;perpage={count?}&amp;target=item&amp;format=atom")
+      }
+
+      "for Topics" in new WithBrowser(
+        app = FakeApplication(additionalConfiguration = inMemoryDatabase())) {
+        browser.goTo("http://localhost:" + port + "/search/description/topic")
+        browser.pageSource must contain("/search/results?q={searchTerms}&amp;page={startPage?}&amp;perpage={count?}&amp;target=topic&amp;format=html")
+        browser.pageSource must contain("/search/results?q={searchTerms}&amp;page={startPage?}&amp;perpage={count?}&amp;target=topic&amp;format=atom")
+      }
     }
   }
 }
