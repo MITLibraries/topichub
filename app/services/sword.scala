@@ -98,7 +98,7 @@ import models.Channel
 
       // construct a serviceDocument URL from channelUrl (using the DSpace URL convention)
       val svcUrl = endpoint.substring(0, endpoint.indexOf("sword") + 5) + "/servicedocument"
-      val until = Duration(5000, "millis")
+      val until = Duration(15000, "millis")
       Logger.info("About to call: " + svcUrl)
       try {
         val resp = Await.ready(WS.url(svcUrl).withAuth(channel.userId, channel.password, WSAuthScheme.BASIC).get(),
