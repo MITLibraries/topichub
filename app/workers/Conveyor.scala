@@ -262,7 +262,7 @@ object Conveyor {
     }
 
     def readSwordResponse(response: play.api.libs.ws.WSResponse) = {
-      if (response.status == 201) {
+      if (response.status == 201 || response.status == 202) {
         Logger.info("Successful Transfer of " + item.objKey)
         channel.recordTransfer
       } else {
