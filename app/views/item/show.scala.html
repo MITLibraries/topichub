@@ -12,16 +12,31 @@
   }
 }
 @layout.main("Item - TopicHub") {
-  <div itemscope itemtype="http://schema.org/@item.contentType.label" class="jumbotron">
+  <div itemscope itemtype="http://schema.org/@item.contentType.label" class="jumbotron item">
     <h3>~ @item.contentType.tag ~</h3>
-    <h2 itemprop="name">@Html(item.metadataValue("title"))</h2>
-    <p itemprop="author">
-      @tags.item_authors(item.metadataValues("author"))
-      <span class="hidden author_toggler btn">[show all @item.metadataValues("author").length authors]<span>
-    </p>
-    <p><span class="muted">@Html(item.metadataValue("abstract"))</span></p>
-    <p>@HubUtils.pluralize(item.transfers, "transfer") since @HubUtils.fmtDate(item.created). @if(item.transfers > 0){Most recent @HubUtils.fmtDate(item.updated)}</p>
-    <p>Appears in collection: <a href="@routes.ItemController.itemBrowse("collection", item.collectionId)">@Collection.findById(item.collectionId).get.description</a></p>
+    <dl>
+      <dt>Title</dt>
+      <dd itemprop="name">@Html(item.metadataValue("title"))</dd>
+
+      <dt>Authors</dt>
+      <dd itemprop="author">
+          @tags.item_authors(item.metadataValues("author"))
+          <span class="hidden author_toggler btn">[show all @item.metadataValues("author").length authors]<span>
+      </dd>
+
+      <dt>DOI</dt>
+      <dd itemprop="sameAs"><a href="https://doi.org/@item.metadataValue("doi")">@item.metadataValue("doi")</a></dd>
+
+      <dt>Published</dt>
+      <dd itemprop="datePublished">@item.metadataValue("pubdate")</dd>
+
+      <dt>Added</dt>
+      <dd>@HubUtils.fmtDate(item.created)</dd>
+
+      <dt>Collection</dt>
+      <dd><a href="@routes.ItemController.itemBrowse("collection", item.collectionId)">@Collection.findById(item.collectionId).get.description</a></dd>
+    </dl>
+
     <p>
       @if(item.hasMetadata("accessUrl")) {
         <a rel="tooltip" title="see article in new browser window" href="@item.metadataValue("accessUrl")" target="_blank" class="btn btn-primary btn-large">View &raquo;</a>
