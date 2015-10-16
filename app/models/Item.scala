@@ -137,7 +137,7 @@ case class Item(id: Int,            // DB key
   }
 
   private def metsHdr = {
-    <metsHdr CREATEDATE={metadataValue("title")}>
+    <metsHdr CREATEDATE={ HubUtils.fmtDate(created) }>
       <agent ROLE="CREATOR" TYPE="ORGANIZATION">
         <name>TopicHub</name>
       </agent>
@@ -158,7 +158,7 @@ case class Item(id: Int,            // DB key
                   </epdcx:statement>
                 }
 
-                { if( hasMetadata("author") )
+                { if( hasMetadata("author") && include_authors)
                   { for ( author <- metadataValues("author") ) yield
                     <epdcx:statement epdcx:propertyURI="http://purl.org/dc/elements/1.1/creator">
                       <epdcx:valueString>{ author }</epdcx:valueString>
@@ -166,7 +166,7 @@ case class Item(id: Int,            // DB key
                   }
                 }
 
-                { if( hasMetadata("additional_author") )
+                { if( hasMetadata("additional_author") && include_authors)
                   { for ( author <- metadataValues("additional_author") ) yield
                     <epdcx:statement epdcx:propertyURI="http://purl.org/dc/elements/1.1/creator">
                       <epdcx:valueString>{ author }</epdcx:valueString>
@@ -214,6 +214,10 @@ case class Item(id: Int,            // DB key
                   </epdcx:statement>
                 }
 
+                <epdcx:statement epdcx:propertyURI="http://purl.org/dc/terms/Agent">
+                  <epdcx:valueString>TopicHub SCOAP3</epdcx:valueString>
+                </epdcx:statement>
+
               </epdcx:description>
             </epdcx:descriptionSet>
           </xmlData>
@@ -251,6 +255,16 @@ case class Item(id: Int,            // DB key
 
       </div>
     </structMap>
+  }
+
+  private def include_authors: Boolean = {
+    val restrict_at = current.configuration.getInt("mets.restrict_maximum_authors").getOrElse(0)
+    val author_size = metadataValues("author").size + metadataValues("additional_author").size
+    if (restrict_at == 0 || author_size < restrict_at) {
+      true
+    } else {
+      false
+    }
   }
 }
 
