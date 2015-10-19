@@ -214,7 +214,7 @@ case class Item(id: Int,            // DB key
                   </epdcx:statement>
                 }
 
-                <epdcx:statement epdcx:propertyURI="http://purl.org/dc/terms/Agent">
+                <epdcx:statement epdcx:propertyURI="http://purl.org/dc/elements/1.1/source">
                   <epdcx:valueString>TopicHub SCOAP3</epdcx:valueString>
                 </epdcx:statement>
 
