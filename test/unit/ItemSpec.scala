@@ -490,11 +490,11 @@ class ItemSpec extends Specification {
         (mets \\ "dmdSec").size must equalTo(1)
         (mets \\ "fileSec").size must equalTo(1)
         (mets \\ "structMap").size must equalTo(1)
-        (mets \\ "valueString").size must equalTo(3)
+        (mets \\ "valueString").size must equalTo(4)
 
         item.addMetadata("abstract", "More stuff!!!")
         val mets_abstract = item.toMets
-        (mets_abstract \\ "valueString").size must equalTo(4)
+        (mets_abstract \\ "valueString").size must equalTo(5)
 
         item.addMetadata("doi", "asdf//popcorn.123.456")
         item.addMetadata("additional_author", "Anonymoys Coward")
@@ -505,7 +505,7 @@ class ItemSpec extends Specification {
         item.addMetadata("accessUri", "http://example.com/a.pdf?pdfa")
         item.addMetadata("accessUri", "http://example.com/a.xml")
         val mets_moar = item.toMets
-        (mets_moar \\ "valueString").size must equalTo(9)
+        (mets_moar \\ "valueString").size must equalTo(10)
         (mets_moar \\ "FLocat").size must equalTo(3)
         (mets_moar \\ "fptr").size must equalTo(3)
       }
